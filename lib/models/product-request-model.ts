@@ -11,7 +11,9 @@ const QuoteSchema = new Schema(
     serviceFee: { type: Number, default: 0 },
     finalEstimatedPrice: { type: Number, default: 0 },
     customerQuote: { type: Number, default: 0 },
-    quoteExpiry: { type: String, default: "" }
+    quoteExpiry: { type: String, default: "" },
+    expectedDeliveryTime: { type: String, default: "" },
+    adminNotes: { type: String, default: "" }
   },
   { _id: false }
 );
@@ -26,6 +28,7 @@ const ProductRequestSchema = new Schema(
     productUrl: { type: String, required: true },
     productName: { type: String, default: "" },
     productCategory: { type: String, default: "" },
+    detectedPlatform: { type: String, default: "" },
     preferredSize: { type: String, default: "" },
     preferredColor: { type: String, default: "" },
     quantity: { type: Number, default: 1 },

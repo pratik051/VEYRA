@@ -4,6 +4,8 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { ProductModel } from "@/lib/models/product-model";
 import { slugify } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const admin = await requireAdminSession();
   if (!admin) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

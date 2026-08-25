@@ -3,6 +3,8 @@ import { requireAdminSession } from "@/lib/auth/require-admin";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { ProductRequestModel } from "@/lib/models/product-request-model";
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const admin = await requireAdminSession();
   if (!admin) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -19,6 +21,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       finalEstimatedPrice?: number;
       customerQuote?: number;
       quoteExpiry?: string;
+      expectedDeliveryTime?: string;
+      adminNotes?: string;
     };
   };
   await connectToDatabase();

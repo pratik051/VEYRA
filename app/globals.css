@@ -2,42 +2,189 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+@layer base {
+  /* Box model & touch */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth scrolling — respects user preference */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  html {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #0b0b0c;
+    background-color: #ffffff;
+    overflow-x: hidden;
+    /* GPU-accelerated font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Focus visible ring — keyboard-only */
+  :focus-visible {
+    outline: 2px solid #c5a059;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Custom gold scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c5a059;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9b7832;
+  }
 }
 
-body {
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: #0b0b0c;
-  background: #fff;
+/* ─────────────────────────────────────────
+   Utility classes — composited-only
+───────────────────────────────────────── */
+@layer utilities {
+  /* Gold gradients */
+  .gold-gradient {
+    background: linear-gradient(135deg, #dfc384 0%, #c5a059 50%, #9b7832 100%);
+  }
+
+  .gold-text-gradient {
+    background: linear-gradient(135deg, #c5a059 0%, #dfc384 50%, #9b7832 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark-card-gradient {
+    background: linear-gradient(180deg, #18181c 0%, #0d0d0f 100%);
+  }
+
+  /* Glassmorphism — GPU composited backdrop filter */
+  .glass-header {
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  .glass-dark {
+    background: rgba(14, 14, 16, 0.88);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+
+  /* Scrollbar hidden */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* GPU promotion hint — only for animated elements */
+  .gpu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ─────────────────────────────────────────
+   Animation classes
+───────────────────────────────────────── */
+
+/* Reduced-motion: disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-rise,
+  .animate-slide-down,
+  .animate-modal-enter,
+  .animate-shimmer,
+  .animate-pulse-slow {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
+/* Composited fade — opacity + scale only (no layout) */
 .animate-fade-in {
-  animation: fade-in 220ms ease-out both;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Rise — transform + opacity (GPU-only) */
 .animate-rise {
-  animation: rise 350ms ease-out both;
+  animation: riseUp 0.30s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes fade-in {
+/* Slide down — for dropdowns, search modal */
+.animate-slide-down {
+  animation: slideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Modal enter — scale + opacity, spring feel */
+.animate-modal-enter {
+  animation: modalEnter 0.26s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Slow pulse for status indicators */
+.animate-pulse-slow {
+  animation: pulseSlow 2.4s ease-in-out infinite;
+}
+
+/* Shimmer skeleton loading */
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────
+   Keyframes — composited transforms only
+───────────────────────────────────────── */
+
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
-@keyframes rise {
+@keyframes riseUp {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -46,4 +193,36 @@ a {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }

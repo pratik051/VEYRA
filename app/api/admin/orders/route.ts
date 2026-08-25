@@ -3,6 +3,8 @@ import { requireAdminSession } from "@/lib/auth/require-admin";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { OrderModel } from "@/lib/models/order-model";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const admin = await requireAdminSession();
   if (!admin) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
