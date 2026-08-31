@@ -49,87 +49,100 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-16 sm:space-y-24">
+    <div className="space-y-20 sm:space-y-28">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }} />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-neutral-50 via-white to-white py-12 sm:py-20 lg:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-12">
+      {/* ─── HERO ─── */}
+      <section className="relative overflow-hidden">
+        {/* Ambient glow orbs */}
+        <div className="pointer-events-none absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-veyra-gold/[0.07] blur-[120px] animate-orb-float" />
+        <div className="pointer-events-none absolute top-20 right-1/4 h-[350px] w-[350px] rounded-full bg-veyra-gold/[0.05] blur-[100px] animate-orb-float" style={{ animationDelay: "3s" }} />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-24 lg:py-28 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-14 lg:grid-cols-12">
             {/* Left Copy */}
-            <div className="space-y-6 lg:col-span-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm">
-                <span className="flex h-2 w-2 rounded-full bg-veyra-gold animate-pulse"></span>
-                <span>Nepal&apos;s Modern Shopping &amp; India Import Concierge</span>
+            <div className="space-y-7 lg:col-span-7 animate-rise">
+              {/* Pill badge */}
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-veyra-gold/25 bg-veyra-gold/10 px-4 py-2 text-xs font-bold text-veyra-gold tracking-wide">
+                <span className="flex h-2 w-2 rounded-full bg-veyra-gold shadow-[0_0_0_4px_rgba(201,168,76,0.2)] animate-pulse" />
+                Nepal&apos;s Modern Shopping &amp; India Import Concierge
               </div>
 
-              <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 sm:text-6xl lg:leading-[1.1]">
-                Everything You Want. <br />
+              <h1 className="font-display text-5xl font-black tracking-tight text-veyra-text-dark sm:text-7xl lg:leading-[1.05]">
+                Everything
+                <br />
+                You Want.{" "}
+                <br />
                 <span className="gold-text-gradient">One Place.</span>
               </h1>
 
-              <p className="max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+              <p className="max-w-xl text-base leading-relaxed text-veyra-muted/80 sm:text-lg">
                 Fashion, accessories, tech and everyday essentials — discover products from India and get them delivered anywhere in Nepal.
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center gap-4 pt-1">
                 <Link
                   href="/shop"
-                  className="rounded-xl bg-black px-7 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-neutral-800 transition"
+                  className="shimmer-gold rounded-xl bg-veyra-gold px-8 py-4 text-sm font-black tracking-wide text-black shadow-gold-glow transition-all duration-300 hover:bg-veyra-gold-light hover:shadow-gold-glow-lg hover:-translate-y-0.5"
                 >
                   Shop Now
                 </Link>
                 <Link
                   href="/request-product"
-                  className="flex items-center gap-2 rounded-xl border-2 border-black bg-white px-6 py-3.5 text-sm font-bold text-black hover:bg-black hover:text-white transition"
+                  className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/[0.03] px-7 py-4 text-sm font-bold text-veyra-text-dark transition-all duration-300 hover:border-veyra-gold/40 hover:bg-black/[0.05] hover:-translate-y-0.5"
                 >
                   <span>Request From India</span>
-                  <span>→</span>
+                  <span className="text-veyra-gold">→</span>
                 </Link>
               </div>
 
-              {/* Trust Micro-Pills */}
-              <div className="grid grid-cols-3 gap-3 border-t border-neutral-200/80 pt-6">
-                <div>
-                  <p className="text-lg font-extrabold text-neutral-900">1,000+</p>
-                  <p className="text-xs text-neutral-500 font-medium">Curated &amp; Sourced Items</p>
-                </div>
-                <div>
-                  <p className="text-lg font-extrabold text-neutral-900">7 Provinces</p>
-                  <p className="text-xs text-neutral-500 font-medium">Nationwide Nepal Delivery</p>
-                </div>
-                <div>
-                  <p className="text-lg font-extrabold text-neutral-900">100% Verified</p>
-                  <p className="text-xs text-neutral-500 font-medium">Clear Cost Estimations</p>
-                </div>
+              {/* Trust Stats */}
+              <div className="grid grid-cols-3 gap-4 border-t border-black/[0.06] pt-7">
+                {[
+                  { value: "1,000+", label: "Curated & Sourced Items" },
+                  { value: "7 Provinces", label: "Nationwide Nepal Delivery" },
+                  { value: "100% Verified", label: "Clear Cost Estimations" }
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <p className="font-display text-lg font-black text-veyra-text-dark">{stat.value}</p>
+                    <p className="text-[11px] text-veyra-muted font-medium mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Right Hero Visual Collage */}
-            <div className="relative lg:col-span-5">
-              <div className="relative mx-auto max-w-md overflow-hidden rounded-3xl border border-neutral-200/80 bg-neutral-950 p-2 shadow-2xl">
-                <Image
-                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=85"
-                  alt="VEYRA Curated Products Lifestyle"
-                  width={900}
-                  height={1000}
-                  className="h-[420px] w-full rounded-2xl object-cover"
-                  priority
-                />
+            {/* Right Hero Visual */}
+            <div className="relative lg:col-span-5 animate-fade-in">
+              <div className="relative mx-auto max-w-md">
+                {/* Gold glow ring */}
+                <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-veyra-gold/20 to-transparent blur-xl" />
 
-                {/* Floating Glass Badges */}
-                <div className="absolute top-6 left-6 rounded-2xl border border-white/20 bg-black/75 p-3.5 text-white backdrop-blur-md shadow-lg">
-                  <p className="text-[10px] font-bold tracking-wider uppercase text-veyra-gold">Direct Indian Marketplaces</p>
-                  <p className="text-xs font-semibold">Amazon • Flipkart • Myntra</p>
-                </div>
+                <div className="relative overflow-hidden rounded-3xl border border-black/5 bg-white p-1.5 shadow-modal">
+                  <Image
+                    src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=85"
+                    alt="VEYRA Curated Products Lifestyle"
+                    width={900}
+                    height={1000}
+                    className="h-[440px] w-full rounded-2xl object-cover"
+                    priority
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-1.5 rounded-2xl bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
-                <div className="absolute bottom-6 right-6 rounded-2xl border border-white/20 bg-white/90 p-3.5 text-neutral-900 backdrop-blur-md shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-3 w-3 rounded-full bg-emerald-500"></span>
-                    <p className="text-xs font-bold">Fast Nepal Sourcing</p>
+                  {/* Floating badges */}
+                  <div className="absolute top-5 left-5 rounded-2xl border border-white/10 bg-black/50 p-3.5 text-white backdrop-blur-md shadow-modal">
+                    <p className="text-[10px] font-black tracking-widest uppercase text-veyra-gold mb-1">Direct Indian Marketplaces</p>
+                    <p className="text-xs font-semibold text-white/80">Amazon • Flipkart • Myntra</p>
                   </div>
-                  <p className="text-[11px] text-neutral-600 mt-0.5">Express Doorstep Shipping</p>
+
+                  <div className="absolute bottom-5 right-5 rounded-2xl border border-white/10 bg-black/40 p-3.5 backdrop-blur-md shadow-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.2)]" />
+                      <p className="text-xs font-bold text-white">Fast Nepal Sourcing</p>
+                    </div>
+                    <p className="text-[11px] text-white/80 mt-0.5">Express Doorstep Shipping</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -137,35 +150,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4 Trust Feature Cards */}
+      {/* ─── FEATURE CARDS ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {featureCards.map((card) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {featureCards.map((card, i) => (
             <article
               key={card.title}
-              className="group rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-card-hover"
+              className={`group glass-card rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-veyra-gold/20 hover:shadow-card-hover stagger-${i + 1}`}
             >
-              <div className="text-2xl mb-3">{card.icon}</div>
-              <h3 className="text-base font-bold text-neutral-900 group-hover:text-veyra-gold transition">
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-veyra-gold/10 text-xl border border-veyra-gold/20 transition-all duration-300 group-hover:bg-veyra-gold/20 group-hover:shadow-gold">
+                {card.icon}
+              </div>
+              <h3 className="font-display text-sm font-bold text-veyra-text-dark group-hover:text-veyra-gold-dark transition-colors duration-200">
                 {card.title}
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-600">{card.body}</p>
+              <p className="mt-2 text-xs leading-relaxed text-veyra-muted">{card.body}</p>
             </article>
           ))}
         </div>
       </section>
 
-      {/* Categories Grid (All 9 Categories) */}
+      {/* ─── CATEGORIES ─── */}
       <section id="categories" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Explore Collection</span>
-            <h2 className="text-2xl font-extrabold text-neutral-900 sm:text-3xl mt-1">Shop by Category</h2>
-            <p className="mt-1 text-sm text-neutral-500">Discover handpicked essentials across every lifestyle category.</p>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
+              <span className="h-px w-6 bg-veyra-gold" />
+              Explore Collection
+            </span>
+            <h2 className="font-display text-3xl font-black text-veyra-text-dark sm:text-4xl mt-2">Shop by Category</h2>
+            <p className="mt-1.5 text-sm text-veyra-muted">Discover handpicked essentials across every lifestyle category.</p>
           </div>
           <Link
             href="/shop"
-            className="mt-3 sm:mt-0 text-sm font-bold text-neutral-900 hover:text-veyra-gold transition inline-flex items-center gap-1"
+            className="mt-3 sm:mt-0 text-sm font-bold text-veyra-gold hover:text-veyra-gold-light transition inline-flex items-center gap-1.5"
           >
             <span>View All Products</span>
             <span>→</span>
@@ -177,9 +195,9 @@ export default function HomePage() {
             <Link
               key={cat.id}
               href={`/shop?category=${encodeURIComponent(cat.name)}`}
-              className="group relative overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
+              className="group relative overflow-hidden rounded-2xl border border-black/[0.04] bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover hover:border-veyra-gold/20"
             >
-              <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
+              <div className="relative h-52 w-full overflow-hidden bg-veyra-surface">
                 <Image
                   src={`${cat.image}?auto=format&fit=crop&w=800&q=80`}
                   alt={cat.name}
@@ -187,15 +205,15 @@ export default function HomePage() {
                   height={400}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                <div className="absolute bottom-3 left-4 right-4 text-white">
-                  <h3 className="text-lg font-bold text-white drop-shadow-sm">{cat.name}</h3>
-                  <p className="text-xs text-neutral-200 line-clamp-1">{cat.description}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <h3 className="font-display text-lg font-bold text-white drop-shadow-sm">{cat.name}</h3>
+                  <p className="text-xs text-white/80 line-clamp-1 mt-0.5">{cat.description}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between p-3.5 bg-white">
-                <span className="text-xs font-semibold text-neutral-500">{cat.itemCount || 20}+ items</span>
-                <span className="text-xs font-bold text-neutral-900 group-hover:text-veyra-gold transition inline-flex items-center gap-1">
+              <div className="flex items-center justify-between px-4 py-3 bg-white">
+                <span className="text-xs font-semibold text-veyra-muted">{cat.itemCount || 20}+ items</span>
+                <span className="text-xs font-bold text-veyra-gold group-hover:text-veyra-gold-dark transition inline-flex items-center gap-1">
                   Explore →
                 </span>
               </div>
@@ -204,15 +222,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* ─── FEATURED PRODUCTS ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Handpicked</span>
-            <h2 className="text-2xl font-extrabold text-neutral-900 sm:text-3xl mt-1">Featured Products</h2>
-            <p className="mt-1 text-sm text-neutral-500">Popular picks selected for quality, durability &amp; value.</p>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
+              <span className="h-px w-6 bg-veyra-gold" />
+              Handpicked
+            </span>
+            <h2 className="font-display text-3xl font-black text-veyra-text-dark sm:text-4xl mt-2">Featured Products</h2>
+            <p className="mt-1.5 text-sm text-veyra-muted">Popular picks selected for quality, durability &amp; value.</p>
           </div>
-          <Link href="/shop" className="text-sm font-bold text-neutral-900 hover:text-veyra-gold transition">
+          <Link href="/shop" className="text-sm font-bold text-veyra-gold hover:text-veyra-gold-light transition inline-flex items-center gap-1">
             See More →
           </Link>
         </div>
@@ -224,73 +245,80 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Dedicated India Product Request Banner */}
+      {/* ─── INDIA BANNER ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-neutral-950 p-8 sm:p-12 text-white shadow-2xl">
-          {/* Subtle gold decorative background gradient */}
-          <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-veyra-gold/10 blur-3xl" />
-          <div className="absolute -left-24 -bottom-24 h-96 w-96 rounded-full bg-veyra-gold/10 blur-3xl" />
+        <div className="relative overflow-hidden rounded-3xl border border-black/[0.04] bg-white p-8 sm:p-14 shadow-modal">
+          {/* Gold orb accents */}
+          <div className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-veyra-gold/10 blur-[80px]" />
+          <div className="pointer-events-none absolute -left-32 -bottom-32 h-80 w-80 rounded-full bg-veyra-gold/[0.07] blur-[80px]" />
+
+          {/* Gold top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, #C9A84C 40%, #E8C97A 60%, transparent 100%)" }} />
 
           <div className="relative z-10 max-w-2xl space-y-6">
-            <span className="inline-block rounded-full border border-veyra-gold/40 bg-veyra-gold/15 px-3 py-1 text-xs font-bold tracking-wider uppercase text-veyra-gold">
+            <span className="inline-block rounded-full border border-veyra-gold/30 bg-veyra-gold/10 px-4 py-1.5 text-xs font-black tracking-widest uppercase text-veyra-gold">
               🌟 Direct Marketplace Sourcing
             </span>
 
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
-              Found It In India? <br />
-              <span className="gold-text-gradient">We&apos;ll Help You Get It.</span>
+            <h2 className="font-display text-4xl font-black tracking-tight text-veyra-text-dark sm:text-5xl lg:text-6xl">
+              Found It In India?{" "}
+              <br />
+              <span className="gold-text-gradient">We&apos;ll Get It.</span>
             </h2>
 
-            <p className="text-sm sm:text-base leading-relaxed text-neutral-300">
+            <p className="text-sm sm:text-base leading-relaxed text-veyra-muted">
               Found something you love on Amazon India, Flipkart, Myntra, Meesho, Ajio or another Indian marketplace? Send us the product link and we&apos;ll check availability and provide you with an estimated quotation.
             </p>
 
             {/* Platform chips */}
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-1">
               {supportedPlatforms.map((p) => (
                 <span
                   key={p.name}
-                  className="rounded-xl border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 text-xs font-semibold text-neutral-200"
+                  className="rounded-full border border-black/10 bg-black/[0.03] px-3.5 py-1.5 text-xs font-semibold text-veyra-muted hover:border-veyra-gold/30 hover:text-veyra-gold-dark transition-all duration-200"
                 >
                   {p.name}
                 </span>
               ))}
-              <span className="rounded-xl border border-neutral-800 bg-neutral-900/80 px-3 py-1.5 text-xs font-semibold text-neutral-400">
+              <span className="rounded-full border border-black/10 bg-black/[0.03] px-3.5 py-1.5 text-xs font-semibold text-veyra-muted">
                 + Any Other Store
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-3 pt-4">
+            <div className="flex flex-wrap gap-3 pt-2">
               <Link
                 href="/request-product"
-                className="rounded-xl bg-veyra-gold px-7 py-3.5 text-sm font-bold text-black shadow-gold hover:bg-veyra-gold-light transition"
+                className="shimmer-gold rounded-xl bg-veyra-gold px-8 py-4 text-sm font-black text-black shadow-gold-glow hover:bg-veyra-gold-light hover:shadow-gold-glow-lg transition-all duration-200"
               >
                 Request a Product
               </Link>
               <Link
                 href="/how-it-works"
-                className="rounded-xl border border-neutral-700 bg-neutral-900 px-6 py-3.5 text-sm font-semibold text-white hover:bg-neutral-800 transition"
+                className="rounded-xl border border-black/15 bg-black/[0.03] px-7 py-4 text-sm font-semibold text-veyra-text hover:border-veyra-gold/30 hover:bg-black/[0.05] transition-all duration-200"
               >
                 How It Works
               </Link>
             </div>
 
-            <p className="text-[11px] text-neutral-500 pt-2">
+            <p className="text-[11px] text-veyra-muted/60 pt-1">
               * VEYRA operates as an independent concierge and sourcing facilitator to make cross-border discovery simple and safe for customers in Nepal.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Trending Now */}
+      {/* ─── TRENDING NOW ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">Trending Now</span>
-            <h2 className="text-2xl font-extrabold text-neutral-900 sm:text-3xl mt-1">Most Popular This Week</h2>
-            <p className="mt-1 text-sm text-neutral-500">Items experiencing high demand and verified 5-star customer reviews.</p>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
+              <span className="h-px w-6 bg-veyra-gold" />
+              Trending Now
+            </span>
+            <h2 className="font-display text-3xl font-black text-veyra-text-dark sm:text-4xl mt-2">Most Popular This Week</h2>
+            <p className="mt-1.5 text-sm text-veyra-muted">Items experiencing high demand and verified 5-star customer reviews.</p>
           </div>
-          <Link href="/shop" className="text-sm font-bold text-neutral-900 hover:text-veyra-gold transition">
+          <Link href="/shop" className="text-sm font-bold text-veyra-gold hover:text-veyra-gold-light transition inline-flex items-center gap-1">
             View All →
           </Link>
         </div>
@@ -302,15 +330,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* New Arrivals */}
+      {/* ─── NEW ARRIVALS ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Fresh Drops</span>
-            <h2 className="text-2xl font-extrabold text-neutral-900 sm:text-3xl mt-1">New Arrivals</h2>
-            <p className="mt-1 text-sm text-neutral-500">Fresh finds. New styles. New essentials.</p>
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
+              <span className="h-px w-6 bg-veyra-gold" />
+              Fresh Drops
+            </span>
+            <h2 className="font-display text-3xl font-black text-veyra-text-dark sm:text-4xl mt-2">New Arrivals</h2>
+            <p className="mt-1.5 text-sm text-veyra-muted">Fresh finds. New styles. New essentials.</p>
           </div>
-          <Link href="/shop" className="text-sm font-bold text-neutral-900 hover:text-veyra-gold transition">
+          <Link href="/shop" className="text-sm font-bold text-veyra-gold hover:text-veyra-gold-light transition inline-flex items-center gap-1">
             View All →
           </Link>
         </div>
@@ -322,18 +353,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4-Step How It Works Section */}
+      {/* ─── HOW IT WORKS ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-neutral-200 bg-neutral-50/50 p-8 sm:p-12">
-          <div className="text-center max-w-xl mx-auto mb-10">
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Simple Process</span>
-            <h2 className="text-2xl font-extrabold text-neutral-900 sm:text-3xl mt-1">How VEYRA Works</h2>
-            <p className="mt-2 text-sm text-neutral-600">
+        <div className="relative overflow-hidden rounded-3xl border border-black/[0.04] bg-white p-8 sm:p-14">
+          {/* Background accent */}
+          <div className="pointer-events-none absolute -right-24 -bottom-24 h-64 w-64 rounded-full bg-veyra-gold/[0.06] blur-[80px]" />
+
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
+              <span className="h-px w-6 bg-veyra-gold" />
+              Simple Process
+              <span className="h-px w-6 bg-veyra-gold" />
+            </span>
+            <h2 className="font-display text-3xl font-black text-veyra-text-dark sm:text-4xl mt-3">How VEYRA Works</h2>
+            <p className="mt-2.5 text-sm text-veyra-muted leading-relaxed">
               Get anything from India or our local catalog delivered to your Nepal address in four straightforward steps.
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 step: "01",
@@ -355,22 +393,24 @@ export default function HomePage() {
                 title: "Confirm & Receive",
                 desc: "Confirm your order, pay with eSewa, Khalti, or bank transfer, and receive your delivery anywhere in Nepal."
               }
-            ].map((item) => (
+            ].map((item, i) => (
               <article
                 key={item.step}
-                className="relative rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+                className={`group relative rounded-2xl border border-black/[0.04] bg-veyra-surface p-6 transition-all duration-300 hover:border-veyra-gold/20 hover:-translate-y-1 stagger-${i + 1}`}
               >
-                <span className="text-xs font-black tracking-widest text-veyra-gold">STEP {item.step}</span>
-                <h3 className="mt-3 text-base font-bold text-neutral-900">{item.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-neutral-600">{item.desc}</p>
+                <span className="font-display text-4xl font-black text-veyra-gold/30 group-hover:text-veyra-gold transition-colors duration-300">
+                  {item.step}
+                </span>
+                <h3 className="mt-3 font-display text-sm font-bold text-veyra-text-dark">{item.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-veyra-muted">{item.desc}</p>
               </article>
             ))}
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <Link
               href="/request-product"
-              className="inline-block rounded-xl bg-black px-7 py-3.5 text-sm font-bold text-white shadow-md hover:bg-neutral-800 transition"
+              className="shimmer-gold inline-block rounded-xl bg-veyra-gold px-8 py-4 text-sm font-black text-black shadow-gold-glow hover:bg-veyra-gold-light hover:shadow-gold-glow-lg transition-all duration-200"
             >
               Start Your Request →
             </Link>
@@ -378,25 +418,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Found It. We'll Check It. — Link Verification Section */}
+      {/* ─── LINK VERIFIER ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-950 p-8 sm:p-14 shadow-modal">
-          {/* Decorative gold glow */}
+        <div className="relative overflow-hidden rounded-3xl border border-black/[0.04] bg-white p-8 sm:p-14 shadow-modal">
+          {/* Gold glow */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-96 rounded-full bg-veyra-gold opacity-10 blur-3xl"
+            className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-52 w-[600px] rounded-full bg-veyra-gold opacity-[0.08] blur-[80px]"
           />
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, #C9A84C 30%, #E8C97A 50%, transparent 100%)" }} />
 
-          <div className="relative z-10 flex flex-col items-center text-center gap-6">
-            <div className="space-y-2">
-              <span className="inline-block rounded-full border border-veyra-gold/40 bg-veyra-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-veyra-gold">
+          <div className="relative z-10 flex flex-col items-center text-center gap-7">
+            <div className="space-y-3">
+              <span className="inline-block rounded-full border border-veyra-gold/30 bg-veyra-gold/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-veyra-gold">
                 India Product Checker
               </span>
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
+              <h2 className="font-display text-4xl font-black text-veyra-text-dark sm:text-5xl lg:text-6xl">
                 Found It.{" "}
                 <span className="gold-text-gradient">We&apos;ll Check It.</span>
               </h2>
-              <p className="mx-auto max-w-xl text-sm text-neutral-400 leading-relaxed">
+              <p className="mx-auto max-w-xl text-sm text-veyra-muted leading-relaxed">
                 See something you want on Amazon India, Flipkart, Myntra, AJIO,
                 Meesho, Nykaa or BigBasket? Just paste the link — we&apos;ll check
                 whether VEYRA can source it and provide you with the estimated price.
@@ -408,19 +449,19 @@ export default function HomePage() {
               <LinkVerifier />
             </div>
 
-            {/* Supported platform chips */}
+            {/* Platform chips */}
             <div className="flex flex-wrap justify-center gap-2">
               {supportedPlatforms.map((p) => (
                 <span
                   key={p.id}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-neutral-400"
+                  className="rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-[11px] font-semibold text-veyra-muted hover:border-veyra-gold/30 hover:text-veyra-gold-dark transition-all duration-200"
                 >
                   {p.name}
                 </span>
               ))}
             </div>
 
-            <p className="text-[11px] text-neutral-600 max-w-md leading-relaxed">
+            <p className="text-[11px] text-veyra-muted/80 max-w-md leading-relaxed">
               Product availability and final pricing are subject to verification.
               VEYRA is not officially affiliated with any of the above platforms.
             </p>
@@ -428,28 +469,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Strong Final CTA Section */}
+      {/* ─── FINAL CTA ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-neutral-200 bg-white p-8 sm:p-12 text-center shadow-card">
-          <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">
-            Can&apos;t Find What You&apos;re Looking For?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-neutral-600">
-            Send us the product link. We&apos;ll check it for you and provide an estimated quotation within hours.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3.5">
-            <Link
-              href="/request-product"
-              className="rounded-xl bg-black px-7 py-3.5 text-sm font-bold text-white shadow-md hover:bg-neutral-800 transition"
-            >
-              REQUEST A PRODUCT
-            </Link>
-            <Link
-              href="/shop"
-              className="rounded-xl border-2 border-black bg-white px-7 py-3.5 text-sm font-bold text-black hover:bg-black hover:text-white transition"
-            >
-              SHOP VEYRA
-            </Link>
+        <div className="relative overflow-hidden rounded-3xl border border-veyra-gold/20 bg-white p-10 sm:p-16 text-center shadow-gold-glow">
+          {/* Large gold orb */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="h-[400px] w-[400px] rounded-full bg-veyra-gold/[0.06] blur-[100px]" />
+          </div>
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, #C9A84C 50%, transparent 100%)" }} />
+
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold mb-4">
+              <span className="h-px w-5 bg-veyra-gold" />
+              Still Looking?
+              <span className="h-px w-5 bg-veyra-gold" />
+            </span>
+            <h2 className="font-display text-4xl font-black text-veyra-text-dark sm:text-5xl">
+              Can&apos;t Find What You&apos;re Looking For?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm sm:text-base text-veyra-muted leading-relaxed">
+              Send us the product link. We&apos;ll check it for you and provide an estimated quotation within hours.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/request-product"
+                className="shimmer-gold rounded-xl bg-veyra-gold px-8 py-4 text-sm font-black text-black shadow-gold-glow hover:bg-veyra-gold-light hover:shadow-gold-glow-lg transition-all duration-300 hover:-translate-y-0.5"
+              >
+                REQUEST A PRODUCT
+              </Link>
+              <Link
+                href="/shop"
+                className="rounded-xl border border-black/15 bg-black/[0.03] px-8 py-4 text-sm font-bold text-veyra-text-dark hover:border-veyra-gold/30 hover:bg-black/[0.06] transition-all duration-300 hover:-translate-y-0.5"
+              >
+                SHOP VEYRA
+              </Link>
+            </div>
           </div>
         </div>
       </section>

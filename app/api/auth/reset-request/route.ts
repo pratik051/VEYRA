@@ -12,8 +12,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "If an account exists, password reset instructions have been created." });
   }
   const resetToken = await createResetToken(String(user._id));
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({
+      message: "If an account exists, password reset instructions have been created."
+    });
+  }
   return NextResponse.json({
-    message: "Password reset token generated. Connect this flow to email/SMS delivery in production.",
+    message: "Password reset token generated for development use.",
     resetToken
   });
 }

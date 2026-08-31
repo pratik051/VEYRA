@@ -19,11 +19,21 @@ export function ProductCard({ product }: { product: Product }) {
   const isWishlisted = has(product.id);
   const discount = discountPercent(product.price, product.originalPrice);
 
+  const badgeStyle = (badge: string) => {
+    switch (badge) {
+      case "TRENDING": return "bg-veyra-gold text-black";
+      case "NEW":       return "bg-emerald-500 text-black";
+      case "SALE":      return "bg-red-500/90 text-white";
+      case "BEST SELLER": return "bg-black/5 text-veyra-text-dark border border-black/10";
+      default:          return "bg-black/5 text-veyra-text-dark";
+    }
+  };
+
   return (
     <>
-      <article className="group relative flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-3 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-neutral-300">
-        {/* Product Image & Badges */}
-        <div className="relative overflow-hidden rounded-xl bg-neutral-100">
+      <article className="group relative flex flex-col justify-between rounded-2xl border border-black/[0.04] bg-white p-2.5 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover hover:border-veyra-gold/20">
+        {/* Product Image */}
+        <div className="relative overflow-hidden rounded-xl bg-veyra-surface-2">
           <Link href={`/product/${product.slug}`} className="block">
             <Image
               src={`${product.image}?auto=format&fit=crop&w=800&q=80`}
@@ -34,28 +44,19 @@ export function ProductCard({ product }: { product: Product }) {
             />
           </Link>
 
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none" />
+
           {/* Badges */}
           <div className="absolute left-2.5 top-2.5 flex flex-col gap-1">
             {product.badge && (
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
-                  product.badge === "TRENDING"
-                    ? "bg-veyra-gold text-black shadow-sm"
-                    : product.badge === "NEW"
-                    ? "bg-black text-white"
-                    : product.badge === "SALE"
-                    ? "bg-red-600 text-white"
-                    : product.badge === "BEST SELLER"
-                    ? "bg-black text-white"
-                    : "bg-neutral-800 text-white"
-                }`}
-              >
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${badgeStyle(product.badge)}`}>
                 {product.badge}
               </span>
             )}
           </div>
 
-          {/* Wishlist Heart Button */}
+          {/* Wishlist Button */}
           <button
             onClick={() => {
               toggle(product.id);
@@ -65,7 +66,7 @@ export function ProductCard({ product }: { product: Product }) {
               );
             }}
             aria-label="Toggle Wishlist"
-            className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition hover:scale-110 hover:bg-white text-sm"
+            className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full border border-black/5 bg-white/70 backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-veyra-gold/40 hover:bg-white text-sm shadow-sm"
           >
             {isWishlisted ? "❤️" : "🤍"}
           </button>
@@ -73,36 +74,36 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Quick View Hover Button */}
           <button
             onClick={() => setQuickViewOpen(true)}
-            className="absolute bottom-2.5 left-2.5 right-2.5 hidden rounded-xl bg-white/95 py-2 text-center text-xs font-semibold text-neutral-900 shadow-md backdrop-blur-sm transition hover:bg-black hover:text-white sm:block opacity-0 group-hover:opacity-100"
+            className="absolute bottom-2.5 left-2.5 right-2.5 hidden rounded-xl border border-black/5 bg-white/90 py-2 text-center text-[11px] font-semibold text-veyra-text-dark backdrop-blur-md transition-all duration-200 hover:bg-veyra-gold hover:text-black hover:border-veyra-gold sm:block opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 shadow-sm"
           >
             ⚡ Quick View
           </button>
         </div>
 
         {/* Product Meta */}
-        <div className="mt-3 flex flex-1 flex-col justify-between">
+        <div className="mt-3 flex flex-1 flex-col justify-between px-0.5">
           <div>
-            <div className="flex items-center justify-between text-xs text-neutral-400">
-              <span className="font-semibold uppercase tracking-wider">{product.category}</span>
-              <span>⭐ {product.rating}</span>
+            <div className="flex items-center justify-between text-[10px] text-veyra-muted">
+              <span className="font-bold uppercase tracking-wider">{product.category}</span>
+              <span className="text-veyra-gold font-semibold">⭐ {product.rating}</span>
             </div>
 
             <Link href={`/product/${product.slug}`} className="mt-1 block">
-              <h3 className="line-clamp-2 text-sm font-semibold text-neutral-900 transition group-hover:text-veyra-gold">
+              <h3 className="line-clamp-2 text-sm font-semibold text-veyra-text-dark transition-colors duration-200 group-hover:text-veyra-gold-dark">
                 {product.name}
               </h3>
             </Link>
           </div>
 
           <div className="mt-3">
-            {/* Price section */}
+            {/* Price */}
             <div className="flex items-baseline gap-2">
-              <span className="text-base font-bold text-neutral-900">{formatNpr(product.price)}</span>
-              <span className="text-xs text-neutral-400 line-through">{formatNpr(product.originalPrice)}</span>
-              <span className="text-[11px] font-bold text-amber-700">{discount}% OFF</span>
+              <span className="text-base font-bold text-veyra-gold-dark">{formatNpr(product.price)}</span>
+              <span className="text-xs text-veyra-muted/60 line-through">{formatNpr(product.originalPrice)}</span>
+              <span className="text-[10px] font-bold text-emerald-400">{discount}% off</span>
             </div>
 
-            {/* Actions Grid */}
+            {/* Actions */}
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
@@ -110,21 +111,21 @@ export function ProductCard({ product }: { product: Product }) {
                   pushToast(`${product.name} added to cart!`, "success");
                 }}
                 disabled={product.stock <= 0}
-                className="w-full rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50"
+                className="w-full rounded-xl bg-veyra-gold py-2.5 text-xs font-bold text-black transition-all duration-200 hover:bg-veyra-gold-light hover:shadow-gold disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
               </button>
 
               <button
                 onClick={() => setQuickViewOpen(true)}
-                className="w-full rounded-xl border border-neutral-300 py-2.5 text-xs font-semibold text-neutral-700 transition hover:border-black hover:text-black sm:hidden"
+                className="w-full rounded-xl border border-black/10 py-2.5 text-xs font-semibold text-veyra-text transition-all duration-200 hover:border-veyra-gold/40 hover:text-veyra-gold-dark sm:hidden"
               >
                 Quick View
               </button>
 
               <Link
                 href={`/product/${product.slug}`}
-                className="hidden w-full items-center justify-center rounded-xl border border-neutral-300 py-2.5 text-xs font-semibold text-neutral-700 transition hover:border-black hover:text-black sm:flex"
+                className="hidden w-full items-center justify-center rounded-xl border border-black/10 py-2.5 text-xs font-semibold text-veyra-text transition-all duration-200 hover:border-veyra-gold/40 hover:text-veyra-gold-dark sm:flex hover:bg-black/[0.02]"
               >
                 Details
               </Link>

@@ -9,6 +9,12 @@ npm install
 npm run dev
 ```
 
+Apply user-model normalization/index migration (when needed):
+
+```bash
+npm run migrate:user-model
+```
+
 ## Included foundation
 
 - Homepage with premium VEYRA sections and CTAs
@@ -17,7 +23,7 @@ npm run dev
 - Request From India flow with request ID generation
 - Cart, checkout, confirmation, order tracking timeline
 - Account area with login/register/profile/wishlist placeholders
-- Functional auth API foundations: register/login/logout/reset/me with secure httpOnly session cookies
+- Functional auth API foundations: register/login/logout/refresh/reset/me with secure httpOnly session cookies
 - MongoDB connection + core models (`products`, `orders`, `productRequests`, `payments`)
 - Admin CRUD APIs for products/orders/product-requests
 - Payment integration architecture (eSewa/Khalti + webhook endpoints)
@@ -42,6 +48,10 @@ Keep all secrets in environment variables (server-side only):
 - `NEXT_PUBLIC_APP_URL`
 
 Do not expose secret keys in frontend code.
+
+## API specification
+
+- VEYRA API draft: [docs/veyra-api-spec.md](docs/veyra-api-spec.md)
 
 ## Next build targets
 

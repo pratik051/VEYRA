@@ -65,6 +65,36 @@ export async function createSessionForUser(userId: string) {
   return token;
 }
 
+export async function refreshSessionByToken(token: string) {
+  await connectToDatabase();
+  const session = await AuthSessionModel.findOne<{ _id: string; userId: string; expiresAt: Date }>({ token }).lean();
+  if (!session) return null;
+  if (new Date(session.expiresAt).getTime() <= Date.now()) {
+    await AuthSessionModel.deleteOne({ token });
+    return null;
+  }
+  const user = await UserModel.findById(session.userId).lean();
+  if (!user || Array.isArray(user)) return null;
+
+  const newToken = randomUUID();
+  const newExpiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
+  await AuthSessionModel.updateOne(
+    { _id: session._id },
+    { token: newToken, expiresAt: newExpiresAt }
+  );
+
+  const authUser: AuthUser = {
+    _id: String(user._id),
+    fullName: String(user.fullName),
+    email: String(user.email),
+    phone: String(user.phone),
+    role: user.role === "admin" ? "admin" : "customer",
+    passwordHash: String(user.passwordHash)
+  };
+
+  return { token: newToken, user: authUser };
+}
+
 export async function deleteSessionByToken(token: string) {
   await connectToDatabase();
   await AuthSessionModel.deleteOne({ token });

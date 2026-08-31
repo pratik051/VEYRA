@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:user-model": "node scripts/migrations/user-model-migration.js",
+    "test:node": "node tests/run-quote-utils-test.js",
+    "test": "vitest"
   },
   "dependencies": {
     "mongoose": "8.7.1",
@@ -23,6 +26,7 @@
     "eslint-config-next": "14.2.5",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.13",
-    "typescript": "5.6.2"
+    "typescript": "5.6.2",
+    "vitest": "1.2.1"
   }
 }

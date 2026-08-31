@@ -75,36 +75,41 @@ function ShopContent() {
     setSortBy("Featured");
   };
 
+  const inputClass = "w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-xs font-medium text-veyra-text-dark placeholder-veyra-muted/60 focus:border-veyra-gold/60 focus:outline-none focus:ring-1 focus:ring-veyra-gold/30 transition-all duration-200";
+  const selectClass = "w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-xs font-medium text-veyra-text-dark focus:border-veyra-gold/60 focus:outline-none focus:ring-1 focus:ring-veyra-gold/30 transition-all duration-200 appearance-none cursor-pointer";
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b border-neutral-200 pb-6">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-black/[0.06] pb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-neutral-900">Shop VEYRA</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-veyra-gold mb-2">
+            <span className="h-px w-5 bg-veyra-gold" />
+            Catalog
+          </span>
+          <h1 className="font-display text-4xl font-black text-veyra-text-dark">Shop VEYRA</h1>
+          <p className="mt-1.5 text-sm text-veyra-muted">
             Browse authentic wearables, accessories, tech gadgets &amp; essentials available in Nepal.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/request-product"
-            className="rounded-xl border border-veyra-gold bg-veyra-gold/10 px-4 py-2 text-xs font-bold text-veyra-gold-dark hover:bg-veyra-gold/20 transition"
-          >
-            🇮🇳 Request from Amazon/Flipkart →
-          </Link>
-        </div>
+        <Link
+          href="/request-product"
+          className="self-start inline-flex items-center gap-2 rounded-xl border border-veyra-gold/30 bg-veyra-gold/10 px-5 py-2.5 text-xs font-bold text-veyra-gold hover:bg-veyra-gold/20 hover:border-veyra-gold/50 transition-all duration-200"
+        >
+          🇮🇳 Request from Amazon/Flipkart →
+        </Link>
       </div>
 
-      {/* Category Pills Slider */}
-      <div className="mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      {/* Category Pills */}
+      <div className="mt-7 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition ${
+            className={`whitespace-nowrap rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all duration-200 ${
               category.toLowerCase() === cat.toLowerCase()
-                ? "bg-black text-white shadow-sm"
-                : "border border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:text-black"
+                ? "bg-veyra-gold text-black shadow-gold"
+                : "border border-black/5 bg-black/[0.02] text-veyra-muted hover:border-veyra-gold/30 hover:text-veyra-gold-dark"
             }`}
           >
             {cat}
@@ -112,95 +117,79 @@ function ShopContent() {
         ))}
       </div>
 
-      {/* Main Filter Bar */}
-      <div className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 items-end">
+      {/* Filter Bar */}
+      <div className="mt-5 grid gap-3 rounded-2xl border border-black/[0.06] bg-white p-5 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 items-end">
         {/* Search */}
         <div className="sm:col-span-2">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Search
           </label>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, tag, category..."
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
+            className={inputClass}
           />
         </div>
 
         {/* Brand */}
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Brand
           </label>
-          <select
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
-          >
+          <select value={brand} onChange={(e) => setBrand(e.target.value)} className={selectClass}>
             {brands.map((b) => (
-              <option key={b} value={b}>
+              <option key={b} value={b} className="bg-white text-veyra-text-dark">
                 {b === "All" ? "All Brands" : b}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Badge / Collection */}
+        {/* Badge */}
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Badge
           </label>
-          <select
-            value={badgeFilter}
-            onChange={(e) => setBadgeFilter(e.target.value)}
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
-          >
+          <select value={badgeFilter} onChange={(e) => setBadgeFilter(e.target.value)} className={selectClass}>
             {badges.map((b) => (
-              <option key={b} value={b}>
+              <option key={b} value={b} className="bg-white text-veyra-text-dark">
                 {b === "All" ? "All Badges" : b}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Min Rating */}
+        {/* Rating */}
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Rating
           </label>
-          <select
-            value={minRating}
-            onChange={(e) => setMinRating(Number(e.target.value))}
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
-          >
-            <option value={0}>Any Rating</option>
-            <option value={4.0}>⭐ 4.0 &amp; above</option>
-            <option value={4.5}>⭐ 4.5 &amp; above</option>
-            <option value={4.8}>⭐ 4.8 &amp; above</option>
+          <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className={selectClass}>
+            <option value={0} className="bg-white text-veyra-text-dark">Any Rating</option>
+            <option value={4.0} className="bg-white text-veyra-text-dark">⭐ 4.0 &amp; above</option>
+            <option value={4.5} className="bg-white text-veyra-text-dark">⭐ 4.5 &amp; above</option>
+            <option value={4.8} className="bg-white text-veyra-text-dark">⭐ 4.8 &amp; above</option>
           </select>
         </div>
 
-        {/* Availability */}
+        {/* Stock */}
         <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Stock
           </label>
-          <select
-            value={availability}
-            onChange={(e) => setAvailability(e.target.value as "all" | "in" | "out")}
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
-          >
-            <option value="all">All Items</option>
-            <option value="in">In Stock Only</option>
-            <option value="out">Out of Stock</option>
+          <select value={availability} onChange={(e) => setAvailability(e.target.value as "all" | "in" | "out")} className={selectClass}>
+            <option value="all" className="bg-white text-veyra-text-dark">All Items</option>
+            <option value="in" className="bg-white text-veyra-text-dark">In Stock Only</option>
+            <option value="out" className="bg-white text-veyra-text-dark">Out of Stock</option>
           </select>
         </div>
 
-        {/* Max Price Range Slider */}
+        {/* Price Range */}
         <div className="sm:col-span-2">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
-            <span>Max Price</span>
-            <span className="text-neutral-900 font-bold">{formatNpr(maxPrice)}</span>
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5">
+            <span className="text-veyra-muted">Max Price</span>
+            <span className="text-veyra-gold font-black">{formatNpr(maxPrice)}</span>
           </div>
           <input
             type="range"
@@ -209,22 +198,19 @@ function ShopContent() {
             step={100}
             value={maxPrice}
             onChange={(e) => setMaxPrice(Number(e.target.value))}
-            className="w-full accent-black cursor-pointer"
+            className="w-full cursor-pointer accent-veyra-gold"
+            style={{ accentColor: "#C9A84C" }}
           />
         </div>
 
-        {/* Sort By */}
+        {/* Sort */}
         <div className="sm:col-span-2">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-veyra-muted mb-1.5">
             Sort By
           </label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as (typeof sortOptions)[number])}
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-900 focus:border-black focus:outline-none"
-          >
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as (typeof sortOptions)[number])} className={selectClass}>
             {sortOptions.map((opt) => (
-              <option key={opt} value={opt}>
+              <option key={opt} value={opt} className="bg-white text-veyra-text-dark">
                 {opt}
               </option>
             ))}
@@ -235,39 +221,39 @@ function ShopContent() {
         <div className="sm:col-span-2">
           <button
             onClick={resetFilters}
-            className="w-full rounded-xl border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition"
+            className="w-full rounded-xl border border-black/10 bg-black/[0.02] py-2.5 text-xs font-bold text-veyra-muted hover:border-veyra-gold/30 hover:text-veyra-gold-dark transition-all duration-200"
           >
             Reset Filters
           </button>
         </div>
       </div>
 
-      {/* Results Header */}
-      <div className="mt-6 flex items-center justify-between text-xs text-neutral-500">
-        <p>
-          Showing <strong className="text-neutral-900">{filtered.length}</strong> of{" "}
-          <strong className="text-neutral-900">{products.length}</strong> products
+      {/* Results Count */}
+      <div className="mt-7 flex items-center justify-between">
+        <p className="text-xs text-veyra-muted">
+          Showing <strong className="text-veyra-gold-dark font-black">{filtered.length}</strong> of{" "}
+          <strong className="text-veyra-muted">{products.length}</strong> products
         </p>
       </div>
 
       {/* Products Grid */}
       {filtered.length === 0 ? (
-        <div className="mt-8 rounded-3xl border border-dashed border-neutral-300 p-12 text-center bg-neutral-50/50">
-          <div className="text-4xl mb-3">🔍</div>
-          <h3 className="text-lg font-bold text-neutral-900">No products match your current filters</h3>
-          <p className="mt-1 text-xs text-neutral-500 max-w-sm mx-auto">
+        <div className="mt-8 rounded-3xl border border-dashed border-black/[0.08] p-14 text-center bg-white/50">
+          <div className="text-4xl mb-4">🔍</div>
+          <h3 className="font-display text-lg font-bold text-veyra-text-dark">No products match your filters</h3>
+          <p className="mt-2 text-xs text-veyra-muted max-w-sm mx-auto">
             Try adjusting your search keywords, price range, or category filters.
           </p>
-          <div className="mt-6 flex justify-center gap-3">
+          <div className="mt-8 flex justify-center gap-3">
             <button
               onClick={resetFilters}
-              className="rounded-xl bg-black px-5 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 transition"
+              className="rounded-xl bg-veyra-gold px-6 py-2.5 text-xs font-bold text-black hover:bg-veyra-gold-light shadow-gold transition-all duration-200"
             >
               Reset All Filters
             </button>
             <Link
               href="/request-product"
-              className="rounded-xl border border-black px-5 py-2.5 text-xs font-semibold text-black hover:bg-neutral-100 transition"
+              className="rounded-xl border border-black/10 px-6 py-2.5 text-xs font-semibold text-veyra-muted hover:border-veyra-gold/30 hover:text-veyra-gold-dark transition-all duration-200"
             >
               Request Custom Item
             </Link>
@@ -286,7 +272,14 @@ function ShopContent() {
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-sm text-neutral-500">Loading VEYRA Catalog...</div>}>
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-20 text-sm text-veyra-muted">
+        <span className="inline-flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-veyra-gold animate-pulse-slow" />
+          Loading VEYRA Catalog...
+        </span>
+      </div>
+    }>
       <ShopContent />
     </Suspense>
   );
