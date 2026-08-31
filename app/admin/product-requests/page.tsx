@@ -35,7 +35,7 @@ export default async function AdminProductRequestsPage() {
         {items.length > 0 && (
           <Table>
             <thead>
-              <tr className="text-left text-sm text-slate-600">
+              <tr className="text-left text-sm text-slate-600 dark:text-slate-300">
                 <th className="p-2">Request ID</th>
                 <th className="p-2">Name</th>
                 <th className="p-2">Platform</th>
@@ -46,14 +46,18 @@ export default async function AdminProductRequestsPage() {
             </thead>
             <tbody>
               {items.map((d: any) => (
-                <tr key={d.requestId} className="border-t">
-                  <td className="p-2">{d.requestId}</td>
-                  <td className="p-2">{d.fullName}</td>
-                  <td className="p-2">{d.detectedPlatform}</td>
-                  <td className="p-2">{d.status}</td>
-                  <td className="p-2">{new Date(d.createdAt).toLocaleString()}</td>
+                <tr key={d.requestId} className="border-t border-black/[0.06] dark:border-white/[0.04]">
+                  <td className="p-2 text-sm dark:text-slate-100">{d.requestId}</td>
+                  <td className="p-2 text-sm dark:text-slate-100">{d.fullName}</td>
+                  <td className="p-2 text-sm dark:text-slate-100">{d.detectedPlatform}</td>
                   <td className="p-2">
-                    <Link href={`/admin/product-requests/${encodeURIComponent(d.requestId)}`} className="text-sky-600 hover:underline">View / Edit</Link>
+                    <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 text-veyra-text dark:bg-[#0f1720] dark:text-slate-100">
+                      {d.status}
+                    </span>
+                  </td>
+                  <td className="p-2 text-sm dark:text-slate-100">{new Date(d.createdAt).toLocaleString()}</td>
+                  <td className="p-2">
+                    <Link href={`/admin/product-requests/${encodeURIComponent(d.requestId)}`} className="text-sky-600 dark:text-sky-300 hover:underline">View / Edit</Link>
                   </td>
                 </tr>
               ))}

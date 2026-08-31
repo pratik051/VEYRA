@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   // Create product request
   const newReq = await ProductRequestModel.create({
-    requestId: `PR-${Date.now()}-${Math.random().ToString(36).slice(2, 8)}`,
+    requestId: `PR-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     fullName: sessionUser ? sessionUser.fullName : (body.fullName ?? "Guest"),
     phone: sessionUser ? sessionUser.phone : (body.phone ?? ""),
     email: sessionUser ? sessionUser.email : (body.email ?? ""),

@@ -22,8 +22,17 @@ type QuoteFields = {
 };
 
 function numberOrUndefined(v: any) {
+  if (v === "" || v === null || v === undefined) return undefined;
   const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
+}
+
+function updateNumericQuoteField(
+  field: keyof Pick<QuoteFields, "finalEstimatedPrice" | "serviceFee" | "shippingIndiaToNepal" | "customsTaxes" | "exchangeRate">,
+  value: string,
+  setQuoteFields: React.Dispatch<React.SetStateAction<QuoteFields>>
+) {
+  setQuoteFields((s) => ({ ...s, [field]: numberOrUndefined(value) }));
 }
 
 export default function ProductRequestEditor({ params }: { params: { id: string } }) {
@@ -110,17 +119,16 @@ export default function ProductRequestEditor({ params }: { params: { id: string 
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-semibold mb-2">Request {req.requestId}</h1>
-      <p className="text-sm text-slate-600">
+      <h1 className="text-xl font-semibold mb-2 text-veyra-text dark:text-slate-100">Request {req.requestId}</h1>
+      <p className="text-sm text-slate-600 dark:text-slate-300">
         <strong>Customer:</strong> {req.fullName} — {req.phone} — {req.email}
       </p>
-      <p className="text-sm mt-2">
+      <p className="text-sm mt-2 dark:text-slate-300">
         <strong>Product URL:</strong>{' '}
-        <a href={req.productUrl} target="_blank" rel="noreferrer" className="text-sky-600 underline">Open product page</a>
+        <a href={req.productUrl} target="_blank" rel="noreferrer" className="text-sky-600 dark:text-sky-300 underline">Open product page</a>
       </p>
 
-      <form onSubmit={handleSave} className="max-w-3xl mt-4">
-        <div className="mb-4">
+      <form onSubmit={handleSave} className="max-w-3xl mt-4">        <div className="mb-4">
           <label className="block text-sm font-medium">Status</label>
           <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-48">
             <option value="pending_review">pending_review</option>
@@ -138,33 +146,33 @@ export default function ProductRequestEditor({ params }: { params: { id: string 
           <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} rows={4} />
         </div>
 
-        <fieldset className="border p-4 mb-4 rounded">
-          <legend className="px-2">Quote (structured)</legend>
+        <fieldset className="border border-black/[0.06] dark:border-white/[0.04] p-4 mb-4 rounded bg-white dark:bg-transparent">
+          <legend className="px-2 text-veyra-text dark:text-slate-100">Quote (structured)</legend>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
             <label className="block">
               <div className="text-sm">Final estimated price (INR)</div>
-              <Input type="number" step="0.01" value={quoteFields.finalEstimatedPrice ?? ""} onChange={(e) => setQuoteFields((s) => ({ ...s, finalEstimatedPrice: e.target.value }))} />
+              <Input type="number" step="0.01" value={quoteFields.finalEstimatedPrice ?? ""} onChange={(e) => updateNumericQuoteField("finalEstimatedPrice", e.target.value, setQuoteFields)} />
             </label>
 
             <label className="block">
               <div className="text-sm">Service fee (INR)</div>
-              <Input type="number" step="0.01" value={quoteFields.serviceFee ?? ""} onChange={(e) => setQuoteFields((s) => ({ ...s, serviceFee: e.target.value }))} />
+              <Input type="number" step="0.01" value={quoteFields.serviceFee ?? ""} onChange={(e) => updateNumericQuoteField("serviceFee", e.target.value, setQuoteFields)} />
             </label>
 
             <label className="block">
               <div className="text-sm">Shipping India → Nepal (INR)</div>
-              <Input type="number" step="0.01" value={quoteFields.shippingIndiaToNepal ?? ""} onChange={(e) => setQuoteFields((s) => ({ ...s, shippingIndiaToNepal: e.target.value }))} />
+              <Input type="number" step="0.01" value={quoteFields.shippingIndiaToNepal ?? ""} onChange={(e) => updateNumericQuoteField("shippingIndiaToNepal", e.target.value, setQuoteFields)} />
             </label>
 
             <label className="block">
               <div className="text-sm">Customs & Taxes (INR)</div>
-              <Input type="number" step="0.01" value={quoteFields.customsTaxes ?? ""} onChange={(e) => setQuoteFields((s) => ({ ...s, customsTaxes: e.target.value }))} />
+              <Input type="number" step="0.01" value={quoteFields.customsTaxes ?? ""} onChange={(e) => updateNumericQuoteField("customsTaxes", e.target.value, setQuoteFields)} />
             </label>
 
             <label className="block">
               <div className="text-sm">Exchange rate</div>
-              <Input type="number" step="0.0001" value={quoteFields.exchangeRate ?? ""} onChange={(e) => setQuoteFields((s) => ({ ...s, exchangeRate: e.target.value }))} />
+              <Input type="number" step="0.0001" value={quoteFields.exchangeRate ?? ""} onChange={(e) => updateNumericQuoteField("exchangeRate", e.target.value, setQuoteFields)} />
             </label>
 
             <label className="block">
@@ -184,7 +192,7 @@ export default function ProductRequestEditor({ params }: { params: { id: string 
         </div>
       </form>
 
-      <pre className="mt-6 bg-slate-100 p-3 rounded">{JSON.stringify(req, null, 2)}</pre>
+      <pre className="mt-6 bg-slate-100 dark:bg-[#071018] dark:text-slate-100 p-3 rounded">{JSON.stringify(req, null, 2)}</pre>
     </div>
   );
 }

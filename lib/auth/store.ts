@@ -14,6 +14,12 @@ export type AuthUser = {
   phone: string;
   role: UserRole;
   passwordHash: string;
+  province?: string;
+  district?: string;
+  city?: string;
+  ward?: string;
+  fullAddress?: string;
+  landmark?: string;
 };
 
 async function seedAdmin() {
@@ -43,6 +49,8 @@ export async function createUser(input: {
   phone: string;
   passwordHash: string;
   role?: UserRole;
+  authProvider?: "local" | "google";
+  googleId?: string;
 }) {
   await seedAdmin();
   const email = input.email.toLowerCase();
@@ -53,8 +61,60 @@ export async function createUser(input: {
     email,
     phone: input.phone,
     passwordHash: input.passwordHash,
-    role: input.role || "customer"
+    role: input.role || "customer",
+    authProvider: input.authProvider || "local",
+    googleId: input.googleId
   });
+}
+
+export async function findOrCreateGoogleUser(input: {
+  googleId: string;
+  email: string;
+  fullName: string;
+  phone?: string;
+}) {
+  await seedAdmin();
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const fallbackPhone = input.phone || "+977-9800000000";
+
+  const existing = await UserModel.findOne({
+    $or: [{ googleId: input.googleId }, { email: normalizedEmail }]
+  }).lean();
+
+  if (existing) {
+    const existingUser = existing as {
+      _id: string;
+      fullName?: string;
+      phone?: string;
+      googleId?: string;
+      passwordHash?: string;
+    };
+
+    const updates: Record<string, unknown> = {
+      fullName: existingUser.fullName || input.fullName,
+      email: normalizedEmail,
+      authProvider: "google",
+      googleId: existingUser.googleId || input.googleId,
+      passwordHash: existingUser.passwordHash || "google-oauth"
+    };
+
+    if (!existingUser.phone && fallbackPhone) updates.phone = fallbackPhone;
+
+    await UserModel.updateOne({ _id: existingUser._id }, { $set: updates });
+    return UserModel.findById(existingUser._id).lean();
+  }
+
+  const created = await UserModel.create({
+    fullName: input.fullName,
+    email: normalizedEmail,
+    phone: fallbackPhone,
+    passwordHash: "google-oauth",
+    authProvider: "google",
+    googleId: input.googleId,
+    role: "customer"
+  });
+
+  return created.toObject ? created.toObject() : created;
 }
 
 export async function createSessionForUser(userId: string) {
@@ -116,7 +176,13 @@ export async function getSessionUserByToken(token: string): Promise<AuthUser | n
     email: String(user.email),
     phone: String(user.phone),
     role: user.role === "admin" ? "admin" : "customer",
-    passwordHash: String(user.passwordHash)
+    passwordHash: String(user.passwordHash),
+    province: String(user.province || ""),
+    district: String(user.district || ""),
+    city: String(user.city || ""),
+    ward: String(user.ward || ""),
+    fullAddress: String(user.fullAddress || ""),
+    landmark: String(user.landmark || "")
   };
 }
 
@@ -143,4 +209,31 @@ export async function updatePasswordByUserId(userId: string, passwordHash: strin
   await connectToDatabase();
   const result = await UserModel.updateOne({ _id: userId }, { passwordHash });
   return result.modifiedCount > 0;
+}
+
+export async function updateUserProfileById(userId: string, input: {
+  fullName?: string;
+  phone?: string;
+  province?: string;
+  district?: string;
+  city?: string;
+  ward?: string;
+  fullAddress?: string;
+  landmark?: string;
+}) {
+  await connectToDatabase();
+  const updates: Record<string, string> = {};
+  if (input.fullName) updates.fullName = input.fullName.trim();
+  if (input.phone) updates.phone = input.phone.trim();
+  if (input.province !== undefined) updates.province = input.province.trim();
+  if (input.district !== undefined) updates.district = input.district.trim();
+  if (input.city !== undefined) updates.city = input.city.trim();
+  if (input.ward !== undefined) updates.ward = input.ward.trim();
+  if (input.fullAddress !== undefined) updates.fullAddress = input.fullAddress.trim();
+  if (input.landmark !== undefined) updates.landmark = input.landmark.trim();
+
+  if (Object.keys(updates).length === 0) return null;
+
+  await UserModel.updateOne({ _id: userId }, { $set: updates });
+  return UserModel.findById(userId).lean();
 }

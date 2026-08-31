@@ -126,12 +126,12 @@ export default function ContactPage() {
                 <div>
                   <strong className="text-neutral-900 block">WhatsApp Sourcing Concierge:</strong>
                   <a
-                    href="https://wa.me/9779800000000?text=Hi%20VEYRA%2C%20I%20have%20an%20inquiry"
+                    href="https://wa.me/9779767797748?text=Hi%20VEYRA%2C%20I%20have%20an%20inquiry"
                     target="_blank"
                     rel="noreferrer"
                     className="font-bold text-emerald-700 hover:underline mt-0.5 inline-block"
                   >
-                    +977 9800000000 (Chat on WhatsApp)
+                    +977 9767797748 (Chat on WhatsApp)
                   </a>
                 </div>
               </div>

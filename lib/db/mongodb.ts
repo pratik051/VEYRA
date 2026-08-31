@@ -5,7 +5,7 @@ declare global {
   var __veyra_mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI ?? process.env.MONGO_URI ?? "";
 
 const cached = global.__veyra_mongoose || { conn: null, promise: null };
 if (!global.__veyra_mongoose) {
@@ -14,7 +14,7 @@ if (!global.__veyra_mongoose) {
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {
-    throw new Error("MONGODB_URI is not configured.");
+    throw new Error("MONGODB_URI or MONGO_URI is not configured.");
   }
   if (cached.conn) return cached.conn;
   if (!cached.promise) {

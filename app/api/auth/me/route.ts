@@ -13,7 +13,14 @@ export async function GET() {
       id: String(user._id),
       fullName: user.fullName,
       email: user.email,
-      role: user.role
+      phone: user.phone,
+      role: user.role,
+      province: user.province || "",
+      district: user.district || "",
+      city: user.city || "",
+      ward: user.ward || "",
+      fullAddress: user.fullAddress || "",
+      landmark: user.landmark || ""
     }
   });
 }

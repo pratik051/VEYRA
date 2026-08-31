@@ -1,20 +1,54 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useCart } from "@/components/providers/cart-provider";
 import { formatNpr, generateId } from "@/lib/utils";
 import { nepalProvinces } from "@/lib/data";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/providers/toast-provider";
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
   const [orderId, setOrderId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("eSewa");
   const [paymentInfo, setPaymentInfo] = useState<{ provider?: string; status?: string; redirectUrl?: string } | null>(null);
   const { pushToast } = useToast();
+
+  useEffect(() => {
+    if (!items.length) {
+      setIsAuthReady(true);
+      return;
+    }
+
+    let isMounted = true;
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!isMounted) return;
+
+        if (!response.ok) {
+          router.replace("/account?tab=Security%20%26%20Auth");
+          return;
+        }
+
+        setIsAuthReady(true);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error("Checkout auth check failed", error);
+        router.replace("/account?tab=Security%20%26%20Auth");
+      }
+    };
+
+    void checkAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, [items.length, router]);
 
   const delivery = items.length ? (subtotal >= 3000 ? 0 : 200) : 0;
   const total = subtotal + delivery;
@@ -154,6 +188,15 @@ export default function CheckoutPage() {
         <Link href="/shop" className="mt-6 inline-block rounded-xl bg-black px-6 py-3 text-xs font-bold text-white">
           Return to Shop
         </Link>
+      </div>
+    );
+  }
+
+  if (!isAuthReady) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="text-2xl font-bold text-neutral-900">Checking your account</h1>
+        <p className="mt-2 text-xs text-neutral-500">Please wait while we confirm you are signed in before placing your order.</p>
       </div>
     );
   }

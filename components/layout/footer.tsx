@@ -19,7 +19,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-20 bg-veyra-surface-2 text-veyra-text border-t border-black/[0.04]">
+    <footer className="mt-20 bg-veyra-surface-2 text-veyra-text border-t border-black/[0.04] dark:bg-[#071018] dark:text-slate-100 dark:border-white/[0.04]">
       {/* Gold top border line */}
       <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent 0%, #C9A84C 30%, #E8C97A 50%, #C9A84C 70%, transparent 100%)" }} />
 
@@ -28,7 +28,6 @@ export function Footer() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:flex lg:items-center lg:justify-between lg:px-8">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-veyra-gold/30 bg-veyra-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-veyra-gold mb-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-veyra-gold animate-pulse-slow" />
               Stay Updated
             </div>
             <h3 className="font-display text-xl font-bold tracking-tight text-veyra-text-dark sm:text-2xl">
@@ -65,7 +64,6 @@ export function Footer() {
           <div className="col-span-2 md:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-2">
               <span className="font-display text-2xl font-black tracking-[0.22em] text-veyra-text-dark">VEYRA</span>
-              <span className="h-2 w-2 rounded-full bg-veyra-gold animate-glow-pulse" />
             </Link>
             <p className="text-sm font-semibold text-veyra-gold">Your Style. Your Essentials.</p>
             <p className="text-xs leading-relaxed text-veyra-muted max-w-sm">

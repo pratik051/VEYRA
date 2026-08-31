@@ -62,14 +62,67 @@
   }
 
   /* Selection */
-  ::selection {
-    background: rgba(201, 168, 76, 0.25);
-    color: #111114;
+    ::selection {
+      background: rgba(201, 168, 76, 0.25);
+      color: #111114;
+    }
   }
-}
 
-/* ─────────────────────────────────────────
-   Utility classes
+  /* Dark theme overrides (class strategy: add `dark` on <html>) */
+  .dark body {
+    color: #e6eef6; /* light text for dark bg */
+    background-color: #0b0c0f; /* deep dark background */
+  }
+
+  .dark .text-black,
+  .dark .text-neutral-900,
+  .dark .text-neutral-800,
+  .dark .text-neutral-700,
+  .dark .text-neutral-600,
+  .dark .text-neutral-500,
+  .dark .text-neutral-400,
+  .dark .text-neutral-300,
+  .dark .text-neutral-200 {
+    color: #f3f8f5 !important;
+  }
+
+  .dark .text-emerald-800,
+  .dark .text-emerald-700,
+  .dark .text-emerald-600,
+  .dark .text-emerald-500,
+  .dark .text-green-600,
+  .dark .text-green-500,
+  .dark .text-lime-600,
+  .dark .text-lime-500 {
+    color: #7ae7a8 !important;
+  }
+
+  /* Dark scrollbar */
+  .dark ::-webkit-scrollbar-track { background: #0b0c0f; }
+  .dark ::-webkit-scrollbar-thumb { background: #2b2f36; }
+  .dark ::-webkit-scrollbar-thumb:hover { background: #3b4048; }
+
+  /* Dark selection */
+  .dark ::selection { background: rgba(201,168,76,0.18); color: #f5f7fb; }
+
+  /* Glass variants for dark theme */
+  .glass-card-dark {
+    background: rgba(12, 14, 18, 0.6);
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .glass-header-dark {
+    background: rgba(10, 11, 13, 0.6);
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+  }
+
+  /* Utilities that adapt in dark mode can use these helper classes, or Tailwind's `dark:` variants. */
+
+  /* ─────────────────────────────────────────
+     Utility classes
 ───────────────────────────────────────── */
 @layer utilities {
 
@@ -117,6 +170,16 @@
     );
     background-size: 200% 100%;
     animation: shimmerGold 2.4s ease-in-out infinite;
+  }
+
+  /* Dark-mode shimmer override to avoid harsh white highlights */
+  .dark .shimmer-gold::after {
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent 60%
+    );
   }
 
   /* Glow effects adapted for light backgrounds */
