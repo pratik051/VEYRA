@@ -195,16 +195,97 @@ export function LinkovaBrandLogo({
 export function LinkovaHeaderBrand({ theme = "light", className = "" }: { theme?: "dark" | "light"; className?: string }) {
   const isDark = theme === "dark";
   return (
-    <div className={`flex items-center gap-2.5 ${className}`}>
-      <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-[#0057FF] via-[#0085FF] to-[#00D2FF] flex items-center justify-center text-white font-black text-lg shadow-md shadow-blue-500/25 flex-shrink-0">
-        L
+    <div className={`flex items-center gap-3 select-none ${className}`}>
+      {/* Official 3D 'L' Emblem with Airplane Swoosh & Delivery Box */}
+      <div className="relative flex-shrink-0 flex items-center justify-center">
+        <svg
+          width={40}
+          height={40}
+          viewBox="0 0 160 160"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-[0_4px_12px_rgba(0,163,255,0.3)]"
+        >
+          <defs>
+            <linearGradient id="headerLGrad" x1="40" y1="20" x2="100" y2="130" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#00E5FF" />
+              <stop offset="40%" stopColor="#00A3FF" />
+              <stop offset="80%" stopColor="#0066FF" />
+              <stop offset="100%" stopColor="#0044CC" />
+            </linearGradient>
+            <linearGradient id="headerTrailGrad" x1="30" y1="90" x2="135" y2="35" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="#00A3FF" />
+              <stop offset="100%" stopColor="#00E5FF" />
+            </linearGradient>
+            <linearGradient id="headerBoxTop" x1="90" y1="90" x2="120" y2="90" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#00E5FF" />
+              <stop offset="100%" stopColor="#00A3FF" />
+            </linearGradient>
+            <linearGradient id="headerBoxLeft" x1="85" y1="95" x2="102" y2="120" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#0088FF" />
+              <stop offset="100%" stopColor="#0044CC" />
+            </linearGradient>
+            <linearGradient id="headerBoxRight" x1="102" y1="95" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#0044CC" />
+              <stop offset="100%" stopColor="#002277" />
+            </linearGradient>
+          </defs>
+
+          {/* 3D "L" Monogram Structure */}
+          <path
+            d="M 50 24 C 50 20, 66 18, 70 24 L 70 100 C 70 118, 88 126, 114 116 C 118 114, 119 122, 112 126 C 82 138, 50 126, 50 96 Z"
+            fill="url(#headerLGrad)"
+          />
+          <path
+            d="M 52 24 C 52 20, 68 20, 68 24 L 68 88 C 68 108, 82 120, 108 120 C 114 120, 118 116, 118 110 C 118 104, 114 98, 104 98 C 84 98, 72 88, 72 70 L 72 24 C 72 20, 52 20, 52 24 Z"
+            fill="url(#headerLGrad)"
+          />
+
+          {/* 3D Delivery Package Box */}
+          <g transform="translate(86, 78) scale(0.9)">
+            <polygon points="18,0 36,9 18,18 0,9" fill="url(#headerBoxTop)" />
+            <polygon points="0,9 18,18 18,36 0,27" fill="url(#headerBoxLeft)" />
+            <polygon points="18,18 36,9 36,27 18,36" fill="url(#headerBoxRight)" />
+            <line x1="18" y1="18" x2="18" y2="36" stroke="#002277" strokeWidth="1" />
+          </g>
+
+          {/* Orbital Flight Path Swoosh */}
+          <path
+            d="M 32 94 C 26 84, 38 72, 60 62 C 82 52, 108 44, 134 34"
+            fill="none"
+            stroke="url(#headerTrailGrad)"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 28 88 C 24 98, 36 108, 62 102 C 86 96, 112 84, 136 68"
+            fill="none"
+            stroke="url(#headerTrailGrad)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+
+          {/* Airplane */}
+          <g transform="translate(130, 26) rotate(-28) scale(0.85)">
+            <path
+              d="M 12 0 L 16 10 L 26 12 L 16 15 L 14 24 L 10 18 L 2 18 L 8 13 L 6 0 Z"
+              fill="#00E5FF"
+              stroke="#FFFFFF"
+              strokeWidth="0.8"
+            />
+          </g>
+        </svg>
       </div>
+
+      {/* Typography */}
       <div className="flex flex-col">
         <span className={`font-display text-xl font-black tracking-tight leading-none ${isDark ? "text-white" : "text-slate-900"}`}>
           LINK<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D2FF] to-[#0066FF]">OVA</span>
         </span>
-        <span className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-          India ➔ Nepal Direct
+        <span className="text-[9px] font-bold tracking-wider text-slate-400 uppercase pt-0.5">
+          Your Link. Our Delivery.
         </span>
       </div>
     </div>
