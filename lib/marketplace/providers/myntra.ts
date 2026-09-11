@@ -10,8 +10,8 @@ export const MyntraProvider: MarketplaceProvider = {
     return [
       {
         source: "myntra",
-        sourceProductId: "24891001",
-        sourceUrl: "https://www.myntra.com/tshirts/roadster/roadster-mens-cotton-oversized-heavyweight-tshirt/24891001/buy",
+        sourceProductId: "MYN-ROADSTER-OVT",
+        sourceUrl: "https://www.myntra.com/tshirts?f=Brand%3ARoadster",
         title: "Roadster Pure Cotton 240 GSM Acid-Washed Heavyweight Oversized Tee",
         slug: "myntra-roadster-heavyweight-oversized-tee",
         description: "Premium streetwear drop-shoulder crew neck tee crafted from 100% combed cotton jersey with ribbed neck band.",
@@ -48,8 +48,8 @@ export const MyntraProvider: MarketplaceProvider = {
       },
       {
         source: "myntra",
-        sourceProductId: "29182300",
-        sourceUrl: "https://www.myntra.com/watches/fossil/fossil-mens-grant-chronograph-leather-watch/29182300/buy",
+        sourceProductId: "MYN-FOSSIL-GRANT",
+        sourceUrl: "https://www.myntra.com/watches?f=Brand%3AFossil",
         title: "Fossil Grant Chronograph Roman Dial Genuine Leather Watch",
         slug: "myntra-fossil-grant-chronograph-watch",
         description: "Classic Roman numeral index chronograph watch featuring built-in stopwatches and supple brown genuine leather strap.",
@@ -78,8 +78,8 @@ export const MyntraProvider: MarketplaceProvider = {
       },
       {
         source: "myntra",
-        sourceProductId: "33190182",
-        sourceUrl: "https://www.myntra.com/jeans/levis/levis-mens-511-slim-fit-stretch-denim-jeans/33190182/buy",
+        sourceProductId: "MYN-LEVIS-511",
+        sourceUrl: "https://www.myntra.com/jeans?f=Brand%3ALevis",
         title: "Levi's Men's 511 Slim Fit Stretch Denim Jeans (Dark Indigo Rinse)",
         slug: "myntra-levis-511-slim-fit-stretch-jeans",
         description: "The modern slim with room to move. Added stretch for all-day comfort with zip fly and iconic red tab styling.",
@@ -115,8 +115,8 @@ export const MyntraProvider: MarketplaceProvider = {
       },
       {
         source: "myntra",
-        sourceProductId: "44910293",
-        sourceUrl: "https://www.myntra.com/shoes/nike/nike-mens-air-max-sc-leather-running-sneakers/44910293/buy",
+        sourceProductId: "MYN-NIKE-AIRMAX",
+        sourceUrl: "https://www.myntra.com/shoes?f=Brand%3ANike",
         title: "Nike Air Max SC Leather Heritage Running & Streetwear Sneakers",
         slug: "myntra-nike-air-max-sc-leather-sneakers",
         description: "With its easy-going lines, heritage track look and visible Air cushioning, Nike Air Max SC is the ideal finish to any outfit.",
@@ -149,8 +149,8 @@ export const MyntraProvider: MarketplaceProvider = {
       },
       {
         source: "myntra",
-        sourceProductId: "55190283",
-        sourceUrl: "https://www.myntra.com/hoodies/hm/hm-relaxed-fit-heavyweight-hoodie/55190283/buy",
+        sourceProductId: "MYN-HM-HOODIE",
+        sourceUrl: "https://www.myntra.com/hoodies?f=Brand%3AH%26M",
         title: "H&M Relaxed Fit Heavyweight French Terry Fleece Hoodie",
         slug: "myntra-hm-relaxed-fit-heavyweight-hoodie",
         description: "Soft sweat fabric hoodie in organic cotton blend with jersey-lined wrapover hood, kangaroo pocket and wide ribbing at cuffs.",

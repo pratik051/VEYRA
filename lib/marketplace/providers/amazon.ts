@@ -10,8 +10,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
     return [
       {
         source: "amazon-india",
-        sourceProductId: "B09B8V1LZ3",
-        sourceUrl: "https://www.amazon.in/dp/B09B8V1LZ3",
+        sourceProductId: "AMZ-ECHO-DOT-5",
+        sourceUrl: "https://www.amazon.in/s?k=Echo+Dot+5th+Gen+Smart+speaker+with+Alexa",
         title: "Echo Dot (5th Gen) Smart Speaker with Bigger Sound, Motion Detection & Alexa",
         slug: "amazon-echo-dot-5th-gen-alexa",
         description: "Best sounding Echo Dot yet: Enjoy an improved audio experience compared to any previous Echo Dot with Alexa for clearer vocals, deeper bass, and vibrant sound in any room.",
@@ -49,8 +49,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B08N36XNTT",
-        sourceUrl: "https://www.amazon.in/dp/B08N36XNTT",
+        sourceProductId: "AMZ-KINDLE-PW-16",
+        sourceUrl: "https://www.amazon.in/s?k=Kindle+Paperwhite+16GB",
         title: "Kindle Paperwhite 16GB (6.8\" Glare-Free Display, Adjustable Warm Light, IPX8)",
         slug: "amazon-kindle-paperwhite-16gb",
         description: "Now with a 6.8\" display and thinner borders, adjustable warm light, up to 10 weeks of battery life, and 20% faster page turns.",
@@ -84,8 +84,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B08XW4S383",
-        sourceUrl: "https://www.amazon.in/dp/B08XW4S383",
+        sourceProductId: "AMZ-FIRETV-4K",
+        sourceUrl: "https://www.amazon.in/s?k=Fire+TV+Stick+4K+with+Alexa+Voice+Remote",
         title: "Fire TV Stick 4K with Alexa Voice Remote (Dolby Vision, HDR10+, Dolby Atmos)",
         slug: "amazon-fire-tv-stick-4k",
         description: "Cinematic 4K streaming with Dolby Vision, HDR10+, and immersive Dolby Atmos audio. Access 12,000+ apps and channels.",
@@ -118,8 +118,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B0CX212FMC",
-        sourceUrl: "https://www.amazon.in/dp/B0CX212FMC",
+        sourceProductId: "AMZ-OP-NORD-CE4",
+        sourceUrl: "https://www.amazon.in/s?k=OnePlus+Nord+CE4+5G",
         title: "OnePlus Nord CE4 5G (8GB RAM, 128GB Storage, 100W SUPERVOOC, 5500mAh)",
         slug: "amazon-oneplus-nord-ce4-5g-smartphone",
         description: "Qualcomm Snapdragon 7 Gen 3 powerhouse with 120Hz Fluid AMOLED display, Sony LYT-600 OIS camera, and 100W ultra-fast charging.",
@@ -155,8 +155,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B0863TXGM3",
-        sourceUrl: "https://www.amazon.in/dp/B0863TXGM3",
+        sourceProductId: "AMZ-SONY-XM4",
+        sourceUrl: "https://www.amazon.in/s?k=Sony+WH-1000XM4+Wireless+Noise+Cancelling+Headphones",
         title: "Sony WH-1000XM4 Industry Leading Wireless Active Noise Cancelling Headphones",
         slug: "amazon-sony-wh-1000xm4-anc-headphones",
         description: "Dual Noise Sensor technology with HD Noise Cancelling Processor QN1, Speak-to-chat, Multipoint Bluetooth connection and 30h battery.",
@@ -191,8 +191,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B0B5DGFV6M",
-        sourceUrl: "https://www.amazon.in/dp/B0B5DGFV6M",
+        sourceProductId: "AMZ-BASICS-PB-20K",
+        sourceUrl: "https://www.amazon.in/s?k=Amazon+Basics+20000mAh+22.5W+Fast+Charging+Power+Bank",
         title: "Amazon Basics 20000mAh 22.5W Fast Charging Power Bank (Triple Output, Type-C PD)",
         slug: "amazon-basics-20000mah-22w-power-bank",
         description: "Heavy-duty 20,000mAh external battery pack with Power Delivery 22.5W fast output, multi-protection circuitry, and metallic casing.",
@@ -221,8 +221,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B0B7NV73PJ",
-        sourceUrl: "https://www.amazon.in/dp/B0B7NV73PJ",
+        sourceProductId: "AMZ-SANDISK-128",
+        sourceUrl: "https://www.amazon.in/s?k=SanDisk+Ultra+128GB+microSDXC+UHS-I+Memory+Card",
         title: "SanDisk Ultra 128GB microSDXC UHS-I Memory Card (140MB/s Read, Class 10, A1)",
         slug: "amazon-sandisk-ultra-128gb-microsd-card",
         description: "Ideal for Android smartphones, action cameras, tablets, and Nintendo Switch with fast 140MB/s transfer speed and A1 app performance.",
@@ -253,8 +253,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "B09V4G9T1Q",
-        sourceUrl: "https://www.amazon.in/dp/B09V4G9T1Q",
+        sourceProductId: "AMZ-BASICS-BP-DAILY",
+        sourceUrl: "https://www.amazon.in/s?k=Amazon+Basics+Daily+Laptop+Backpack",
         title: "Amazon Basics Daily Multi-Pocket Ergonomic Water-Resistant Laptop Backpack",
         slug: "amazon-ergonomic-daily-laptop-backpack",
         description: "Durable lightweight travel and office backpack with dedicated 15.6 inch padded laptop compartment and anti-theft back pocket.",

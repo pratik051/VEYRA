@@ -10,8 +10,8 @@ export const FlipkartProvider: MarketplaceProvider = {
     return [
       {
         source: "flipkart",
-        sourceProductId: "MOBGTAGY7GMG2WZZ",
-        sourceUrl: "https://www.flipkart.com/p/itmMOBGTAGY7GMG2WZZ",
+        sourceProductId: "FLIP-REALME-65W",
+        sourceUrl: "https://www.flipkart.com/search?q=Realme+65W+Fast+Charger",
         title: "Realme 65W GaN Dual-Port SuperDart Fast Charger with Type-C Cable",
         slug: "flipkart-realme-65w-gan-superdart-charger",
         description: "Ultra-compact Gallium Nitride (GaN) fast charger compatible with laptops, tablets, and smartphones.",
@@ -45,8 +45,8 @@ export const FlipkartProvider: MarketplaceProvider = {
       },
       {
         source: "flipkart",
-        sourceProductId: "SHOFGQYZ7RTY6BZZ",
-        sourceUrl: "https://www.flipkart.com/p/itmSHOFGQYZ7RTY6BZZ",
+        sourceProductId: "FLIP-ASIAN-RUN-01",
+        sourceUrl: "https://www.flipkart.com/search?q=Asian+Men+Running+Shoes",
         title: "Asian Men's Lightweight Breathable Running Shoes (Air Max Cushion)",
         slug: "flipkart-asian-mens-lightweight-running-shoes",
         description: "Engineered mesh upper for maximum airflow with bouncy EVA sole for responsive shock absorption.",
@@ -81,8 +81,8 @@ export const FlipkartProvider: MarketplaceProvider = {
       },
       {
         source: "flipkart",
-        sourceProductId: "EARGNOTHINGA781",
-        sourceUrl: "https://www.flipkart.com/p/itmEARGNOTHINGA781",
+        sourceProductId: "FLIP-NOTHING-EARA",
+        sourceUrl: "https://www.flipkart.com/search?q=Nothing+Ear+a+ANC+Earbuds",
         title: "Nothing Ear (a) with 45dB Smart ANC & Hi-Res Wireless Audio",
         slug: "flipkart-nothing-ear-a-anc-earbuds",
         description: "Iconic transparent design with ChatGPT integration, 45dB Smart Active Noise Cancellation, and 42.5h total battery life.",
@@ -117,8 +117,8 @@ export const FlipkartProvider: MarketplaceProvider = {
       },
       {
         source: "flipkart",
-        sourceProductId: "CAMMI360SECHOM9",
-        sourceUrl: "https://www.flipkart.com/p/itmCAMMI360SECHOM9",
+        sourceProductId: "FLIP-XIAOMI-360-CAM",
+        sourceUrl: "https://www.flipkart.com/search?q=Xiaomi+360+2K+Smart+Security+Camera",
         title: "Xiaomi 360° 2K Full HD Smart Home Security Camera with Night Vision",
         slug: "flipkart-xiaomi-360-2k-smart-security-camera",
         description: "Ultra-clear 2K (1296p) resolution, 360° panoramic view, AI human detection, and 2-way real-time voice calls via Mi Home App.",
@@ -147,8 +147,8 @@ export const FlipkartProvider: MarketplaceProvider = {
       },
       {
         source: "flipkart",
-        sourceProductId: "EARBOULTZ40PRO81",
-        sourceUrl: "https://www.flipkart.com/p/itmEARBOULTZ40PRO81",
+        sourceProductId: "FLIP-BOULT-Z40",
+        sourceUrl: "https://www.flipkart.com/search?q=Boult+Audio+Z40+Earbuds",
         title: "Boult Audio Z40 with 60H Playtime, ENC & 45ms Ultra-Low Latency Gaming",
         slug: "flipkart-boult-audio-z40-tws-earbuds",
         description: "BoomX rich bass drivers, Zen Quad-Mic Environmental Noise Cancellation, Type-C lightning bounc charging with IPX5 water resistance.",
