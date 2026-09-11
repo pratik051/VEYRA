@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkProductAvailabilityAndDelivery, REQUIRED_DELIVERY_PIN } from "@/lib/marketplace/availability";
+import { checkProductAvailabilityAndDelivery } from "@/lib/marketplace/availability";
 
 export type VerificationStatus =
   | "available"
@@ -21,7 +21,6 @@ export interface VerifyProductResponse {
   verified?: boolean;
   inStock?: boolean;
   deliveryAvailable?: boolean;
-  postalCode?: string;
   canOrder?: boolean;
   reason?: string;
   stockStatusText?: string;
@@ -30,7 +29,7 @@ export interface VerifyProductResponse {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { url?: string; postalCode?: string; variant?: any; quantity?: number };
+  let body: { url?: string; variant?: any; quantity?: number };
   try {
     body = (await req.json()) as any;
   } catch {
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
   }
 
   const rawUrl = (body.url ?? "").trim();
-  const postalCode = (body.postalCode ?? REQUIRED_DELIVERY_PIN).trim();
 
   if (!rawUrl) {
     return NextResponse.json<VerifyProductResponse>(
@@ -66,7 +64,6 @@ export async function POST(req: NextRequest) {
 
   const checkResult = await checkProductAvailabilityAndDelivery({
     url: rawUrl,
-    postalCode,
     variant: body.variant,
     quantity: body.quantity
   });
@@ -95,7 +92,6 @@ export async function POST(req: NextRequest) {
       verified: checkResult.verified,
       inStock: checkResult.inStock,
       deliveryAvailable: checkResult.deliveryAvailable,
-      postalCode: checkResult.postalCode,
       canOrder: checkResult.canOrder,
       reason: checkResult.reason,
       stockStatusText: checkResult.stockStatusText,

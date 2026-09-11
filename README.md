@@ -14,6 +14,8 @@
 
 - [Core Platform Overview](#-core-platform-overview)
 - [Architecture & Role Separation](#-architecture--role-separation)
+- [Product Availability & Verification Engine](#-product-availability--verification-engine)
+- [Request Product & Alternative Sourcing Flow](#-request-product--alternative-sourcing-flow)
 - [Customer Account & Support Tickets](#-customer-account--support-tickets)
 - [Admin Management Portal](#-admin-management-portal)
 - [Supported Indian Marketplaces](#-supported-indian-marketplaces)
@@ -32,7 +34,7 @@
 1. **Cross-Border Marketplace Concierge:** Enables customers in Nepal to purchase authentic products from India's largest e-commerce platforms with automated landed NPR calculation.
 2. **Transparent Landed NPR Pricing Formula:**
    $$\text{Total NPR} = (\text{INR Price} \times 1.65) + \text{Service Fee (20\%)} + \text{Local Nepal Delivery (NPR 200)}$$
-3. **Dedicated Customer Account Area (`/account`):** Real-time order tracking, printable PDF invoices, order history, default saved addresses, and interactive Support Tickets.
+3. **Dedicated Customer Account Area (`/account`):** Real-time order tracking, printable PDF invoices, order history, default saved addresses, Sourcing Quotes, and interactive Support Tickets.
 4. **Official Vector Brand Identity:** Modern 3D royal-to-electric cyan 'L' monogram with airplane orbital flight trajectory and India-to-Nepal route badge (`🇮🇳 ➔ 🇳🇵`).
 
 ---
@@ -47,9 +49,43 @@ LINKOVA enforces strict architectural and server-side separation between **Admin
    - Normal users never see admin controls, stats, or navigation.
 
 2. **Customer Area (`/account`):**
-   - Normal users manage their profile, orders, addresses, and support tickets in `/account`.
+   - Normal users manage their profile, orders, addresses, sourcing requests, and support tickets in `/account`.
    - `/dashboard` permanently redirects to `/account`.
-   - Never exposes administrative controls to customers.
+   - Never exposes administrative controls or internal configurations to customers.
+
+---
+
+## 🔍 Product Availability & Verification Engine
+
+LINKOVA guarantees that an Indian marketplace product is marked orderable **ONLY** when all required sourcing conditions are strictly met:
+
+1. **Comprehensive Server-Side Verification:**
+   - **Marketplace & URL Validation:** Confirms supported platform, live URL resolution, and extracts canonical Product/SKU/ASIN identifiers.
+   - **Identity Validation:** Matches product name, brand, image, and variant.
+   - **Stock Availability:** Must be confirmed as `IN_STOCK`. Unknown or unconfirmed stock is treated as not orderable directly.
+   - **Internal Delivery Verification:** Verifies delivery availability to LINKOVA's internal transit sourcing destination.
+   - **Order Placement Re-Check:** Re-verifies live stock, delivery, and pricing at the exact moment of order placement to prevent stale checkout.
+2. **Strict Privacy of Internal Sourcing Location:**
+   - The internal transit destination is configured securely on the backend.
+   - Customers and public APIs only receive generic delivery status indicators (e.g., `✓ Delivery available`, `❌ Delivery unavailable`).
+
+---
+
+## 🔄 Request Product & Alternative Sourcing Flow
+
+When an item is unavailable for direct automated ordering, LINKOVA enables a collaborative sourcing flow:
+
+1. **Customer Product Request (`/request-product`):**
+   - Customers can submit a product request with custom quantities, sizes, and colors.
+   - The backend records the original URL, identifiers, and verification failure snapshot.
+2. **Admin Review & Verified Alternative Link:**
+   - Admins inspect the request in the Admin Dashboard (`/admin`).
+   - Admins can locate an alternative product link (e.g. from an authorized seller or alternative marketplace).
+   - **Independent Verification:** The backend independently verifies the alternative product's stock, delivery, and pricing before allowing it to be offered.
+3. **Customer Review & Conversion:**
+   - The customer receives the verified alternative card in `/account` under *Sourcing Quotes* with landed NPR pricing.
+   - Customers can **Accept Alternative** (which re-verifies on the backend and converts to a live order) or **Decline**.
+   - Full traceability preserves both the original requested URL and the final verified source URL on the order snapshot.
 
 ---
 
@@ -68,15 +104,18 @@ Users can report issues and get help with a ticket workflow:
 
 The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
 
-- **Real-Time DB Metrics:** Live counts for Total Sourcing Volume, India Orders, Store Orders, Pending Payment Reviews, and User Problems.
+- **Real-Time DB Metrics:** Live counts for Total Sourcing Volume, India Orders, Product Requests, Store Orders, Pending Payment Reviews, and User Problems.
+- **Product Requests & Alternative Link Sourcing:**
+   - Filter by status (*Pending, Reviewing, Alternative Found, Waiting for User, Converted, Closed*).
+   - Submit and independently verify alternative marketplace links.
 - **User Problems / Support Center:**
-  - Status filters (*All, Open, In Progress, Waiting for User, Resolved, Closed*) and category filters.
-  - Search by Ticket ID, Customer Name, Email, Order ID, or Subject.
-  - Comprehensive ticket detail slide-over with customer profile, problem description, live linked Order snapshot, and complete message thread.
-  - **Dual Reply System:** Toggle between *Reply to Customer* (visible in user account) and *Internal Note* (visible only to admins).
-  - Live status and priority updates.
+   - Status filters (*All, Open, In Progress, Waiting for User, Resolved, Closed*) and category filters.
+   - Search by Ticket ID, Customer Name, Email, Order ID, or Subject.
+   - Comprehensive ticket detail slide-over with customer profile, problem description, live linked Order snapshot, and complete message thread.
+   - **Dual Reply System:** Toggle between *Reply to Customer* (visible in user account) and *Internal Note* (visible only to admins).
+   - Live status and priority updates.
 - **Order Management & Invoices:** Real-time milestone updates and PDF invoice generation.
-- **Marketplace Verification & Sync:** Automated validation of Indian marketplace product URLs and availability check for PIN code `854331`.
+- **Marketplace Verification & Sync:** Automated validation of Indian marketplace product feeds and catalog imports.
 
 ---
 
@@ -101,7 +140,7 @@ The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
 
 ### 🇮🇳 1. India-to-Nepal Direct Marketplace Sourcing
 - Paste any supported Indian e-commerce URL (`amazon.in`, `flipkart.com`, `myntra.com`, etc.) at `/request-product` to generate instant landed quotes in Nepali Rupees.
-- Automated verification for stock and delivery availability to PIN `854331`.
+- Automated verification for stock and delivery availability.
 
 ### 📦 2. 1-Click Saved Delivery Address
 - Default address is automatically loaded during checkout.
@@ -197,8 +236,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 # TypeScript compilation check
 npx tsc --noEmit
 
-# Run support ticket and security test suite
-node tests/run-support-tickets-test.js
+# Run support ticket, availability, and alternative product test suite
+node tests/run-availability-and-alternatives-test.js
 
 # Production build
 npm run build
@@ -215,35 +254,40 @@ npm start
 veyra/
 ├── app/
 │   ├── (storefront)/                 # Home, Shop, Marketplace Channels, Product Pages
-│   ├── account/                      # Customer Portal, Orders & Support Tickets
+│   ├── account/                      # Customer Portal, Orders, Sourcing Quotes & Support Tickets
 │   ├── admin/                        # Secure Admin Console (Server-Side Authorized)
 │   │   ├── layout.tsx                # Admin Role Authorization Guard
-│   │   └── page.tsx                  # Orders, Marketplace, & User Problems
+│   │   └── page.tsx                  # Orders, Product Requests, Marketplace & User Problems
 │   ├── dashboard/                    # Permanent Redirect to /account
 │   ├── login/                        # Customer Login
 │   ├── signup/                       # Customer Registration
-│   ├── request-product/              # Sourcing URL Quote Calculator
+│   ├── request-product/              # Sourcing URL Quote Calculator & Request Flow
 │   ├── track-order/                  # Public Live Shipment Tracker
 │   ├── api/                          # REST Route Handlers
-│   │   ├── admin/                    # Admin Orders, Payments, Marketplace & Tickets
+│   │   ├── admin/                    # Admin Orders, Product Requests, Payments & Tickets
+│   │   │   ├── product-requests/     # Admin Product Requests & Alternative Link Verification
 │   │   │   ├── tickets/              # Admin Ticket List, Detail, Reply & Status
 │   │   │   ├── india-orders/         # India Sourcing Orders
 │   │   │   └── marketplace/          # Provider Sync & Product Verification
-│   │   ├── user/                     # User Profile, Orders, Addresses & Support Tickets
+│   │   ├── user/                     # User Profile, Orders, Addresses, Requests & Support Tickets
+│   │   │   ├── product-requests/     # User Product Request Submission & Accept/Decline
 │   │   │   └── tickets/              # User Ticket Creation, Detail & Reply
 │   │   ├── auth/                     # Google OAuth, Firebase, Session Tokens
+│   │   ├── products/                 # Product Availability & Delivery Engine
 │   │   └── india-order/              # India Sourcing Order Placement & PDF Invoices
 │   ├── layout.tsx                    # Root Layout with Font Optimization
 │   └── globals.css                   # Tailwind Design System & Animations
 ├── components/
-│   ├── admin/                        # Admin Dashboard & User Problems Panel
+│   ├── admin/                        # Admin Dashboard, Product Requests & User Problems Panel
 │   ├── layout/                       # Header, StorefrontShell, MobileNav, Footer
 │   ├── providers/                    # Cart, Wishlist, Toast Context Providers
-│   └── ui/                           # LinkovaBrandLogo, MarketplaceLogo, ProductCard
+│   └── ui/                           # LinkVerifier, BrandLogo, MarketplaceLogo, ProductCard
 ├── lib/
 │   ├── auth/                         # Sessions, RBAC Authorization & Security
+│   ├── config/                       # Server-side Sourcing Destination Configuration
 │   ├── db/                           # MongoDB Connection Manager
-│   ├── models/                       # SupportTicket, IndiaOrder, Order, User Schemas
+│   ├── marketplace/                  # Availability, Delivery, and Alternative Verification Engine
+│   ├── models/                       # ProductRequest, SupportTicket, IndiaOrder, User Schemas
 │   └── utils.ts                      # Formatters, Currency Calculations & Helpers
 ├── tests/                            # Automated Unit & Security Test Suites
 └── README.md                         # Public Project Documentation

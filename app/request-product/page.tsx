@@ -42,10 +42,12 @@ function RequestProductFlow() {
   const [verifying, setVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [stockStatus, setStockStatus] = useState("In Stock");
-  const [deliveryStatus, setDeliveryStatus] = useState("Available to 854331");
+  const [deliveryStatus, setDeliveryStatus] = useState("Delivery available");
   const [canOrder, setCanOrder] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [productImage, setProductImage] = useState("");
+  const [submittingProductRequest, setSubmittingProductRequest] = useState(false);
+  const [requestSubmittedSuccess, setRequestSubmittedSuccess] = useState<string | null>(null);
 
   // Step 3: Customer & Product Details
   const [fullName, setFullName] = useState("");
@@ -170,7 +172,6 @@ function RequestProductFlow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: trimmed,
-          postalCode: "854331",
           variant: { size: variantSize || size, color: variantColor || color },
           quantity
         })
@@ -182,7 +183,7 @@ function RequestProductFlow() {
         setIsVerified(true);
         setCanOrder(true);
         setStockStatus(data.stockStatusText || "✓ In Stock");
-        setDeliveryStatus(data.deliveryStatusText || "✓ Available to 854331");
+        setDeliveryStatus(data.deliveryStatusText || "✓ Delivery available");
         setDetectedPlatform(data.product?.source || detectPlatformFromUrl(trimmed));
         if (data.product?.name && !productName) setProductName(data.product.name);
         if (data.product?.priceINR && !inrPrice) setInrPrice(String(data.product.priceINR));
@@ -190,14 +191,14 @@ function RequestProductFlow() {
         if (data.product?.sourceProductId) setSourceProductId(data.product.sourceProductId);
 
         setStep(3);
-        pushToast("✓ Product verified, in stock, and available for delivery to 854331!", "success");
+        pushToast("✓ Product verified, in stock, and available for delivery!", "success");
       } else {
         setIsVerified(false);
         setCanOrder(false);
         setStockStatus(data.stockStatusText || "❌ Out of Stock");
-        setDeliveryStatus(data.deliveryStatusText || "❌ Unavailable to 854331");
+        setDeliveryStatus(data.deliveryStatusText || "❌ Delivery unavailable");
         setCheckError(data.message || "Product failed sourcing availability verification.");
-        pushToast(data.message || "This product cannot currently be ordered.", "error");
+        pushToast(data.message || "This product cannot currently be ordered directly. You can submit a product request.", "error");
       }
     } catch (err: any) {
       setIsVerified(false);
@@ -212,6 +213,45 @@ function RequestProductFlow() {
   // Handle URL Verification Trigger
   const handleVerifyUrl = () => {
     void executeAvailabilityCheck(productUrl);
+  };
+
+  // Submit Product Sourcing Request to Admin
+  const handleRequestProductSubmit = async () => {
+    if (!productUrl.trim()) {
+      pushToast("Please enter a product URL first.", "error");
+      return;
+    }
+    setSubmittingProductRequest(true);
+    try {
+      const res = await fetch("/api/user/product-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          productUrl: productUrl.trim(),
+          productName: productName || "Requested Marketplace Item",
+          productImage,
+          requestedVariant: productVariant,
+          requestedSize: size,
+          requestedColor: color,
+          requestedQuantity: quantity,
+          currentKnownPrice: Number(inrPrice) || 0,
+          reason: checkError || "Product unavailable for direct ordering"
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRequestSubmittedSuccess(data.request?.requestId || "Submitted");
+        pushToast(data.message || "Product request submitted to admin successfully!", "success");
+      } else {
+        pushToast(data.error || "Failed to submit request. Please sign in.", "error");
+      }
+    } catch {
+      pushToast("Network error submitting product request.", "error");
+    } finally {
+      setSubmittingProductRequest(false);
+    }
   };
 
   // Recalculate price whenever INR or Quantity changes
@@ -379,30 +419,67 @@ function RequestProductFlow() {
 
           {/* Availability Check Failure Alert */}
           {checkError && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 space-y-3">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 space-y-4">
               <div className="flex items-start gap-2.5">
-                <span className="text-red-600 font-black text-sm">❌</span>
+                <span className="text-amber-600 font-black text-sm">⚠️</span>
                 <div>
-                  <h4 className="text-xs font-black text-red-950 uppercase tracking-wide">
-                    Product Availability Check Failed
+                  <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                    Direct Ordering Not Available
                   </h4>
-                  <p className="text-xs text-red-800 mt-0.5">{checkError}</p>
+                  <p className="text-xs text-amber-800 mt-0.5">{checkError}</p>
                 </div>
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
-                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-amber-200">
                   <span>{isVerified ? "✓" : "❌"}</span>
-                  <span className="font-semibold text-neutral-700">Link Valid</span>
+                  <span className="font-semibold text-neutral-700">Link Verified</span>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-amber-200">
                   <span>{stockStatus.includes("✓") ? "✓" : "❌"}</span>
                   <span className="font-semibold text-neutral-700">{stockStatus}</span>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-amber-200">
                   <span>{deliveryStatus.includes("✓") ? "✓" : "❌"}</span>
                   <span className="font-semibold text-neutral-700">{deliveryStatus}</span>
                 </div>
               </div>
+
+              {/* Action: Request This Product (Get Alternative Link from Admin) */}
+              {requestSubmittedSuccess ? (
+                <div className="rounded-xl bg-emerald-100 border border-emerald-300 p-3.5 text-xs text-emerald-900 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-base">✓</span>
+                    <span className="font-bold">Product Request Submitted ({requestSubmittedSuccess})!</span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800">
+                    Our procurement team will review this item and find a verified alternative link for you. Track this in your account dashboard.
+                  </p>
+                  <div className="pt-1">
+                    <Link
+                      href="/account?tab=requests"
+                      className="inline-flex items-center gap-1 text-xs font-black text-emerald-950 underline hover:text-black"
+                    >
+                      View Sourcing Quotes in Account →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-neutral-900">Want our team to find a working alternative?</p>
+                    <p className="text-[11px] text-neutral-500">We will verify alternative marketplace stock and provide a direct quote.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRequestProductSubmit}
+                    disabled={submittingProductRequest}
+                    className="w-full sm:w-auto rounded-xl bg-neutral-950 px-5 py-2.5 text-xs font-black text-white hover:bg-neutral-800 transition shadow-sm whitespace-nowrap cursor-pointer disabled:opacity-50"
+                  >
+                    {submittingProductRequest ? "Submitting Request..." : "Request Product (Get Alternative Link) →"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -434,7 +511,7 @@ function RequestProductFlow() {
                   ✓ In Stock
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
-                  ✓ Delivery to 854331
+                  ✓ Delivery Available
                 </span>
               </div>
               <h2 className="font-display text-xl font-black text-neutral-950">

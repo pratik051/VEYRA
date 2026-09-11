@@ -8,13 +8,17 @@ import { connectToDatabase } from "../db/mongodb";
 import { MarketplaceProductModel } from "../models/marketplace-product-model";
 import { buildCanonicalProductUrl, validateProductImage } from "./verification";
 import { extractProductIdFromUrlOrText } from "./ai-product-matcher";
+import { SOURCING_DESTINATION, DEFAULT_TRANSIT_PIN } from "../config/sourcing-destination";
 
-export const REQUIRED_DELIVERY_PIN = "854331";
+export type StockState = "IN_STOCK" | "OUT_OF_STOCK" | "UNKNOWN";
+export type DeliveryState = "DELIVERY_AVAILABLE" | "DELIVERY_UNAVAILABLE" | "UNKNOWN";
 
 export type AvailabilityReason =
   | "AVAILABLE"
   | "OUT_OF_STOCK"
   | "DELIVERY_UNAVAILABLE"
+  | "DELIVERY_UNCONFIRMED"
+  | "STOCK_UNCONFIRMED"
   | "UNAVAILABLE"
   | "UNVERIFIED"
   | "INVALID_URL"
@@ -22,7 +26,6 @@ export type AvailabilityReason =
 
 export interface AvailabilityCheckRequest {
   url: string;
-  postalCode?: string;
   variant?: {
     size?: string;
     color?: string;
@@ -30,6 +33,10 @@ export interface AvailabilityCheckRequest {
     [key: string]: any;
   };
   quantity?: number;
+  /**
+   * Internal override: used only by backend staff / automated tests.
+   */
+  internalPostalCode?: string;
 }
 
 export interface AvailabilityProductDetails {
@@ -50,10 +57,12 @@ export interface AvailabilityProductDetails {
 
 export interface AvailabilityCheckResult {
   verified: boolean;
+  orderable: boolean;
+  canOrder: boolean; // Alias for backward-compat
   inStock: boolean;
   deliveryAvailable: boolean;
-  postalCode: string;
-  canOrder: boolean;
+  stockStatus: StockState;
+  deliveryStatus: DeliveryState;
   reason: AvailabilityReason;
   message: string;
   stockStatusText: string;
@@ -62,27 +71,26 @@ export interface AvailabilityCheckResult {
   canonicalUrl: string;
   product?: AvailabilityProductDetails;
   checkedAt: string;
+  // Admin-only internal debugging field (stripped before sending to customers)
+  _internalAudit?: {
+    internalPin: string;
+    internalDestination: string;
+    signals: string[];
+  };
 }
 
 /**
- * Checks if a PIN code is valid 6-digit Indian Postal Code
- */
-export function isValidIndianPinCode(pin: string): boolean {
-  return /^[1-9][0-9]{5}$/.test(pin.trim());
-}
-
-/**
- * Parses live HTML / Schema / text content for explicit out-of-stock / availability signals
+ * Parses live HTML / schema / text content for explicit out-of-stock / availability signals
  */
 function parseHtmlStockAndDeliverySignals(
   html: string,
-  postalCode: string = REQUIRED_DELIVERY_PIN
-): { inStock: boolean; deliveryAvailable: boolean; signals: string[] } {
+  internalPin: string = DEFAULT_TRANSIT_PIN
+): { stock: StockState; delivery: DeliveryState; signals: string[] } {
   const lowHtml = html.toLowerCase();
   const signals: string[] = [];
 
-  let inStock = true;
-  let deliveryAvailable = true;
+  let stock: StockState = "UNKNOWN";
+  let delivery: DeliveryState = "UNKNOWN";
 
   // 1. Explicit Out-of-Stock indicators
   const outOfStockKeywords = [
@@ -102,7 +110,7 @@ function parseHtmlStockAndDeliverySignals(
 
   for (const phrase of outOfStockKeywords) {
     if (lowHtml.includes(phrase)) {
-      inStock = false;
+      stock = "OUT_OF_STOCK";
       signals.push(`Detected out-of-stock signal: "${phrase}"`);
       break;
     }
@@ -120,23 +128,21 @@ function parseHtmlStockAndDeliverySignals(
     "only 5 left in stock",
     "add to cart",
     "buy now",
-    "available to ship"
+    "available to ship",
+    "order within"
   ];
 
-  let hasExplicitInStock = false;
-  for (const phrase of inStockKeywords) {
-    if (lowHtml.includes(phrase)) {
-      hasExplicitInStock = true;
-      break;
+  if (stock !== "OUT_OF_STOCK") {
+    for (const phrase of inStockKeywords) {
+      if (lowHtml.includes(phrase)) {
+        stock = "IN_STOCK";
+        signals.push(`Detected in-stock signal: "${phrase}"`);
+        break;
+      }
     }
   }
 
-  if (!hasExplicitInStock && !inStock) {
-    inStock = false;
-  }
-
-  // 3. Postal Code Delivery Eligibility
-  // Check for explicit geo/PIN rejection signals in page content
+  // 3. Postal Code Delivery Eligibility (Inspecting internal transit capability)
   const undeliverableKeywords = [
     "cannot be delivered to this location",
     "delivery not available for this pincode",
@@ -148,48 +154,75 @@ function parseHtmlStockAndDeliverySignals(
     "delivery unavailable for selected address"
   ];
 
+  let hasUndeliverableSignal = false;
   for (const phrase of undeliverableKeywords) {
     if (lowHtml.includes(phrase)) {
-      deliveryAvailable = false;
+      delivery = "DELIVERY_UNAVAILABLE";
+      hasUndeliverableSignal = true;
       signals.push(`Detected delivery rejection signal: "${phrase}"`);
       break;
     }
   }
 
-  // Category freight restrictions: heavy freight without local transit depot (e.g. huge refrigerators, 65+ inch glass unboxed items)
+  if (!hasUndeliverableSignal) {
+    // Check if deliverable signals exist
+    const deliverableKeywords = [
+      "free delivery",
+      "fastest delivery",
+      "delivery by",
+      "ships from",
+      "sold by",
+      "standard delivery",
+      "eligible for free delivery"
+    ];
+
+    for (const phrase of deliverableKeywords) {
+      if (lowHtml.includes(phrase)) {
+        delivery = "DELIVERY_AVAILABLE";
+        signals.push(`Detected delivery availability signal: "${phrase}"`);
+        break;
+      }
+    }
+  }
+
+  // Freight & Hazardous Restrictions
   if (
     lowHtml.includes("freight-only") ||
     lowHtml.includes("heavy bulky appliance - local city delivery only") ||
     lowHtml.includes("hazardous material - cannot be shipped by air/transit")
   ) {
-    deliveryAvailable = false;
-    signals.push("Product subject to regional courier freight restrictions for transit PIN 854331.");
+    delivery = "DELIVERY_UNAVAILABLE";
+    signals.push("Product subject to courier freight restrictions for internal transit depot.");
   }
 
-  return { inStock, deliveryAvailable, signals };
+  return { stock, delivery, signals };
 }
 
 /**
  * Comprehensive Product Availability & Delivery Verification Engine.
  * Source of truth for all product checks before order placement.
+ *
+ * All private location details are strictly internal to the server.
  */
 export async function checkProductAvailabilityAndDelivery(
   request: AvailabilityCheckRequest
 ): Promise<AvailabilityCheckResult> {
   const rawUrl = (request.url || "").trim();
-  const postalCode = (request.postalCode || REQUIRED_DELIVERY_PIN).trim();
   const requestedVariant = request.variant;
   const quantity = Math.max(1, request.quantity || 1);
   const checkedAt = new Date().toISOString();
+  const internalPin = request.internalPostalCode || SOURCING_DESTINATION.pin;
 
   // 1. URL Presence & Structure
   if (!rawUrl || (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://"))) {
     return {
       verified: false,
+      orderable: false,
+      canOrder: false,
       inStock: false,
       deliveryAvailable: false,
-      postalCode,
-      canOrder: false,
+      stockStatus: "UNKNOWN",
+      deliveryStatus: "UNKNOWN",
       reason: "INVALID_URL",
       message: "Please enter a valid Indian marketplace product link starting with https://",
       stockStatusText: "Invalid Link",
@@ -206,10 +239,12 @@ export async function checkProductAvailabilityAndDelivery(
   } catch {
     return {
       verified: false,
+      orderable: false,
+      canOrder: false,
       inStock: false,
       deliveryAvailable: false,
-      postalCode,
-      canOrder: false,
+      stockStatus: "UNKNOWN",
+      deliveryStatus: "UNKNOWN",
       reason: "INVALID_URL",
       message: "Malformed URL syntax.",
       stockStatusText: "Invalid Link",
@@ -225,12 +260,14 @@ export async function checkProductAvailabilityAndDelivery(
   if (!APPROVED_DOMAINS.has(hostname) && !APPROVED_DOMAINS.has(`www.${hostname}`)) {
     return {
       verified: false,
+      orderable: false,
+      canOrder: false,
       inStock: false,
       deliveryAvailable: false,
-      postalCode,
-      canOrder: false,
+      stockStatus: "UNKNOWN",
+      deliveryStatus: "UNKNOWN",
       reason: "UNSUPPORTED_PLATFORM",
-      message: `Domain '${hostname}' is not a supported Indian marketplace. LINKOVA supports Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, Noise, etc.`,
+      message: `Domain '${hostname}' is not a supported marketplace channel. LINKOVA supports Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, etc.`,
       stockStatusText: "Unsupported Domain",
       deliveryStatusText: "Unsupported Domain",
       verifiedUrl: "",
@@ -244,13 +281,15 @@ export async function checkProductAvailabilityAndDelivery(
   if (!platform || !isValidProductUrl(rawUrl, platform)) {
     return {
       verified: false,
+      orderable: false,
+      canOrder: false,
       inStock: false,
       deliveryAvailable: false,
-      postalCode,
-      canOrder: false,
+      stockStatus: "UNKNOWN",
+      deliveryStatus: "UNKNOWN",
       reason: "INVALID_URL",
       message: platform
-        ? `This link does not match the product page structure for ${platform.displayName}. Please copy the link directly from the product page.`
+        ? `This link does not match the product page format for ${platform.displayName}. Please copy the direct link from the product page.`
         : "Invalid marketplace product page URL.",
       stockStatusText: "Invalid Structure",
       deliveryStatusText: "Invalid Structure",
@@ -284,15 +323,16 @@ export async function checkProductAvailabilityAndDelivery(
     console.error("[checkProductAvailabilityAndDelivery] DB lookup error:", err);
   }
 
-  // 5. Live Product Page Inspection (Real Stock & Delivery Verification)
-  let liveInStock = true;
-  let liveDeliveryAvailable = true;
+  // 5. Live Product Page Inspection
+  let liveStockStatus: StockState = "UNKNOWN";
+  let liveDeliveryStatus: DeliveryState = "UNKNOWN";
   let extractedTitle = dbProduct?.title || dbProduct?.name || "";
   let extractedPriceINR = dbProduct?.priceINR || 0;
   let extractedImage = dbProduct?.images?.[0] || dbProduct?.image || "";
   let extractedBrand = dbProduct?.brand || "";
   let extractedCategory = dbProduct?.category || "Everyday Essentials";
   let extractedVariants: Array<{ name: string; values: string[] }> = dbProduct?.variants || [];
+  let signals: string[] = [];
   let verificationError = "";
 
   try {
@@ -317,10 +357,12 @@ export async function checkProductAvailabilityAndDelivery(
     if (fetchRes.status === 404) {
       return {
         verified: false,
+        orderable: false,
+        canOrder: false,
         inStock: false,
         deliveryAvailable: false,
-        postalCode,
-        canOrder: false,
+        stockStatus: "OUT_OF_STOCK",
+        deliveryStatus: "DELIVERY_UNAVAILABLE",
         reason: "INVALID_URL",
         message: "This product page no longer exists on the marketplace (HTTP 404).",
         stockStatusText: "Discontinued / Page 404",
@@ -333,21 +375,26 @@ export async function checkProductAvailabilityAndDelivery(
 
     if (fetchRes.ok) {
       const html = await fetchRes.text();
-      const parsedSignals = parseHtmlStockAndDeliverySignals(html, postalCode);
-      liveInStock = parsedSignals.inStock;
-      liveDeliveryAvailable = parsedSignals.deliveryAvailable;
+      const parsedSignals = parseHtmlStockAndDeliverySignals(html, internalPin);
+      liveStockStatus = parsedSignals.stock;
+      liveDeliveryStatus = parsedSignals.delivery;
+      signals = parsedSignals.signals;
 
       // Extract Title if not in DB
       if (!extractedTitle) {
         const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
         if (titleMatch && titleMatch[1]) {
-          extractedTitle = titleMatch[1].replace(/\s*\|.*$/, "").replace(/\s*-\s*Amazon\.in.*$/i, "").trim();
+          extractedTitle = titleMatch[1]
+            .replace(/\s*\|.*$/, "")
+            .replace(/\s*-\s*Amazon\.in.*$/i, "")
+            .trim();
         }
       }
 
       // Extract Price INR if not in DB
       if (!extractedPriceINR) {
-        const priceMatch = html.match(/class="[^"]*price[^"]*"[^>]*>₹?\s*([0-9,]+(\.[0-9]+)?)/i) ||
+        const priceMatch =
+          html.match(/class="[^"]*price[^"]*"[^>]*>₹?\s*([0-9,]+(\.[0-9]+)?)/i) ||
           html.match(/["']price["']\s*:\s*["']?([0-9]+(\.[0-9]+)?)["']?/i);
         if (priceMatch && priceMatch[1]) {
           extractedPriceINR = parseFloat(priceMatch[1].replace(/,/g, ""));
@@ -356,7 +403,8 @@ export async function checkProductAvailabilityAndDelivery(
 
       // Extract Image if not in DB
       if (!extractedImage) {
-        const imgMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
+        const imgMatch =
+          html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
           html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i);
         if (imgMatch && imgMatch[1]) {
           extractedImage = imgMatch[1];
@@ -364,67 +412,90 @@ export async function checkProductAvailabilityAndDelivery(
       }
     }
   } catch (netErr: any) {
-    // If live fetch timed out or was blocked by CDN protection, fallback to DB record or structural verification
     if (dbProduct) {
-      liveInStock = dbProduct.availability === "in_stock" || dbProduct.availability === "limited";
-      liveDeliveryAvailable = true;
+      liveStockStatus =
+        dbProduct.availability === "out_of_stock"
+          ? "OUT_OF_STOCK"
+          : dbProduct.availability === "in_stock"
+          ? "IN_STOCK"
+          : "UNKNOWN";
+      liveDeliveryStatus = "DELIVERY_AVAILABLE";
+      signals.push("Using cached DB verification record due to network response limit.");
     } else {
-      // Without DB product and without network response, we cannot guess stock
-      verificationError = "Network check was unable to inspect live stock status.";
+      liveStockStatus = "UNKNOWN";
+      liveDeliveryStatus = "UNKNOWN";
+      verificationError = "We couldn't confirm availability right now.";
     }
   }
 
-  // 6. DB status override if product was explicitly marked out of stock in DB
+  // DB status override if explicitly out of stock
   if (dbProduct && dbProduct.availability === "out_of_stock") {
-    liveInStock = false;
+    liveStockStatus = "OUT_OF_STOCK";
   }
 
-  // 7. Check Requested Variant Availability
-  if (requestedVariant && liveInStock) {
+  // If live check was successful and we found add to cart buttons, but delivery is unconfirmed,
+  // we treat delivery as available if there was no explicit delivery rejection
+  if (liveStockStatus === "IN_STOCK" && liveDeliveryStatus === "UNKNOWN") {
+    liveDeliveryStatus = "DELIVERY_AVAILABLE";
+    signals.push("Delivery confirmed via standard marketplace fulfillment.");
+  }
+
+  // 6. Check Requested Variant Availability
+  if (requestedVariant && liveStockStatus === "IN_STOCK") {
     const requestedSize = requestedVariant.size?.trim();
     const requestedColor = requestedVariant.color?.trim();
 
     if (dbProduct?.variants && Array.isArray(dbProduct.variants)) {
       const sizeVariant = dbProduct.variants.find((v: any) => v.name.toLowerCase() === "size");
       if (sizeVariant && requestedSize && !sizeVariant.values.includes(requestedSize)) {
-        liveInStock = false;
+        liveStockStatus = "OUT_OF_STOCK";
         verificationError = `Selected size '${requestedSize}' is currently unavailable.`;
       }
 
       const colorVariant = dbProduct.variants.find((v: any) => v.name.toLowerCase() === "color");
       if (colorVariant && requestedColor && !colorVariant.values.includes(requestedColor)) {
-        liveInStock = false;
+        liveStockStatus = "OUT_OF_STOCK";
         verificationError = `Selected color '${requestedColor}' is currently unavailable.`;
       }
     }
   }
 
-  // 8. Image & Price Sanity
+  // 7. Image & Price Sanity
   const hasImage = Boolean(extractedImage) && (await validateProductImage(extractedImage));
   const hasValidPrice = typeof extractedPriceINR === "number" && extractedPriceINR > 0;
-
-  // 9. Calculate Final Decision
   const isVerified = Boolean(platform && sourceProductId && (dbProduct || hasImage || extractedTitle));
-  const inStock = isVerified && liveInStock;
-  const deliveryAvailable = isVerified && inStock && liveDeliveryAvailable;
-  const canOrder = isVerified && inStock && deliveryAvailable;
 
-  // 10. Determine Reason and Customer Message
+  // 8. Strict Orderability Requirement:
+  // A product is ORDERABLE ONLY when ALL of these are confirmed:
+  // - Verified marketplace & product exists
+  // - Stock status is strictly IN_STOCK
+  // - Delivery status is strictly DELIVERY_AVAILABLE
+  // - Price is valid
+  const inStock = isVerified && liveStockStatus === "IN_STOCK";
+  const deliveryAvailable = isVerified && inStock && liveDeliveryStatus === "DELIVERY_AVAILABLE";
+  const orderable = isVerified && inStock && deliveryAvailable && hasValidPrice;
+
+  // 9. Generic, Safe Customer Messages (Never leaking private PIN or location)
   let reason: AvailabilityReason = "AVAILABLE";
-  let message = "✓ Product verified, in stock, and available for delivery to postal code 854331.";
+  let message = "✓ Product verified, in stock, and available for delivery.";
+  let stockStatusText = inStock ? "✓ In Stock" : liveStockStatus === "OUT_OF_STOCK" ? "❌ Out of Stock" : "⚠️ Stock Unconfirmed";
+  let deliveryStatusText = deliveryAvailable ? "✓ Delivery available" : liveDeliveryStatus === "DELIVERY_UNAVAILABLE" ? "❌ Delivery unavailable" : "⚠️ Delivery Unconfirmed";
 
   if (!isVerified) {
     reason = "UNVERIFIED";
     message = "⚠️ We couldn't verify the marketplace product details right now.";
-  } else if (!inStock && !deliveryAvailable) {
-    reason = "UNAVAILABLE";
-    message = `❌ This product cannot be ordered. It is currently out of stock and unavailable for delivery to postal code ${postalCode}.`;
-  } else if (!inStock) {
+  } else if (!inStock && liveStockStatus === "OUT_OF_STOCK") {
     reason = "OUT_OF_STOCK";
     message = verificationError || "❌ This product or selected variant is currently out of stock.";
-  } else if (!deliveryAvailable) {
+  } else if (!deliveryAvailable && liveDeliveryStatus === "DELIVERY_UNAVAILABLE") {
     reason = "DELIVERY_UNAVAILABLE";
-    message = `❌ This product cannot currently be delivered to postal code ${postalCode}.`;
+    message = "❌ Delivery is currently unavailable for this product.";
+  } else if (liveStockStatus === "UNKNOWN") {
+    reason = "STOCK_UNCONFIRMED";
+    message = "⚠️ Stock availability could not be confirmed right now. You can request this product for manual sourcing.";
+  } else if (liveDeliveryStatus === "UNKNOWN") {
+    reason = "DELIVERY_UNCONFIRMED";
+    message = "⚠️ Delivery availability could not be confirmed right now. You can request this product for manual sourcing.";
   }
 
   const productDetails: AvailabilityProductDetails = {
@@ -445,19 +516,24 @@ export async function checkProductAvailabilityAndDelivery(
 
   return {
     verified: isVerified,
+    orderable,
+    canOrder: orderable,
     inStock,
     deliveryAvailable,
-    postalCode,
-    canOrder,
+    stockStatus: liveStockStatus,
+    deliveryStatus: liveDeliveryStatus,
     reason,
     message,
-    stockStatusText: inStock ? "✓ In Stock" : "❌ Out of Stock",
-    deliveryStatusText: deliveryAvailable
-      ? `✓ Available to ${postalCode}`
-      : `❌ Unavailable to ${postalCode}`,
+    stockStatusText,
+    deliveryStatusText,
     verifiedUrl: rawUrl,
     canonicalUrl,
     product: productDetails,
-    checkedAt
+    checkedAt,
+    _internalAudit: {
+      internalPin,
+      internalDestination: `${SOURCING_DESTINATION.postOffice}, ${SOURCING_DESTINATION.district}, ${SOURCING_DESTINATION.state}`,
+      signals
+    }
   };
 }

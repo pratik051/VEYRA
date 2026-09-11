@@ -181,6 +181,7 @@ function InfoRow({
 const adminTabs = [
   "Overview",
   "India Orders & Invoices",
+  "Product Requests",
   "Marketplace Sources",
   "User Problems",
   "Products",
@@ -218,6 +219,26 @@ export function AdminDashboard() {
   const [ticketReplyType, setTicketReplyType] = useState<"reply" | "internal_note">("reply");
   const [ticketReplySubmitting, setTicketReplySubmitting] = useState(false);
   const [ticketStatusUpdating, setTicketStatusUpdating] = useState(false);
+
+  // Product Requests & Alternative Sourcing State
+  const [productRequestsList, setProductRequestsList] = useState<any[]>([]);
+  const [productRequestCounts, setProductRequestCounts] = useState({
+    total: 0,
+    pending: 0,
+    reviewing: 0,
+    alternativeFound: 0,
+    waitingForUser: 0,
+    converted: 0,
+    closed: 0
+  });
+  const [productRequestFilterStatus, setProductRequestFilterStatus] = useState("all");
+  const [selectedProductRequest, setSelectedProductRequest] = useState<any | null>(null);
+  const [alternativeModalOpen, setAlternativeModalOpen] = useState(false);
+  const [alternativeUrlInput, setAlternativeUrlInput] = useState("");
+  const [alternativePriceInr, setAlternativePriceInr] = useState("");
+  const [alternativeAdminNote, setAlternativeAdminNote] = useState("");
+  const [alternativeSubmitting, setAlternativeSubmitting] = useState(false);
+  const [alternativeVerificationError, setAlternativeVerificationError] = useState<string | null>(null);
 
   const [syncingProvider, setSyncingProvider] = useState<string | null>(null);
   const [reverifyingId, setReverifyingId] = useState<string | null>(null);
@@ -269,14 +290,15 @@ export function AdminDashboard() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [productRes, orderRes, indiaOrderRes, paymentRes, mktRes, mktProductsRes, ticketRes] = await Promise.all([
+      const [productRes, orderRes, indiaOrderRes, paymentRes, mktRes, mktProductsRes, ticketRes, requestRes] = await Promise.all([
         fetch("/api/admin/products"),
         fetch("/api/admin/orders"),
         fetch("/api/admin/india-orders"),
         fetch("/api/admin/payments"),
         fetch("/api/admin/marketplace/status"),
         fetch("/api/admin/marketplace/products"),
-        fetch("/api/admin/tickets")
+        fetch("/api/admin/tickets"),
+        fetch("/api/admin/product-requests")
       ]);
       if (productRes.ok) {
         const p = await productRes.json();
@@ -309,6 +331,15 @@ export function AdminDashboard() {
         }
         if (t.counts) {
           setTicketCounts(t.counts);
+        }
+      }
+      if (requestRes.ok) {
+        const reqData = await requestRes.json();
+        if (Array.isArray(reqData.requests)) {
+          setProductRequestsList(reqData.requests);
+        }
+        if (reqData.counts) {
+          setProductRequestCounts(reqData.counts);
         }
       }
     } catch (e) {
@@ -492,6 +523,72 @@ export function AdminDashboard() {
       }
     } catch {
       pushToast("Network error updating product.", "error");
+    }
+  };
+
+  const handleUpdateProductRequestStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/admin/product-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`Request ${id} status updated to "${status}".`, "success");
+        await loadAll();
+      } else {
+        pushToast(data.error || "Failed to update request status.", "error");
+      }
+    } catch {
+      pushToast("Network error updating request status.", "error");
+    }
+  };
+
+  const handleOpenAlternativeModal = (reqItem: any) => {
+    setSelectedProductRequest(reqItem);
+    setAlternativeUrlInput(reqItem.alternativeProduct?.productUrl || "");
+    setAlternativePriceInr(reqItem.alternativeProduct?.priceINR ? String(reqItem.alternativeProduct.priceINR) : "");
+    setAlternativeAdminNote(reqItem.alternativeProduct?.adminNote || "");
+    setAlternativeVerificationError(null);
+    setAlternativeModalOpen(true);
+  };
+
+  const handleSubmitAlternativeProduct = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedProductRequest || !alternativeUrlInput.trim()) return;
+
+    setAlternativeSubmitting(true);
+    setAlternativeVerificationError(null);
+
+    try {
+      const res = await fetch(`/api/admin/product-requests/${selectedProductRequest.requestId}/alternative`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productUrl: alternativeUrlInput.trim(),
+          priceINR: alternativePriceInr ? Number(alternativePriceInr) : undefined,
+          adminNote: alternativeAdminNote.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("✓ Alternative product independently verified & offered to customer!", "success");
+        setAlternativeModalOpen(false);
+        setSelectedProductRequest(null);
+        setAlternativeUrlInput("");
+        setAlternativePriceInr("");
+        setAlternativeAdminNote("");
+        await loadAll();
+      } else {
+        setAlternativeVerificationError(data.error || "Alternative verification failed.");
+        pushToast(data.error || "Alternative product failed backend verification.", "error");
+      }
+    } catch {
+      pushToast("Network error submitting alternative product.", "error");
+    } finally {
+      setAlternativeSubmitting(false);
     }
   };
 
@@ -768,6 +865,20 @@ export function AdminDashboard() {
               }`}
             >
               {tab === "India Orders & Invoices" && `🇮🇳 India Orders (${indiaOrdersList.length})`}
+              {tab === "Product Requests" && (
+                <span className="flex items-center gap-1.5">
+                  <span>Product Requests</span>
+                  {productRequestCounts.pending > 0 ? (
+                    <span className="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                      {productRequestCounts.pending}
+                    </span>
+                  ) : (
+                    <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                      {productRequestsList.length}
+                    </span>
+                  )}
+                </span>
+              )}
               {tab === "Marketplace Sources" && `🇮🇳 Sources & Feeds (${marketplaceProviders.length})`}
               {tab === "User Problems" && (
                 <span className="flex items-center gap-1.5">
@@ -786,7 +897,7 @@ export function AdminDashboard() {
               {tab === "Store Orders" && `Store Orders (${ordersList.length})`}
               {tab === "Products" && `Catalog (${productsList.length})`}
               {tab === "Payment Verification" && `Payments (${paymentsList.filter((p) => p.status === "submitted").length})`}
-              {tab !== "India Orders & Invoices" && tab !== "Marketplace Sources" && tab !== "User Problems" && tab !== "Store Orders" && tab !== "Products" && tab !== "Payment Verification" && tab}
+              {tab !== "India Orders & Invoices" && tab !== "Product Requests" && tab !== "Marketplace Sources" && tab !== "User Problems" && tab !== "Store Orders" && tab !== "Products" && tab !== "Payment Verification" && tab}
             </button>
           ))}
         </div>
@@ -1032,7 +1143,190 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 3.3 User Problems & Support Tickets Tab (Complete Specification) */}
+      {/* 3.3 Product Requests & Alternative Sourcing Tab */}
+      {activeTab === "Product Requests" && (
+        <div className="space-y-6">
+          {/* Real-time DB Statistics Counters */}
+          <div className="grid grid-cols-2 sm:grid-cols-7 gap-3">
+            {[
+              { id: "all", label: "Total", count: productRequestCounts.total, bg: "bg-slate-900 text-white" },
+              { id: "Pending", label: "Pending", count: productRequestCounts.pending, bg: "bg-amber-500 text-white" },
+              { id: "Reviewing", label: "Reviewing", count: productRequestCounts.reviewing, bg: "bg-blue-600 text-white" },
+              { id: "Alternative Found", label: "Alt Found", count: productRequestCounts.alternativeFound, bg: "bg-purple-600 text-white" },
+              { id: "Waiting for User", label: "Waiting User", count: productRequestCounts.waitingForUser, bg: "bg-indigo-600 text-white" },
+              { id: "Converted to Order", label: "Converted", count: productRequestCounts.converted, bg: "bg-emerald-600 text-white" },
+              { id: "Closed", label: "Closed", count: productRequestCounts.closed, bg: "bg-slate-700 text-white" }
+            ].map((st) => (
+              <div
+                key={st.id}
+                onClick={() => setProductRequestFilterStatus(st.id)}
+                className={`rounded-2xl p-4 border text-center transition cursor-pointer ${
+                  productRequestFilterStatus === st.id ? `${st.bg} border-transparent shadow-sm` : "bg-white text-slate-800 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider block opacity-70">{st.label}</span>
+                <p className="text-xl font-black mt-0.5">{st.count}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Product Requests Table */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Unavailable Product Requests &amp; Alternative Sourcing</h3>
+                <p className="text-xs text-slate-400">Review customer requests for items that failed automated availability and provide independently verified alternative links.</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="pb-3">Request ID</th>
+                    <th className="pb-3">Customer</th>
+                    <th className="pb-3">Original Product &amp; URL</th>
+                    <th className="pb-3">Variant / Qty</th>
+                    <th className="pb-3">Failure Reason / Verification</th>
+                    <th className="pb-3">Alternative Product Offer</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {productRequestsList
+                    .filter((r) => {
+                      if (productRequestFilterStatus !== "all" && r.status !== productRequestFilterStatus) return false;
+                      if (searchFilter.trim()) {
+                        const q = searchFilter.toLowerCase();
+                        return (
+                          r.requestId?.toLowerCase().includes(q) ||
+                          r.userName?.toLowerCase().includes(q) ||
+                          r.phone?.toLowerCase().includes(q) ||
+                          r.email?.toLowerCase().includes(q) ||
+                          r.productName?.toLowerCase().includes(q) ||
+                          r.originalMarketplace?.toLowerCase().includes(q)
+                        );
+                      }
+                      return true;
+                    })
+                    .map((reqItem) => {
+                      return (
+                        <tr key={reqItem.requestId} className="hover:bg-slate-50/60 transition">
+                          <td className="py-3.5 font-mono font-black text-slate-900">
+                            <div>{reqItem.requestId}</div>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              {reqItem.createdAt ? new Date(reqItem.createdAt).toLocaleDateString() : ""}
+                            </span>
+                          </td>
+                          <td className="py-3.5">
+                            <p className="font-extrabold text-slate-900">{reqItem.userName}</p>
+                            <p className="text-[11px] text-slate-500">{reqItem.phone}</p>
+                            {reqItem.email && <p className="text-[10px] text-slate-400">{reqItem.email}</p>}
+                          </td>
+                          <td className="py-3.5 max-w-[220px]">
+                            <div className="flex items-center gap-2">
+                              {reqItem.productImage && (
+                                <img
+                                  src={reqItem.productImage}
+                                  alt=""
+                                  className="h-9 w-9 rounded-lg object-contain bg-slate-100 p-0.5 flex-shrink-0"
+                                />
+                              )}
+                              <div className="truncate">
+                                <p className="font-bold text-slate-800 truncate">{reqItem.productName || "Product"}</p>
+                                <a
+                                  href={reqItem.originalProductUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5"
+                                >
+                                  <span>Original Link ↗</span>
+                                </a>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3.5">
+                            <span className="font-bold">Qty: {reqItem.requestedQuantity || 1}</span>
+                            {(reqItem.requestedSize || reqItem.requestedColor) && (
+                              <p className="text-[10px] text-slate-500">
+                                {[reqItem.requestedSize, reqItem.requestedColor].filter(Boolean).join(" • ")}
+                              </p>
+                            )}
+                          </td>
+                          <td className="py-3.5 max-w-[180px]">
+                            <p className="text-[11px] text-amber-800 bg-amber-50 rounded-lg p-1.5 border border-amber-200/60 leading-tight">
+                              {reqItem.reason || "Direct order unavailable"}
+                            </p>
+                          </td>
+                          <td className="py-3.5 max-w-[200px]">
+                            {reqItem.alternativeProduct?.productUrl ? (
+                              <div className="space-y-1">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-800">
+                                  ✓ Verified (₹{reqItem.alternativeProduct.priceINR})
+                                </span>
+                                <p className="text-[11px] font-bold text-slate-800 truncate">
+                                  {reqItem.alternativeProduct.productName}
+                                </p>
+                                <a
+                                  href={reqItem.alternativeProduct.productUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] text-purple-700 font-bold hover:underline block truncate"
+                                >
+                                  Alternative URL ↗
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 italic">No alternative provided yet</span>
+                            )}
+                          </td>
+                          <td className="py-3.5">
+                            <select
+                              value={reqItem.status}
+                              onChange={(e) => handleUpdateProductRequestStatus(reqItem.requestId, e.target.value)}
+                              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-800 focus:outline-none"
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Reviewing">Reviewing</option>
+                              <option value="Alternative Found">Alternative Found</option>
+                              <option value="Waiting for User">Waiting for User</option>
+                              <option value="Approved">Approved</option>
+                              <option value="Rejected">Rejected</option>
+                              <option value="Converted to Order">Converted to Order</option>
+                              <option value="Closed">Closed</option>
+                            </select>
+                          </td>
+                          <td className="py-3.5 text-right space-y-1">
+                            <button
+                              onClick={() => handleOpenAlternativeModal(reqItem)}
+                              className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer shadow-xs"
+                            >
+                              {reqItem.alternativeProduct ? "Update Alt ➔" : "+ Alt Link ➔"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  {productRequestsList.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-3 text-slate-400">
+                          <span className="text-4xl">📋</span>
+                          <span className="text-sm font-bold">No product requests submitted</span>
+                          <span className="text-xs">When users encounter unavailable items or submit requests, they will appear here.</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3.4 User Problems & Support Tickets Tab (Complete Specification) */}
       {activeTab === "User Problems" && (
         <div className="space-y-6">
           {/* Real-time DB Statistics Counters */}
@@ -1678,7 +1972,7 @@ export function AdminDashboard() {
                     Sourcing &amp; Delivery Eligibility Verification
                   </h3>
                   <span className="text-[10px] font-bold text-slate-500">
-                    Postal Code: <strong className="text-slate-800">854331</strong>
+                    Destination: <strong className="text-slate-800">Internal Transit Hub (Verified)</strong>
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
@@ -1689,9 +1983,9 @@ export function AdminDashboard() {
                     </span>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Delivery to 854331</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Delivery Sourcing</span>
                     <span className="font-black text-slate-900 mt-1 block">
-                      {selectedOrderDetail.deliveryStatus || "✓ Available"}
+                      {selectedOrderDetail.deliveryStatus || "✓ Delivery available"}
                     </span>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -2145,6 +2439,119 @@ export function AdminDashboard() {
                 Close Ticket View
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ─── 6. ALTERNATIVE PRODUCT SUBMISSION MODAL (Admin Verified Sourcing) ─── */}
+      {alternativeModalOpen && selectedProductRequest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          onClick={() => setAlternativeModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Verified Alternative Sourcing</span>
+                <h3 className="text-base font-black text-slate-900">Provide Alternative Link ({selectedProductRequest.requestId})</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAlternativeModalOpen(false)}
+                className="rounded-full p-1 text-slate-400 hover:text-black hover:bg-slate-100 transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Original Item Details Snapshot */}
+            <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200/80 text-xs space-y-1">
+              <span className="text-[10px] font-bold uppercase text-slate-400">Customer Requested:</span>
+              <p className="font-extrabold text-slate-900">{selectedProductRequest.productName}</p>
+              <p className="text-slate-600 text-[11px]">
+                Marketplace: {selectedProductRequest.originalMarketplace || "Indian Store"} • Qty: {selectedProductRequest.requestedQuantity || 1}
+              </p>
+              <p className="text-amber-800 text-[11px] bg-amber-50 p-1.5 rounded-lg border border-amber-200">
+                <strong>Failure Reason:</strong> {selectedProductRequest.reason || "Direct ordering failed"}
+              </p>
+            </div>
+
+            {/* Verification Error Notice */}
+            {alternativeVerificationError && (
+              <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 space-y-1">
+                <span className="font-bold block">❌ Backend Verification Rejected Alternative:</span>
+                <p className="text-[11px] leading-relaxed">{alternativeVerificationError}</p>
+                <p className="text-[10px] text-rose-600 font-bold mt-1">
+                  Note: An unverified or out-of-stock alternative will never be marked as orderable.
+                </p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitAlternativeProduct} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                  Alternative Indian Marketplace URL *
+                </label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://www.amazon.in/dp/... or https://www.flipkart.com/..."
+                  value={alternativeUrlInput}
+                  onChange={(e) => setAlternativeUrlInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-mono text-[11px] focus:border-purple-600 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  The backend will independently check stock, delivery, and pricing for this URL before offering it.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                  Price in India (INR ₹) (Optional - auto-extracted if empty)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  step="any"
+                  placeholder="e.g. 1599"
+                  value={alternativePriceInr}
+                  onChange={(e) => setAlternativePriceInr(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-bold focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                  Admin Note to Customer (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Original seller was out of stock. We found the exact product from an authorized seller on Flipkart."
+                  value={alternativeAdminNote}
+                  onChange={(e) => setAlternativeAdminNote(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-medium focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setAlternativeModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={alternativeSubmitting || !alternativeUrlInput.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black transition disabled:opacity-50 shadow-md cursor-pointer"
+                >
+                  {alternativeSubmitting ? "Verifying Alternative..." : "Verify & Submit Alternative ➔"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

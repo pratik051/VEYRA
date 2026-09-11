@@ -137,10 +137,10 @@ const IndiaOrderSchema = new Schema<IIndiaOrder>(
     paymentTransactionId: { type: String, default: "" },
     orderStatus: { type: String, enum: ORDER_STATUSES, default: "Confirmed", index: true },
     invoiceUrl: { type: String, default: "" },
-    // Sourcing Availability & PIN 854331 Snapshot
+    // Sourcing Availability Snapshot
     stockStatus: { type: String, default: "In Stock" },
-    deliveryStatus: { type: String, default: "Available to 854331" },
-    postalCodeChecked: { type: String, default: "854331" },
+    deliveryStatus: { type: String, default: "Delivery available" },
+    postalCodeChecked: { type: String, default: "" },
     canOrder: { type: Boolean, default: true },
     availabilityCheckedAt: { type: Date, default: Date.now }
   },

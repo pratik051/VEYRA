@@ -75,44 +75,40 @@ export async function POST(req: Request) {
     }
 
     // ── SERVER-SIDE Marketplace URL Validation ───────────────────────────────
-    // We validate that the productUrl belongs to an approved Indian marketplace.
-    // This prevents customers from submitting arbitrary external URLs.
     if (!isValidMarketplaceUrl(productUrl)) {
       return NextResponse.json({
         error: "The product URL must be from a supported Indian marketplace (Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, Noise, etc.)."
       }, { status: 400 });
     }
 
-    // ── FRESH SERVER-SIDE STOCK & PIN 854331 DELIVERY CHECK ─────────────────
-    // The backend must perform a final availability check at the exact moment of order placement.
+    // ── FRESH SERVER-SIDE STOCK & DELIVERY AVAILABILITY RECHECK ───────────────
+    // A fresh verification is performed at the exact moment of order placement.
     const availabilityCheck = await checkProductAvailabilityAndDelivery({
       url: productUrl,
-      postalCode: "854331",
       variant: { size, color, name: productVariant },
       quantity
     });
 
-    if (!availabilityCheck.canOrder) {
+    if (!availabilityCheck.orderable) {
       return NextResponse.json(
         {
-          error: availabilityCheck.message,
+          error: "This product is currently unavailable for ordering. You can request an alternative product link from our admin team.",
           reason: availabilityCheck.reason,
           stockStatus: availabilityCheck.stockStatusText,
           deliveryStatus: availabilityCheck.deliveryStatusText,
-          postalCode: "854331",
-          canOrder: false
+          canOrder: false,
+          orderable: false
         },
         { status: 400 }
       );
     }
 
-    // Auto-detect source ID from URL (server-side, never trust client-sent value alone)
+    // Auto-detect source ID from URL
     const detectedSourceId = getSourceIdFromUrl(productUrl);
     const marketplace = detectedSourceId || clientMarketplace || "indian-marketplace";
     const marketplaceDisplayName = getMarketplaceDisplayName(marketplace);
 
     // ── SERVER-SIDE PRICE CALCULATION ────────────────────────────────────────
-    // Formula: (INR * 1.65) + 20% + 200 delivery. Never trust client-sent amounts.
     const priceCalculation = calculateOrderPrice(rawInrPrice * quantity);
 
     // ── Generate unique identifiers ──────────────────────────────────────────
@@ -202,14 +198,14 @@ export async function POST(req: Request) {
       province,
       postalCode,
       deliveryInstructions,
-      shippingAddress, // Immutable address snapshot preserved forever
-      // ── Marketplace Snapshot (preserved forever) ──
+      shippingAddress,
+      // Marketplace Snapshot
       marketplace,
       sourceProductId: clientSourceProductId || "",
-      productUrl,          // Active Indian marketplace URL
-      originalSourceUrl,   // Original submitted URL
-      verifiedSourceUrl,   // Verified working URL
-      canonicalSourceUrl,  // Canonical platform URL
+      productUrl,
+      originalSourceUrl,
+      verifiedSourceUrl,
+      canonicalSourceUrl,
       productName,
       productImage,
       brand,
@@ -228,17 +224,17 @@ export async function POST(req: Request) {
       paymentTransactionId: paymentTransactionId || (paymentMethod === "FULL_PAYMENT" ? `TXN-${randomBytes(4).toString("hex").toUpperCase()}` : ""),
       orderStatus,
       invoiceUrl,
-      // ── Sourcing Availability & PIN 854331 Snapshot ──
+      // Sourcing Availability Snapshot
       stockStatus: availabilityCheck.stockStatusText,
       deliveryStatus: availabilityCheck.deliveryStatusText,
-      postalCodeChecked: "854331",
+      postalCodeChecked: "Internal Depot",
       canOrder: true,
       availabilityCheckedAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    // ── Save to Database ──────────────────────────────────────────────────────
+    // Save to Database
     try {
       await connectToDatabase();
       await IndiaOrderModel.create(orderPayload);

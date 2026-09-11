@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { VerifyProductResponse } from "@/app/api/verify-product-link/route";
 
 const PLATFORM_DISPLAY_NAMES = [
   "Amazon India",
@@ -11,13 +10,15 @@ const PLATFORM_DISPLAY_NAMES = [
   "AJIO",
   "Meesho",
   "Nykaa",
-  "BigBasket"
+  "Tata CLiQ",
+  "Croma",
+  "boAt"
 ];
 
 type VerifyState =
   | { phase: "idle" }
   | { phase: "loading" }
-  | { phase: "result"; data: VerifyProductResponse; url: string }
+  | { phase: "result"; data: any; url: string }
   | { phase: "error"; message: string };
 
 export function LinkVerifier({ compact = false }: { compact?: boolean }) {
@@ -33,12 +34,12 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
     setState({ phase: "loading" });
 
     try {
-      const res = await fetch("/api/verify-product-link", {
+      const res = await fetch("/api/products/check-availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: trimmed })
       });
-      const data = (await res.json()) as VerifyProductResponse;
+      const data = await res.json();
       setState({ phase: "result", data, url: trimmed });
     } catch {
       setState({
@@ -48,14 +49,23 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
     }
   };
 
-  const handleContinueOrder = (result: VerifyProductResponse, productUrl: string) => {
+  const handleContinueOrder = (result: any, productUrl: string) => {
     const params = new URLSearchParams({
       url: productUrl,
-      ...(result.platform ? { platform: result.platform } : {}),
-      ...(result.platformDisplayName
-        ? { platformName: result.platformDisplayName }
-        : {}),
-      verification: result.status
+      ...(result.product?.source ? { platform: result.product.source } : {}),
+      ...(result.product?.name ? { name: encodeURIComponent(result.product.name) } : {}),
+      ...(result.product?.priceINR ? { inr: String(result.product.priceINR) } : {}),
+      ...(result.product?.sourceProductId ? { sid: result.product.sourceProductId } : {})
+    });
+    router.push(`/request-product?${params.toString()}`);
+  };
+
+  const handleRequestProduct = (result: any, productUrl: string) => {
+    const params = new URLSearchParams({
+      url: productUrl,
+      requestMode: "alternative",
+      ...(result.product?.name ? { name: encodeURIComponent(result.product.name) } : {}),
+      ...(result.product?.priceINR ? { inr: String(result.product.priceINR) } : {})
     });
     router.push(`/request-product?${params.toString()}`);
   };
@@ -75,7 +85,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste product link from Amazon India, Flipkart, Myntra, AJIO…"
+              placeholder="Paste Indian product link from Amazon India, Flipkart, Myntra, boAt…"
               className="flex-1 rounded-2xl border border-neutral-200 bg-white px-4 py-3.5 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 transition"
               required
               autoFocus={!compact}
@@ -83,7 +93,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
             <button
               type="submit"
               disabled={state.phase === "loading" || !url.trim()}
-              className="shrink-0 rounded-2xl bg-black px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 transition"
+              className="shrink-0 rounded-2xl bg-black px-6 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 transition cursor-pointer"
             >
               {state.phase === "loading" ? (
                 <span className="flex items-center gap-2">
@@ -120,8 +130,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
               <span className="font-medium text-neutral-500">
                 {PLATFORM_DISPLAY_NAMES.join(" • ")}
               </span>
-              . Product availability and final pricing are subject to
-              verification.
+              . Product availability and live pricing are verified in real-time.
             </p>
           )}
         </form>
@@ -129,11 +138,11 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
 
       {/* Network error */}
       {state.phase === "error" && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 animate-fade-in">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 animate-fade-in space-y-2">
           <p className="text-sm font-semibold text-red-700">{state.message}</p>
           <button
             onClick={handleReset}
-            className="mt-3 text-xs font-semibold text-red-600 underline"
+            className="text-xs font-semibold text-red-600 underline cursor-pointer"
           >
             Try again
           </button>
@@ -144,7 +153,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
       {state.phase === "result" && (
         <div className="animate-fade-in space-y-3">
           {/* Result A — Available & Orderable */}
-          {state.data.canProceed && state.data.inStock && state.data.deliveryAvailable ? (
+          {state.data.orderable && state.data.inStock && state.data.deliveryAvailable ? (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 space-y-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-start gap-3">
@@ -155,7 +164,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
                     <h3 className="text-sm font-black text-emerald-950">
                       Product Verified &amp; Orderable
                     </h3>
-                    <p className="text-xs text-emerald-800 mt-0.5 font-medium">
+                    <p className="text-xs text-emerald-800 mt-0.5 font-medium line-clamp-1">
                       {state.data.product?.name || "Verified Indian Marketplace Product"}
                     </p>
                   </div>
@@ -180,7 +189,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
                 </div>
                 <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">Delivery to 854331</span>
+                  <span className="font-semibold text-neutral-800">Delivery Available</span>
                 </div>
               </div>
 
@@ -209,59 +218,60 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
             </div>
           ) : (
             /* Result B — Unavailable / Out of Stock / Undeliverable */
-            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-5 space-y-4">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-xs">
-                  ✕
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-bold shadow-xs">
+                  ⚠️
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-red-950">
-                    Product Cannot Be Ordered
+                  <h3 className="text-sm font-black text-amber-950">
+                    Product Unavailable for Direct Ordering
                   </h3>
-                  <p className="mt-1 text-xs text-red-800 leading-relaxed font-medium">
-                    {state.data.message || "This product failed sourcing availability checks."}
+                  <p className="mt-1 text-xs text-amber-800 leading-relaxed font-medium">
+                    {state.data.message || "This product is currently out of stock or unavailable for direct instant checkout."}
                   </p>
                 </div>
               </div>
 
               {/* Status Badges Matrix */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
                   <span className={state.data.verified ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
                     {state.data.verified ? "✓" : "✕"}
                   </span>
                   <span className="font-semibold text-neutral-800">
-                    {state.data.verified ? "Product Found" : "Invalid Product"}
+                    {state.data.verified ? "Product Found" : "Unverified Link"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
-                  <span className={state.data.inStock ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
+                  <span className={state.data.inStock ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
                     {state.data.inStock ? "✓" : "❌"}
                   </span>
                   <span className="font-semibold text-neutral-800">
-                    {state.data.inStock ? "In Stock" : "Out of Stock"}
+                    {state.data.stockStatusText || "Stock Unconfirmed"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
-                  <span className={state.data.deliveryAvailable ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
-                    {state.data.deliveryAvailable ? "✓" : "❌"}
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
+                  <span className={state.data.deliveryAvailable ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
+                    {state.data.deliveryAvailable ? "✓" : "⚠️"}
                   </span>
                   <span className="font-semibold text-neutral-800">
-                    {state.data.deliveryAvailable ? "Delivery Available" : "Unavailable to 854331"}
+                    {state.data.deliveryStatusText || "Delivery Unconfirmed"}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <button
-                  disabled
-                  className="rounded-xl bg-neutral-300 px-5 py-2.5 text-xs font-bold text-neutral-500 cursor-not-allowed"
+                  type="button"
+                  onClick={() => handleRequestProduct(state.data, state.url)}
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-black shadow-sm transition cursor-pointer"
                 >
-                  Order Now (Disabled)
+                  📋 Request Product (Get Alternative Link) →
                 </button>
                 <button
                   onClick={handleReset}
-                  className="rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-neutral-800 transition cursor-pointer"
+                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition cursor-pointer"
                 >
                   Check Another Link
                 </button>

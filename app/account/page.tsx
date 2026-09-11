@@ -323,6 +323,89 @@ function AccountContent() {
     }
   }, []);
 
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
+  const [decliningRequestId, setDecliningRequestId] = useState<string | null>(null);
+
+  const fetchRequests = useCallback(async () => {
+    setRequestsLoading(true);
+    try {
+      const res = await fetch("/api/user/product-requests", {
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.requests)) {
+          setRequests(data.requests);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load product requests:", err);
+    } finally {
+      setRequestsLoading(false);
+    }
+  }, []);
+
+  const handleAcceptAlternative = async (reqItem: any) => {
+    setAcceptingRequestId(reqItem.requestId);
+    try {
+      const defaultAddr = savedAddresses.find((a) => a.isDefault) || savedAddresses[0] || {};
+      const res = await fetch(`/api/user/product-requests/${reqItem.requestId}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          fullName: defaultAddr.fullName || user?.fullName || "Customer",
+          phone: defaultAddr.phone || user?.phone || "",
+          email: defaultAddr.email || user?.email || "",
+          deliveryAddress: defaultAddr.fullAddress || user?.fullAddress || "Direct Nepal Delivery",
+          city: defaultAddr.city || user?.city || "",
+          district: defaultAddr.district || user?.district || "",
+          province: defaultAddr.province || user?.province || "",
+          postalCode: defaultAddr.postalCode || "",
+          paymentMethod: "COD"
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`✓ Alternative product accepted! Order ${data.order?.orderId || ""} created.`, "success");
+        await fetchRequests();
+        await fetchOrders();
+      } else {
+        pushToast(data.error || "Failed to accept alternative product.", "error");
+      }
+    } catch {
+      pushToast("Network error accepting alternative product.", "error");
+    } finally {
+      setAcceptingRequestId(null);
+    }
+  };
+
+  const handleDeclineAlternative = async (reqItem: any) => {
+    if (!confirm("Are you sure you want to decline this alternative product?")) return;
+    setDecliningRequestId(reqItem.requestId);
+    try {
+      const res = await fetch(`/api/user/product-requests/${reqItem.requestId}/decline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin"
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Alternative product offer declined.", "info");
+        await fetchRequests();
+      } else {
+        pushToast(data.error || "Failed to decline alternative.", "error");
+      }
+    } catch {
+      pushToast("Network error declining alternative.", "error");
+    } finally {
+      setDecliningRequestId(null);
+    }
+  };
+
   useEffect(() => {
     loadMe();
   }, [loadMe]);
@@ -331,9 +414,10 @@ function AccountContent() {
     if (user) {
       fetchOrders();
       fetchTickets();
+      fetchRequests();
       loadAddresses();
     }
-  }, [user, fetchOrders, fetchTickets, loadAddresses]);
+  }, [user, fetchOrders, fetchTickets, fetchRequests, loadAddresses]);
 
   const handleCreateTicket = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -1119,7 +1203,7 @@ function AccountContent() {
               <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-base font-black text-slate-900">Custom India Sourcing Requests</h3>
-                  <p className="text-xs text-slate-500">Track quotes generated for custom India links you requested.</p>
+                  <p className="text-xs text-slate-500">Track quotes generated for custom India links or unavailable marketplace products.</p>
                 </div>
                 <Link
                   href="/request-product"
@@ -1129,21 +1213,246 @@ function AccountContent() {
                 </Link>
               </div>
 
-              {requests.length === 0 ? (
+              {requestsLoading ? (
+                <div className="py-12 text-center text-xs text-slate-400">Loading sourcing requests...</div>
+              ) : requests.length === 0 ? (
                 <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300 space-y-3">
                   <p className="text-3xl">📋</p>
                   <h4 className="text-base font-bold text-slate-900">No active sourcing requests</h4>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Found an item on Amazon, Flipkart, Myntra, or boAt? Submit the URL and our concierge team will generate a landed NPR quote.
+                    Found an item on Amazon, Flipkart, Myntra, or boAt that was unavailable for direct ordering? Submit the URL and our concierge team will find and verify an alternative link.
                   </p>
+                  <div className="pt-2">
+                    <Link
+                      href="/request-product"
+                      className="inline-block rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md"
+                    >
+                      Request a Product Now
+                    </Link>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {requests.map((r) => (
-                    <div key={r.requestId} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
-                      <p className="font-bold text-slate-900">{r.productName}</p>
-                    </div>
-                  ))}
+                <div className="space-y-5">
+                  {requests.map((r: any) => {
+                    const hasAlternative = Boolean(r.alternativeProduct && r.alternativeProduct.orderable);
+                    const isConverted = r.status === "Converted to Order" || Boolean(r.convertedOrderId);
+                    const isDeclined = r.customerAction === "declined" || r.status === "Rejected";
+
+                    return (
+                      <div
+                        key={r.requestId}
+                        className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-5"
+                      >
+                        {/* Header */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-xs font-black text-slate-900">{r.requestId}</span>
+                            <span className={`px-2.5 py-0.5 text-[10px] font-black rounded-full border ${
+                              r.status === "Alternative Found" || r.status === "Waiting for User"
+                                ? "bg-purple-100 text-purple-800 border-purple-200"
+                                : r.status === "Converted to Order"
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                : r.status === "Reviewing"
+                                ? "bg-blue-100 text-blue-800 border-blue-200"
+                                : "bg-amber-100 text-amber-800 border-amber-200"
+                            }`}>
+                              {r.status}
+                            </span>
+                            {r.originalMarketplace && (
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 uppercase">
+                                {r.originalMarketplace}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-slate-400">
+                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
+                          </span>
+                        </div>
+
+                        {/* Two Columns: Original Product + Alternative Offer */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                          {/* Left Column: Original Requested Product */}
+                          <div className="rounded-2xl bg-slate-50/80 p-4 border border-slate-100 space-y-3 text-xs">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                              1. Original Requested Item
+                            </span>
+
+                            <div className="flex gap-3">
+                              {r.productImage ? (
+                                <img
+                                  src={r.productImage}
+                                  alt={r.productName}
+                                  className="h-16 w-16 rounded-xl object-contain bg-white border border-slate-200 p-1 flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="h-16 w-16 rounded-xl bg-slate-200 flex items-center justify-center text-xl flex-shrink-0">
+                                  📦
+                                </div>
+                              )}
+                              <div className="space-y-1 min-w-0">
+                                <h4 className="font-extrabold text-slate-900 leading-snug break-words">
+                                  {r.productName || "Indian Marketplace Item"}
+                                </h4>
+                                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 font-medium">
+                                  <span>Qty: {r.requestedQuantity || 1}</span>
+                                  {r.requestedSize && <span>Size: {r.requestedSize}</span>}
+                                  {r.requestedColor && <span>Color: {r.requestedColor}</span>}
+                                  {r.currentKnownPrice ? <span>₹{r.currentKnownPrice} INR</span> : null}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-slate-200/60 space-y-1 text-[11px]">
+                              <div className="truncate">
+                                <span className="text-slate-400">Original URL: </span>
+                                <a
+                                  href={r.originalProductUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-blue-600 font-bold hover:underline"
+                                >
+                                  Open Link ↗
+                                </a>
+                              </div>
+                              {r.reason && (
+                                <p className="text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200/60">
+                                  <strong>Status Note:</strong> {r.reason}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Right Column: Verified Alternative Link from Admin */}
+                          <div className={`rounded-2xl p-4 border space-y-3 text-xs ${
+                            hasAlternative
+                              ? "bg-purple-50/40 border-purple-200 shadow-2xs"
+                              : "bg-slate-50/40 border-dashed border-slate-200"
+                          }`}>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-900 block">
+                                2. Verified Alternative Offer
+                              </span>
+                              {hasAlternative && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                                  ✓ Verified Available
+                                </span>
+                              )}
+                            </div>
+
+                            {hasAlternative ? (
+                              <div className="space-y-3">
+                                <div className="flex gap-3">
+                                  {r.alternativeProduct.productImage ? (
+                                    <img
+                                      src={r.alternativeProduct.productImage}
+                                      alt={r.alternativeProduct.productName}
+                                      className="h-16 w-16 rounded-xl object-contain bg-white border border-purple-200 p-1 flex-shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="h-16 w-16 rounded-xl bg-purple-100 flex items-center justify-center text-xl flex-shrink-0">
+                                      ✨
+                                    </div>
+                                  )}
+                                  <div className="space-y-1 min-w-0">
+                                    <h4 className="font-extrabold text-slate-900 leading-snug break-words">
+                                      {r.alternativeProduct.productName}
+                                    </h4>
+                                    <p className="text-[11px] text-purple-700 font-bold">
+                                      Marketplace: {r.alternativeProduct.marketplace}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 pt-1">
+                                  <div className="p-2 rounded-xl bg-white border border-purple-200">
+                                    <span className="text-[10px] text-slate-400 block font-bold">Price in India</span>
+                                    <span className="font-black text-slate-800">₹{r.alternativeProduct.priceINR} INR</span>
+                                  </div>
+                                  <div className="p-2 rounded-xl bg-white border border-purple-200">
+                                    <span className="text-[10px] text-slate-400 block font-bold">Landed Nepal Price</span>
+                                    <span className="font-black text-red-600">
+                                      {formatNpr(r.alternativeProduct.finalAmountNPR)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1 text-[11px] text-slate-600">
+                                  <div className="flex items-center justify-between">
+                                    <span>Delivery:</span>
+                                    <span className="font-bold text-emerald-700">✓ Delivery available</span>
+                                  </div>
+                                  <div>
+                                    <a
+                                      href={r.alternativeProduct.productUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-blue-600 font-bold hover:underline"
+                                    >
+                                      View Alternative Marketplace Page ↗
+                                    </a>
+                                  </div>
+                                  {r.alternativeProduct.adminNote && (
+                                    <p className="text-slate-700 bg-white p-2 rounded-lg border border-purple-100 mt-1">
+                                      <strong>Admin Note:</strong> {r.alternativeProduct.adminNote}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Acceptance Actions */}
+                                {!isConverted && !isDeclined && (
+                                  <div className="pt-2 border-t border-purple-200/80 flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAcceptAlternative(r)}
+                                      disabled={acceptingRequestId === r.requestId}
+                                      className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 shadow-sm transition active:scale-95 cursor-pointer disabled:opacity-50"
+                                    >
+                                      {acceptingRequestId === r.requestId ? "Processing Order..." : "✓ Accept & Place Order"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeclineAlternative(r)}
+                                      disabled={decliningRequestId === r.requestId}
+                                      className="rounded-xl border border-slate-300 hover:bg-red-50 hover:text-red-600 px-3.5 py-2.5 text-xs font-bold text-slate-600 transition cursor-pointer"
+                                    >
+                                      Decline
+                                    </button>
+                                  </div>
+                                )}
+
+                                {isConverted && (
+                                  <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center justify-between">
+                                    <span>✓ Order Placed: {r.convertedOrderId}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveTab("orders")}
+                                      className="underline hover:text-black font-black"
+                                    >
+                                      View in Orders ➔
+                                    </button>
+                                  </div>
+                                )}
+
+                                {isDeclined && (
+                                  <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 text-[11px] font-medium text-center">
+                                    ✕ This alternative link was declined.
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="py-6 text-center space-y-2 text-slate-400">
+                                <p className="text-2xl">🔍</p>
+                                <p className="font-bold text-slate-700 text-xs">Admin Review in Progress</p>
+                                <p className="text-[11px] max-w-xs mx-auto">
+                                  Our procurement desk is currently searching verified inventory to provide an alternative link. You will see the alternative product card here once found.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
