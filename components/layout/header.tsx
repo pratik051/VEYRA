@@ -6,6 +6,10 @@ import { useCart } from "@/components/providers/cart-provider";
 import { useWishlist } from "@/components/providers/wishlist-provider";
 import { SearchModal } from "@/components/ui/search-modal";
 import { usePathname } from "next/navigation";
+import { MARKETPLACE_METAS } from "@/lib/marketplace-constants";
+import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
+import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+import { categories } from "@/lib/data";
 
 function SearchIcon() {
   return (
@@ -39,14 +43,18 @@ function UserIcon() {
   );
 }
 
-import { MARKETPLACE_METAS } from "@/lib/marketplace-constants";
-import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
-import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  );
+}
 
 export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [marketplaceMenuOpen, setMarketplaceMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { items } = useCart();
   const { ids } = useWishlist();
   const pathname = usePathname();
@@ -60,9 +68,28 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "All Products", href: "/shop" },
+    { name: "India Sourcing", href: "/request-product" },
+    { name: "Track Order", href: "/track-order" },
     { name: "About", href: "/about" },
   ];
 
@@ -75,15 +102,26 @@ export function Header() {
             : "bg-white border-b border-neutral-100"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8 gap-4">
-          {/* Brand Logo with Official Linkova Vector */}
-          <Link href="/" className="group flex items-center gap-2.5 flex-shrink-0">
-            <LinkovaHeaderBrand theme="light" />
-          </Link>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 gap-2 sm:gap-4">
+          {/* Mobile Hamburger Button + Brand Logo */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open mobile navigation menu"
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition active:scale-95"
+            >
+              <MenuIcon />
+            </button>
 
-          {/* Center Navigation Links */}
+            <Link href="/" className="group flex items-center gap-2 flex-shrink-0">
+              <LinkovaHeaderBrand theme="light" />
+            </Link>
+          </div>
+
+          {/* Center Navigation Links (Desktop) */}
           <nav className="hidden md:flex items-center gap-1 bg-neutral-100/70 p-1 rounded-full border border-neutral-200/60">
-            {navLinks.map((link) => {
+            {navLinks.slice(0, 3).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -108,11 +146,11 @@ export function Header() {
           </nav>
 
           {/* Right Controls: Search Bar & Icons */}
-          <div className="flex items-center gap-3">
-            {/* Embedded Neo Search Bar */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Embedded Neo Search Bar (Desktop / Tablet) */}
             <div
               onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center justify-between gap-3 bg-neutral-100/90 hover:bg-neutral-200/70 border border-neutral-200/80 rounded-full px-4 py-2 cursor-pointer transition w-52 md:w-64 text-xs text-neutral-500 hover:border-neutral-300"
+              className="hidden sm:flex items-center justify-between gap-3 bg-neutral-100/90 hover:bg-neutral-200/70 border border-neutral-200/80 rounded-full px-4 py-2 cursor-pointer transition w-44 md:w-60 text-xs text-neutral-500 hover:border-neutral-300"
             >
               <div className="flex items-center gap-2 truncate">
                 <SearchIcon />
@@ -164,18 +202,18 @@ export function Header() {
             <Link
               href="/dashboard"
               aria-label="Account Dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
+              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
             >
               <UserIcon />
             </Link>
           </div>
         </div>
 
-        {/* ── Marketplace Channels Quick Bar ── */}
-        <div className="border-t border-neutral-100 bg-neutral-50/80 hidden sm:block">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 sm:px-6 lg:px-8 overflow-x-auto scrollbar-none text-[11px] font-bold">
+        {/* ── Marketplace Channels Quick Bar (Horizontal Swipeable on all screens) ── */}
+        <div className="border-t border-neutral-100 bg-neutral-50/90">
+          <div className="mx-auto flex max-w-7xl items-center gap-1.5 px-3 sm:px-6 lg:px-8 py-1.5 overflow-x-auto scrollbar-none text-[11px] font-bold">
             <span className="text-neutral-400 font-extrabold uppercase tracking-wider text-[10px] flex-shrink-0 flex items-center gap-1 mr-1">
-              <span>🇮🇳</span> Channels:
+              <span>🇮🇳</span> <span className="hidden xs:inline">Channels:</span>
             </span>
             {MARKETPLACE_METAS.map((m) => {
               const isSelected =
@@ -186,14 +224,14 @@ export function Header() {
                 <Link
                   key={m.id}
                   href={m.shopUrl}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full transition-all text-xs ${
                     isSelected
                       ? "bg-neutral-950 text-white shadow-xs"
                       : "text-neutral-700 hover:text-neutral-950 hover:bg-white border border-transparent hover:border-neutral-200"
                   }`}
                 >
                   <div className="h-3.5 w-auto flex items-center">
-                    <MarketplaceLogo marketplace={m.id} className="h-3 w-auto max-w-[40px]" />
+                    <MarketplaceLogo marketplace={m.id} className="h-3 w-auto max-w-[36px]" />
                   </div>
                   <span>{m.shortName}</span>
                 </Link>
@@ -202,6 +240,136 @@ export function Header() {
           </div>
         </div>
       </header>
+
+      {/* ── Mobile Navigation Drawer ── */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          {/* Backdrop */}
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-fadeIn"
+          />
+
+          {/* Drawer Body */}
+          <div className="relative w-[85vw] max-w-[340px] bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 animate-slideRight">
+            <div className="p-5 space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+                <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                  <LinkovaHeaderBrand theme="light" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                  className="rounded-full p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Search Shortcut */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSearchOpen(true);
+                }}
+                className="w-full flex items-center justify-between gap-3 bg-neutral-100 rounded-2xl px-4 py-3 text-xs font-semibold text-neutral-500 hover:bg-neutral-200 transition"
+              >
+                <div className="flex items-center gap-2">
+                  <SearchIcon />
+                  <span>Search products...</span>
+                </div>
+                <span className="text-[10px] bg-white px-2 py-0.5 rounded-full font-bold text-neutral-400 border border-neutral-200">
+                  Search
+                </span>
+              </button>
+
+              {/* Main Navigation Links */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 px-3 block mb-1">
+                  Menu
+                </span>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                      pathname === link.href
+                        ? "bg-neutral-950 text-white"
+                        : "text-neutral-700 hover:bg-neutral-100"
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    <span className="text-neutral-400">→</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Indian Marketplaces Section */}
+              <div className="space-y-2 pt-2 border-t border-neutral-100">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 px-3 flex items-center gap-1">
+                  <span>🇮🇳</span> Indian Marketplaces
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {MARKETPLACE_METAS.map((m) => (
+                    <Link
+                      key={m.id}
+                      href={m.shopUrl}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 text-xs font-bold text-neutral-800 border border-neutral-100 transition"
+                    >
+                      <div className="h-4 w-5 flex items-center justify-center flex-shrink-0">
+                        <MarketplaceLogo marketplace={m.id} className="h-3 w-auto max-w-[28px]" />
+                      </div>
+                      <span className="truncate text-[11px]">{m.shortName}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Popular Categories */}
+              <div className="space-y-1 pt-2 border-t border-neutral-100">
+                <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 px-3 block mb-1">
+                  Popular Categories
+                </span>
+                <div className="flex flex-wrap gap-1.5 px-1">
+                  {categories.slice(0, 6).map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/shop?category=${encodeURIComponent(cat.name)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[11px] font-bold text-neutral-700 transition"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Account & Sourcing Button */}
+            <div className="p-4 border-t border-neutral-100 space-y-2 bg-neutral-50/50">
+              <Link
+                href="/request-product"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 text-white text-xs font-black shadow-md"
+              >
+                <span>🇮🇳 Paste Any Indian Link</span>
+              </Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white border border-neutral-200 text-neutral-800 text-xs font-bold hover:bg-neutral-100 transition"
+              >
+                <span>👤 My Account &amp; Orders</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Search Modal */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />

@@ -154,7 +154,7 @@ export function ProductCard({ product }: { product: AnyProduct }) {
     <>
       <article className="group relative flex flex-col justify-between rounded-2xl bg-white border border-neutral-100 p-2 sm:p-2.5 transition-all duration-300 hover:shadow-md hover:border-neutral-200">
         {/* Top Image Container */}
-        <div className="relative overflow-hidden rounded-xl bg-neutral-50 flex items-center justify-center p-3 h-52 sm:h-60">
+        <div className="relative overflow-hidden rounded-xl bg-neutral-50 flex items-center justify-center p-2 sm:p-3 h-44 xs:h-52 sm:h-60">
           <Link href={`/product/${product.slug}`} className="relative h-full w-full block">
             <Image
               src={`${product.image || product.images?.[0]}?auto=format&fit=crop&w=600&q=80`}
@@ -166,22 +166,22 @@ export function ProductCard({ product }: { product: AnyProduct }) {
           </Link>
 
           {/* Left Badges Stack */}
-          <div className="absolute left-2.5 top-2.5 flex flex-col gap-1 items-start z-10">
+          <div className="absolute left-2 top-2 sm:left-2.5 sm:top-2.5 flex flex-col gap-1 items-start z-10">
             {mktBadge && (
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9px] uppercase font-black tracking-wider shadow-xs backdrop-blur-md ${mktBadge.color}`}>
-                <MarketplaceLogo marketplace={mktBadge.id} className="h-2.5 w-auto max-w-[36px]" />
-                <span>{mktBadge.name}</span>
+              <span className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 py-0.5 text-[8px] sm:text-[9px] uppercase font-black tracking-wider shadow-xs backdrop-blur-md ${mktBadge.color}`}>
+                <MarketplaceLogo marketplace={mktBadge.id} className="h-2 sm:h-2.5 w-auto max-w-[32px] sm:max-w-[36px]" />
+                <span className="hidden xs:inline">{mktBadge.name}</span>
               </span>
             )}
             {primaryBadge && (
-              <span className="rounded-full bg-neutral-950 px-2 py-0.5 text-[9px] font-black uppercase text-white shadow-xs">
+              <span className="rounded-full bg-neutral-950 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[9px] font-black uppercase text-white shadow-xs">
                 {primaryBadge}
               </span>
             )}
           </div>
 
           {/* Floating Actions (Wishlist & Quick View) */}
-          <div className="absolute right-2.5 top-2.5 flex flex-col gap-1.5 z-10">
+          <div className="absolute right-2 top-2 sm:right-2.5 sm:top-2.5 flex flex-col gap-1.5 z-10">
             <button
               onClick={() => {
                 toggle(product.id || product.slug);
@@ -191,7 +191,7 @@ export function ProductCard({ product }: { product: AnyProduct }) {
                 );
               }}
               aria-label="Wishlist"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-neutral-700 shadow-sm hover:bg-white hover:text-red-500 transition hover:scale-110"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-neutral-700 shadow-sm hover:bg-white hover:text-red-500 transition hover:scale-110 cursor-pointer"
             >
               <HeartIcon filled={isWishlisted} />
             </button>
@@ -199,14 +199,14 @@ export function ProductCard({ product }: { product: AnyProduct }) {
             <button
               onClick={() => setQuickViewOpen(true)}
               aria-label="Quick View"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-neutral-700 shadow-sm hover:bg-white hover:text-neutral-950 transition hover:scale-110"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-neutral-700 shadow-sm hover:bg-white hover:text-neutral-950 transition hover:scale-110 cursor-pointer"
             >
               <EyeIcon />
             </button>
           </div>
 
-          {/* Slide-Up Action Bar */}
-          <div className="absolute bottom-2 left-2 right-2 flex gap-1.5 transition-all duration-300 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+          {/* Desktop Slide-Up Action Bar (Hover Only) */}
+          <div className="hidden sm:flex absolute bottom-2 left-2 right-2 gap-1.5 transition-all duration-300 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
             <Link
               href={orderNowUrl}
               className="flex-1 rounded-xl bg-red-600 py-2 text-center text-[11px] font-black text-white hover:bg-red-700 shadow-md transition"
@@ -223,10 +223,10 @@ export function ProductCard({ product }: { product: AnyProduct }) {
         </div>
 
         {/* Product Meta */}
-        <div className="mt-2.5 space-y-1 px-1 pb-1">
-          <div className="flex items-center justify-between text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
-            <span>{product.category}</span>
-            <span>{product.brand}</span>
+        <div className="mt-2 space-y-1 px-0.5 sm:px-1 pb-1">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+            <span className="truncate max-w-[50%]">{product.category}</span>
+            <span className="truncate max-w-[45%] text-right">{product.brand}</span>
           </div>
 
           <Link href={`/product/${product.slug}`} className="block">
@@ -238,27 +238,27 @@ export function ProductCard({ product }: { product: AnyProduct }) {
           {/* Indian Price & Final NPR Price Display */}
           <div className="pt-0.5 space-y-0.5">
             {product.priceINR ? (
-              <div className="flex items-baseline justify-between text-xs">
-                <span className="text-[11px] text-neutral-500 font-semibold">
+              <div className="flex items-baseline justify-between text-[11px] sm:text-xs">
+                <span className="text-[10px] sm:text-[11px] text-neutral-500 font-semibold">
                   INR: <strong className="text-neutral-700 font-bold">₹{product.priceINR.toLocaleString()}</strong>
                 </span>
                 {product.originalPriceINR && product.originalPriceINR > product.priceINR && (
-                  <span className="text-[10px] text-neutral-400 line-through">
+                  <span className="text-[9px] sm:text-[10px] text-neutral-400 line-through">
                     ₹{product.originalPriceINR.toLocaleString()}
                   </span>
                 )}
               </div>
             ) : null}
 
-            <div className="flex items-baseline justify-between">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] uppercase font-black tracking-wider text-neutral-500">LINKOVA Price:</span>
-                <span className="text-sm sm:text-base font-black text-red-600">
+            <div className="flex items-baseline justify-between gap-1">
+              <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+                <span className="text-[9px] sm:text-[10px] uppercase font-black tracking-wider text-neutral-500">NPR:</span>
+                <span className="text-xs sm:text-base font-black text-red-600">
                   {formatNpr(product.finalAmountNPR || product.price || 0)}
                 </span>
               </div>
               {product.originalPrice && product.originalPrice > (product.price || product.finalAmountNPR || 0) && !product.priceINR && (
-                <span className="text-[11px] text-neutral-400 line-through">
+                <span className="text-[10px] sm:text-[11px] text-neutral-400 line-through">
                   {formatNpr(product.originalPrice)}
                 </span>
               )}
@@ -266,8 +266,18 @@ export function ProductCard({ product }: { product: AnyProduct }) {
           </div>
 
           {/* Ratings */}
-          <div className="pt-1">
+          <div className="pt-0.5">
             <StarRating rating={product.rating || 4.5} reviews={product.reviews || product.reviewCount || 0} />
+          </div>
+
+          {/* Mobile-Only Action Button */}
+          <div className="pt-1.5 sm:hidden">
+            <Link
+              href={orderNowUrl}
+              className="block w-full rounded-lg bg-neutral-900 py-1.5 text-center text-[10px] font-black text-white active:bg-red-600 shadow-2xs transition"
+            >
+              ⚡ Order / View
+            </Link>
           </div>
         </div>
       </article>

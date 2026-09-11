@@ -82,6 +82,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
+      {/* Mobile Admin Nav Strip */}
+      <div className="md:hidden flex items-center gap-1 overflow-x-auto bg-slate-900 border-b border-slate-800 px-3 py-2 text-xs font-semibold no-scrollbar">
+        <Link href="/admin" className="shrink-0 px-3 py-1 rounded-full bg-slate-800 text-white shadow-xs">
+          📊 Admin Dashboard
+        </Link>
+        <Link href="/shop" target="_blank" className="shrink-0 px-3 py-1 rounded-full text-slate-300 hover:text-white bg-slate-800/60">
+          🛍️ Storefront ↗
+        </Link>
+        <Link href="/request-product" target="_blank" className="shrink-0 px-3 py-1 rounded-full text-slate-300 hover:text-white bg-slate-800/60">
+          🇮🇳 Sourcing ↗
+        </Link>
+        <Link href="/account" className="shrink-0 px-3 py-1 rounded-full text-slate-300 hover:text-white bg-slate-800/60">
+          👤 Account
+        </Link>
+      </div>
+
       {/* Main Content Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {children}

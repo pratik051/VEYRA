@@ -55,6 +55,7 @@ function ShopContent() {
   const [minRating, setMinRating] = useState(0);
   const [badgeFilter, setBadgeFilter] = useState("All");
   const [maxPrice, setMaxPrice] = useState(25000);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [marketplaceProducts, setMarketplaceProducts] = useState<AnyProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,10 +300,52 @@ function ShopContent() {
         ))}
       </div>
 
-      {/* Filter Bar */}
-      <div className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 items-end shadow-xs">
-        {/* Search */}
-        <div className="sm:col-span-2">
+      {/* Mobile Filter & Search Toggle Bar */}
+      <div className="md:hidden flex items-center gap-2">
+        <div className="relative flex-1">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search Amazon, Myntra, boAt..."
+            className="w-full rounded-2xl border border-neutral-200 bg-white py-2.5 pl-3.5 pr-8 text-xs font-semibold text-neutral-900 shadow-xs focus:border-black focus:outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 text-xs p-1"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMobileFiltersOpen((prev) => !prev)}
+          className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition shadow-xs cursor-pointer ${
+            mobileFiltersOpen || source !== "All" || category !== "All" || brand !== "All" || badgeFilter !== "All" || minRating > 0 || maxPrice < 25000
+              ? "bg-neutral-950 text-white"
+              : "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+          }`}
+        >
+          <span>⚙️ Filters</span>
+          {(source !== "All" || category !== "All" || brand !== "All" || badgeFilter !== "All" || minRating > 0 || maxPrice < 25000) && (
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-black text-white">
+              !
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Filter Bar (Visible always on Desktop md+, collapsible on Mobile) */}
+      <div
+        className={`${
+          mobileFiltersOpen ? "block" : "hidden md:grid"
+        } grid gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 items-end shadow-xs transition-all`}
+      >
+        {/* Search on Desktop */}
+        <div className="hidden md:block sm:col-span-2">
           <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-500 mb-1">
             Search Products
           </label>
@@ -399,13 +442,19 @@ function ShopContent() {
           </select>
         </div>
 
-        {/* Reset */}
-        <div>
+        {/* Reset / Close */}
+        <div className="flex gap-2">
           <button
             onClick={resetFilters}
-            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 text-xs font-bold text-neutral-600 hover:bg-neutral-100 transition"
+            className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 text-xs font-bold text-neutral-600 hover:bg-neutral-100 transition cursor-pointer"
           >
-            Reset All
+            Reset
+          </button>
+          <button
+            onClick={() => setMobileFiltersOpen(false)}
+            className="md:hidden flex-1 rounded-xl bg-neutral-950 py-2.5 text-xs font-bold text-white transition cursor-pointer"
+          >
+            Apply ({filtered.length})
           </button>
         </div>
       </div>

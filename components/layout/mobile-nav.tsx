@@ -60,7 +60,7 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-black/[0.04] dark:border-white/[0.04] bg-white/95 dark:bg-[#071018] px-2 py-2 backdrop-blur-xl md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-black/[0.04] dark:border-white/[0.04] bg-white/95 dark:bg-[#071018] px-2 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
       {tabs.map((tab) => {
         const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
 
@@ -68,7 +68,7 @@ export function MobileNav() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`relative flex flex-col items-center justify-center rounded-xl px-2 py-2 transition-all duration-200 ${
+            className={`relative flex min-h-[44px] min-w-[48px] flex-col items-center justify-center rounded-xl px-2 py-1 transition-all duration-200 ${
               isActive
                 ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
@@ -82,7 +82,7 @@ export function MobileNav() {
                 </span>
               )}
             </div>
-            <span className={`mt-1 text-[10px] tracking-tight ${isActive ? "font-semibold" : "font-medium"}`}>
+            <span className={`mt-0.5 text-[10px] tracking-tight ${isActive ? "font-semibold" : "font-medium"}`}>
               {tab.label}
             </span>
           </Link>

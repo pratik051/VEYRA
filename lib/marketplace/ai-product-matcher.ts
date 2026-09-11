@@ -425,8 +425,8 @@ export async function verifyCandidateUrlReachability(candidateUrl: string): Prom
     } catch (fetchErr: any) {
       clearTimeout(timeout);
       // If HEAD fails due to CDN restrictions, do structural verification
-      const platform = getPlatformByDomain(parsed.hostname);
-      if (platform && isValidProductUrl(candidateUrl, platform)) {
+      const platform = getSourceIdFromUrl(candidateUrl);
+      if (platform && isValidProductUrl(candidateUrl, platform as any)) {
         return { valid: true, finalUrl: candidateUrl, statusCode: 200 };
       }
       return {

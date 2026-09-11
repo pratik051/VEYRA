@@ -181,14 +181,14 @@ export function SupportChat() {
   };
 
   return (
-    <div className="fixed bottom-5 right-4 z-50 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 z-50">
       {open && (
         <section
           aria-label="LINKOVA Customer Shopping & Order Assistant"
-          className="mb-3 flex h-[min(38rem,calc(100vh-6.5rem))] w-[min(26rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl transition-all"
+          className="mb-2 flex h-[min(36rem,calc(100dvh-9.5rem))] w-[min(26rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl transition-all"
         >
           {/* Header */}
-          <div className="flex items-center justify-between bg-neutral-950 px-5 py-3.5 text-white">
+          <div className="flex items-center justify-between bg-neutral-950 px-4 sm:px-5 py-3 text-white">
             <div className="flex items-center gap-2.5">
               <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-red-600 text-sm font-black shadow-inner">
                 ✨

@@ -170,17 +170,17 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       <div className="mt-6 grid gap-10 lg:grid-cols-12">
         {/* Left Column: Image Gallery */}
         <div className="space-y-4 lg:col-span-6">
-          <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-50 shadow-sm flex items-center justify-center p-6">
+          <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-50 shadow-sm flex items-center justify-center p-3 sm:p-6">
             <Image
               src={`${activeImage || product.image || galleryImages[0]}?auto=format&fit=crop&w=1200&q=85`}
               alt={product.name || product.title || "Product"}
               width={1000}
               height={1000}
               priority
-              className="h-[380px] w-full object-contain sm:h-[480px] transition-transform duration-500 hover:scale-105"
+              className="h-[280px] xs:h-[340px] sm:h-[480px] w-full object-contain transition-transform duration-500 hover:scale-105"
             />
             {isImported && (
-              <span className="absolute top-4 left-4 rounded-full bg-amber-500 text-neutral-950 px-3 py-1 text-xs font-black uppercase shadow-sm">
+              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 rounded-full bg-amber-500 text-neutral-950 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-black uppercase shadow-sm">
                 🇮🇳 {product.source || "India Sourced"}
               </span>
             )}

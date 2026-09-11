@@ -21,6 +21,14 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk"
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover" as const,
+  themeColor: "#0f172a"
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://linkova.com.np"),
   title: {
