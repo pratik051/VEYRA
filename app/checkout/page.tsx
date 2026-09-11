@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import { useCart } from "@/components/providers/cart-provider";
 import { formatNpr, generateId } from "@/lib/utils";
 import { nepalProvinces } from "@/lib/data";
@@ -12,11 +13,16 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
   const [orderId, setOrderId] = useState("");
+  const [confirmedAmount, setConfirmedAmount] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState("eSewa");
+  const [selectedPayment, setSelectedPayment] = useState<"Khalti" | "eSewa" | "MyPay">("eSewa");
   const [paymentInfo, setPaymentInfo] = useState<{ provider?: string; status?: string; redirectUrl?: string } | null>(null);
+  const [transactionCode, setTransactionCode] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
   const { pushToast } = useToast();
 
   useEffect(() => {
@@ -52,6 +58,11 @@ export default function CheckoutPage() {
 
   const delivery = items.length ? (subtotal >= 3000 ? 0 : 200) : 0;
   const total = subtotal + delivery;
+  const paymentMethods: Array<{ id: "Khalti" | "eSewa" | "MyPay"; name: string; desc: string }> = [
+    { id: "Khalti", name: "Khalti", desc: "Pay securely with Khalti QR." },
+    { id: "eSewa", name: "eSewa", desc: "Pay securely with eSewa QR." },
+    { id: "MyPay", name: "MyPay", desc: "Pay securely with MyPay QR." }
+  ];
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -92,6 +103,7 @@ export default function CheckoutPage() {
       }
       const confirmedId = data.orderId || generateId("ORD");
       setOrderId(confirmedId);
+      setConfirmedAmount(data.payment?.amount || total);
       setPaymentInfo(data.payment || null);
       pushToast(`Order ${confirmedId} placed successfully!`, "success");
       clearCart();
@@ -101,6 +113,22 @@ export default function CheckoutPage() {
       setError("Network error occurred. Please try again.");
       setLoading(false);
     }
+  };
+
+  const submitPaymentEvidence = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!screenshot || !transactionCode.trim()) return;
+    setPaymentSubmitting(true);
+    setPaymentMessage("");
+    const form = new FormData();
+    form.append("orderId", orderId);
+    form.append("paymentMethod", selectedPayment);
+    form.append("transactionCode", transactionCode.trim());
+    form.append("screenshot", screenshot);
+    const response = await fetch("/api/payments/submit", { method: "POST", body: form });
+    const data = await response.json();
+    setPaymentSubmitting(false);
+    setPaymentMessage(data.message || data.error || "Unable to submit payment.");
   };
 
   if (orderId) {
@@ -114,7 +142,7 @@ export default function CheckoutPage() {
           <div>
             <h1 className="text-3xl font-extrabold text-neutral-900">Order Confirmed!</h1>
             <p className="mt-2 text-sm text-neutral-500">
-              Thank you for shopping with VEYRA. We are preparing your order for dispatch.
+              Thank you for shopping with LINKOVA. We are preparing your order for dispatch.
             </p>
           </div>
 
@@ -142,18 +170,27 @@ export default function CheckoutPage() {
               <strong className="text-neutral-900">2-4 Business Days</strong>
             </div>
 
-            {selectedPayment === "Bank Transfer" && (
-              <div className="mt-4 rounded-xl border border-neutral-300 bg-white p-4 text-xs space-y-2">
-                <p className="font-bold text-neutral-900">🏦 VEYRA Bank Details for Transfer:</p>
-                <p><strong>Bank:</strong> Nabil Bank Limited (Kathmandu Branch)</p>
-                <p><strong>Account Name:</strong> VEYRA RETAIL NEPAL</p>
-                <p><strong>Account Number:</strong> 01200175089201</p>
-                <p className="text-[11px] text-neutral-500">
-                  Please include your Order ID (<strong>{orderId}</strong>) in the remarks/narration.
-                </p>
-              </div>
-            )}
           </div>
+
+          {!paymentMessage && (
+            <form onSubmit={submitPaymentEvidence} className="rounded-2xl border border-neutral-200 bg-white p-5 text-left space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold">Submit {selectedPayment} Payment</h2>
+                <span className="text-xs font-semibold text-neutral-500">Amount: {formatNpr(confirmedAmount)}</span>
+              </div>
+              <p className="text-xs text-neutral-500">Upload the successful payment screenshot and enter the transaction/reference code. Your evidence will be reviewed by an administrator.</p>
+              <label className="block text-xs font-semibold">Payment Screenshot *
+                <input required type="file" accept="image/png,image/jpeg,image/webp" onChange={(e: ChangeEvent<HTMLInputElement>) => setScreenshot(e.target.files?.[0] || null)} className="mt-1 block w-full text-xs" />
+              </label>
+              <label className="block text-xs font-semibold">Transaction Code / Reference ID *
+                <input required value={transactionCode} onChange={(e) => setTransactionCode(e.target.value)} className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2.5 text-xs" />
+              </label>
+              <button disabled={paymentSubmitting} className="w-full rounded-xl bg-black py-3 text-xs font-bold text-white disabled:opacity-60">
+                {paymentSubmitting ? "Submitting..." : "Submit Payment"}
+              </button>
+            </form>
+          )}
+          {paymentMessage && <p className="rounded-xl bg-emerald-50 p-4 text-xs font-semibold text-emerald-700">{paymentMessage}</p>}
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <Link
@@ -322,29 +359,8 @@ export default function CheckoutPage() {
               2. Payment Method
             </h2>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                {
-                  id: "eSewa",
-                  name: "eSewa Mobile Wallet",
-                  desc: "Instant payment with eSewa digital wallet."
-                },
-                {
-                  id: "Khalti",
-                  name: "Khalti Digital Wallet",
-                  desc: "Quick checkout using Khalti credentials."
-                },
-                {
-                  id: "Bank Transfer",
-                  name: "Direct Bank Transfer / Fonepay",
-                  desc: "Mobile banking or bank account transfer."
-                },
-                {
-                  id: "Cash on Delivery",
-                  name: "Cash on Delivery (COD)",
-                  desc: "Pay in cash upon doorstep delivery in Nepal."
-                }
-              ].map((p) => (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {paymentMethods.map((p) => (
                 <label
                   key={p.id}
                   onClick={() => setSelectedPayment(p.id)}
@@ -368,14 +384,19 @@ export default function CheckoutPage() {
                 </label>
               ))}
             </div>
-
-            {selectedPayment === "Bank Transfer" && (
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-1">
-                <p className="font-bold text-neutral-900">🏦 Transfer Details:</p>
-                <p>Nabil Bank • Acc: 01200175089201 • VEYRA RETAIL NEPAL</p>
-                <p className="text-[11px] text-neutral-500">Scan Fonepay QR or transfer after confirming order.</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-3">
+              <p className="font-bold text-neutral-900">Pay with {selectedPayment}</p>
+              <div className="relative mx-auto h-64 w-64">
+                <Image
+                  src={`/payment-qr/${selectedPayment === "Khalti" ? "khalti" : selectedPayment === "eSewa" ? "esewa" : "mypay"}-qr.png`}
+                  alt={`${selectedPayment} QR code`}
+                  fill
+                  className="rounded-xl object-contain"
+                />
               </div>
-            )}
+              <p className="font-bold">Amount: {formatNpr(total)}</p>
+              <p className="text-neutral-500">Scan the QR code, complete payment, and keep your screenshot and transaction code for submission after the order is created.</p>
+            </div>
           </div>
 
           {error && <p className="rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-600">{error}</p>}
@@ -424,7 +445,7 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-[11px] text-neutral-400 text-center">
-              By placing this order, you agree to VEYRA terms and delivery policies.
+              By placing this order, you agree to LINKOVA terms and delivery policies.
             </p>
           </div>
         </aside>

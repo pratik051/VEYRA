@@ -4,7 +4,7 @@ export default function CancellationPolicyPage() {
   return (
     <PolicyTemplate
       title="Cancellation Policy"
-      summary="Understand how order cancellations, quotation declines, and pre-dispatch modifications work at VEYRA."
+      summary="Understand how order cancellations, quotation declines, and pre-dispatch modifications work at LINKOVA."
       sections={[
         {
           heading: "In-Stock Catalog Orders",

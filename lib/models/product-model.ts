@@ -5,7 +5,7 @@ const ProductSchema = new Schema(
     slug: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true },
     category: { type: String, required: true },
-    brand: { type: String, default: "VEYRA" },
+    brand: { type: String, default: "LINKOVA" },
     price: { type: Number, required: true },
     originalPrice: { type: Number, required: true },
     rating: { type: Number, default: 0 },

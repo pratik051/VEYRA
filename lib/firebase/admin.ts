@@ -1,7 +1,8 @@
-import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { cert, getApp, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
 let adminApp: ReturnType<typeof initializeApp> | null = null;
+const ADMIN_APP_NAME = "linkova-auth";
 
 function buildServiceAccountFromEnv() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
@@ -21,15 +22,20 @@ function buildServiceAccountFromEnv() {
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const encodedPrivateKey = process.env.FIREBASE_PRIVATE_KEY_BASE64;
 
-  if (projectId && clientEmail && privateKey) {
+  if (projectId && clientEmail && (privateKey || encodedPrivateKey)) {
+    const resolvedPrivateKey = privateKey
+      ? privateKey.replace(/\\n/g, "\n")
+      : Buffer.from(encodedPrivateKey!, "base64").toString("utf8");
+
     return {
       type: "service_account",
       project_id: projectId,
       private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || "",
-      private_key: privateKey.replace(/\\n/g, "\n"),
+      private_key: resolvedPrivateKey,
       client_email: clientEmail,
       client_id: process.env.FIREBASE_CLIENT_ID || "",
       auth_uri: "https://accounts.google.com/o/oauth2/auth",
@@ -47,13 +53,17 @@ export function getFirebaseAdminApp() {
 
   const serviceAccount = buildServiceAccountFromEnv();
   if (serviceAccount) {
-    adminApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount as any) });
+    adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
+      ? getApp(ADMIN_APP_NAME)
+      : initializeApp({ credential: cert(serviceAccount as any) }, ADMIN_APP_NAME);
     return adminApp;
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS || projectId) {
-    adminApp = getApps().length ? getApps()[0] : initializeApp();
+    adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
+      ? getApp(ADMIN_APP_NAME)
+      : initializeApp(undefined, ADMIN_APP_NAME);
     return adminApp;
   }
 

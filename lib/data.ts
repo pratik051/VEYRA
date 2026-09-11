@@ -37,7 +37,7 @@ export const products: Product[] = [
       "Battery Life": "8h earbuds + 24h case (32h total)",
       "Charging": "USB-C Fast Charging + Qi Wireless",
       "Water Resistance": "IPX5 Sweat & Splash Proof",
-      "Warranty": "6 Months VEYRA Verified Warranty"
+      "Warranty": "6 Months LINKOVA Verified Warranty"
     },
     image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46",
     gallery: [
@@ -601,7 +601,7 @@ export const sampleReviews: Review[] = [
     rating: 5,
     date: "2 days ago",
     title: "Incredible ANC and bass response!",
-    content: "Ordered these earbuds via VEYRA. Arrived in Kathmandu in perfect condition. The noise cancellation easily matches earphones twice the price.",
+    content: "Ordered these earbuds via LINKOVA. Arrived in Kathmandu in perfect condition. The noise cancellation easily matches earphones twice the price.",
     verified: true
   },
   {
@@ -611,7 +611,7 @@ export const sampleReviews: Review[] = [
     rating: 5,
     date: "1 week ago",
     title: "Super comfortable for walking all day",
-    content: "Very lightweight sneakers and genuine build quality. Sizing fits true to European standard. Fast delivery service by VEYRA.",
+    content: "Very lightweight sneakers and genuine build quality. Sizing fits true to European standard. Fast delivery service by LINKOVA.",
     verified: true
   },
   {
@@ -635,7 +635,7 @@ export const coupons: Coupon[] = [
     description: "10% off on your order (Minimum order Rs. 1,500)"
   },
   {
-    code: "VEYRA500",
+    code: "LINKOVA500",
     discountType: "fixed",
     amount: 500,
     minOrder: 3500,

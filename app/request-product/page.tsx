@@ -3,10 +3,9 @@
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/providers/toast-provider";
-import { categories, supportedPlatforms } from "@/lib/data";
+import { formatNpr } from "@/lib/utils";
 import Link from "next/link";
 
-// Platform ID → display name mapping (client-safe, no PIN)
 const PLATFORM_DISPLAY: Record<string, string> = {
   "amazon-india": "Amazon India",
   flipkart: "Flipkart",
@@ -26,29 +25,66 @@ function detectPlatformFromUrl(val: string): string {
   if (low.includes("ajio.com")) return "AJIO";
   if (low.includes("nykaa.com")) return "Nykaa";
   if (low.includes("bigbasket.com")) return "BigBasket";
+  if (low.startsWith("http://") || low.startsWith("https://")) return "Indian Online Store";
   return "";
 }
 
-function RequestProductForm() {
+function RequestProductFlow() {
   const searchParams = useSearchParams();
   const { pushToast } = useToast();
 
-  const [requestId, setRequestId] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [detectedPlatform, setDetectedPlatform] = useState("");
+  // Wizard Steps: 1: Link -> 2: Verification -> 3: Details & INR -> 4: Payment -> 5: Confirmed
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+
+  // Step 1 & 2: Link & Verification State
   const [productUrl, setProductUrl] = useState("");
-  const [verificationBanner, setVerificationBanner] = useState<{
-    type: "success" | "warning";
-    text: string;
+  const [detectedPlatform, setDetectedPlatform] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+  // Step 3: Customer & Product Details
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [province, setProvince] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
+
+  const [productName, setProductName] = useState("");
+  const [productVariant, setProductVariant] = useState("");
+  const [size, setSize] = useState("");
+  const [color, setColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [inrPrice, setInrPrice] = useState<string>("");
+  const [sourceProductId, setSourceProductId] = useState("");  // from marketplace product
+
+  // Step 4: Server Calculation & Payment
+  const [calculatingPrice, setCalculatingPrice] = useState(false);
+  const [finalNprAmount, setFinalNprAmount] = useState<number | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "FULL_PAYMENT">("COD");
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+
+  // Step 5: Confirmed Order Details
+  const [confirmedOrder, setConfirmedOrder] = useState<{
+    orderId: string;
+    invoiceNumber: string;
+    invoiceUrl: string;
+    finalAmountNPR: number;
+    paymentMethod: string;
+    paymentStatus: string;
   } | null>(null);
 
-  // Pre-fill from URL params (set by LinkVerifier on homepage)
+  // Pre-fill from URL params if passed from product page or LinkVerifier
   useEffect(() => {
     const urlParam = searchParams.get("url") ?? "";
     const platformParam = searchParams.get("platform") ?? "";
     const platformNameParam = searchParams.get("platformName") ?? "";
-    const verificationParam = searchParams.get("verification") ?? "";
+    const inrParam = searchParams.get("inr") ?? "";
+    const nameParam = searchParams.get("name") ?? "";
+    const sourceProductIdParam = searchParams.get("sid") ?? "";
 
     if (urlParam) {
       setProductUrl(urlParam);
@@ -57,363 +93,593 @@ function RequestProductForm() {
         (platformParam ? PLATFORM_DISPLAY[platformParam] : "") ||
         detectPlatformFromUrl(urlParam);
       if (detected) setDetectedPlatform(detected);
-    }
-
-    if (verificationParam === "manual_required" || verificationParam === "available") {
-      setVerificationBanner({
-        type: "success",
-        text:
-          platformNameParam
-            ? `${platformNameParam} product link detected. Our team will verify and provide an all-inclusive price estimate.`
-            : "Product link received. Our team will verify and provide an all-inclusive price estimate."
-      });
+      if (inrParam) setInrPrice(inrParam);
+      if (nameParam) setProductName(decodeURIComponent(nameParam));
+      if (sourceProductIdParam) setSourceProductId(sourceProductIdParam);
+      setIsVerified(true);
+      setStep(3);
     }
   }, [searchParams]);
 
-  const handleUrlChange = (val: string) => {
-    setProductUrl(val);
-    setDetectedPlatform(detectPlatformFromUrl(val));
-  };
-
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const fullName = String(form.get("fullName") || "").trim();
-    const phone = String(form.get("phone") || "").trim();
-    const url = productUrl.trim();
-
-    if (!fullName || !phone || !url) {
-      setError("Please fill in Full Name, Phone Number, and Product URL.");
-      pushToast("Please complete required fields.", "error");
+  // Handle URL Verification
+  const handleVerifyUrl = () => {
+    const trimmed = productUrl.trim();
+    if (!trimmed || (!trimmed.startsWith("http://") && !trimmed.startsWith("https://"))) {
+      pushToast("Please enter a valid product link URL starting with https://", "error");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    setVerifying(true);
+    setTimeout(() => {
+      const platform = detectPlatformFromUrl(trimmed);
+      setDetectedPlatform(platform || "Indian E-Commerce Store");
+      setIsVerified(true);
+      setVerifying(false);
+      setStep(3);
+      pushToast("Product link verified successfully! Please enter order details.", "success");
+    }, 600);
+  };
 
+  // Recalculate price whenever INR or Quantity changes
+  const handleProceedToPayment = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!fullName.trim() || !phone.trim() || !deliveryAddress.trim()) {
+      pushToast("Please fill in your full name, phone number, and delivery address.", "error");
+      return;
+    }
+
+    const rawInr = Number(inrPrice);
+    if (isNaN(rawInr) || rawInr <= 0) {
+      pushToast("Please enter the exact positive INR amount (₹) shown on the product website.", "error");
+      return;
+    }
+
+    setCalculatingPrice(true);
     try {
-      const response = await fetch("/api/request-product", {
+      const res = await fetch("/api/india-order/calculate-price", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          phone,
-          email: String(form.get("email") || "").trim(),
-          deliveryLocation: String(form.get("deliveryLocation") || "").trim(),
-          productUrl: url,
-          productName: String(form.get("productName") || "").trim(),
-          productCategory: String(form.get("productCategory") || "").trim(),
-          detectedPlatform,
-          preferredSize: String(form.get("preferredSize") || "").trim(),
-          preferredColor: String(form.get("preferredColor") || "").trim(),
-          quantity: Number(form.get("quantity") || 1),
-          additionalNotes: String(form.get("additionalNotes") || "").trim(),
-          maximumBudget: String(form.get("maximumBudget") || "").trim(),
-          preferredDeliveryTime: String(form.get("preferredDeliveryTime") || "").trim(),
-          status: "Pending"
-        })
+        body: JSON.stringify({ indianPriceINR: rawInr * quantity })
       });
 
-      if (response.ok) {
-        const data = (await response.json()) as { requestId: string };
-        setRequestId(data.requestId);
-        pushToast("Request submitted successfully!", "success");
+      const data = await res.json();
+      if (res.ok && data.finalAmountNPR) {
+        setFinalNprAmount(data.finalAmountNPR);
+        setStep(4);
       } else {
-        // Generate local request ID as fallback
-        const fallbackId = `VEYRA-REQ-${Math.floor(10000 + Math.random() * 90000)}`;
-        setRequestId(fallbackId);
-        pushToast("Request received. ID generated.", "success");
+        pushToast(data.error || "Unable to calculate price.", "error");
       }
     } catch {
-      const fallbackId = `VEYRA-REQ-${Math.floor(10000 + Math.random() * 90000)}`;
-      setRequestId(fallbackId);
-      pushToast("Request submitted.", "success");
+      pushToast("Failed to connect to calculation server.", "error");
     } finally {
-      setLoading(false);
+      setCalculatingPrice(false);
     }
   };
 
-  // Success screen
-  if (requestId) {
-    return (
-      <div className="mx-auto max-w-lg text-center space-y-6 py-12">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">
-          ✓
-        </div>
-        <div>
-          <h2 className="text-2xl font-extrabold text-neutral-900">Request Received</h2>
-          <p className="mt-2 text-sm text-neutral-500">
-            Your product request has been successfully submitted to VEYRA.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 space-y-2">
-          <span className="block text-xs font-bold uppercase text-neutral-400">Your Request ID</span>
-          <span className="block text-2xl font-black font-mono text-neutral-900 tracking-wide">
-            {requestId}
-          </span>
-          <p className="text-xs text-neutral-500 leading-relaxed pt-1">
-            Save this ID to check your request status anytime. Our team will verify the product and contact you with availability and pricing within <strong>2–4 hours</strong> during business hours.
-          </p>
-        </div>
-        <div className="flex justify-center gap-3">
-          <Link
-            href="/track-order"
-            className="rounded-xl bg-black px-6 py-2.5 text-xs font-bold text-white hover:bg-neutral-800 transition"
-          >
-            Track Request Status
-          </Link>
-          <Link
-            href="/shop"
-            className="rounded-xl border border-neutral-300 px-6 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition"
-          >
-            Browse VEYRA Store
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Submit Order (COD or Full Payment)
+  const handleFinalOrderSubmit = async () => {
+    setSubmittingOrder(true);
+    const rawInr = Number(inrPrice);
+
+    try {
+      const res = await fetch("/api/india-order/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          fullName,
+          phone,
+          email,
+          deliveryAddress,
+          city,
+          district,
+          province,
+          postalCode,
+          deliveryInstructions,
+          productUrl,
+          productName: productName || "Indian Marketplace Sourced Product",
+          productVariant,
+          size,
+          color,
+          quantity,
+          indianPriceINR: rawInr,
+          paymentMethod,
+          sourceProductId: sourceProductId || ""
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.order) {
+        setConfirmedOrder(data.order);
+        setStep(5);
+        pushToast(
+          paymentMethod === "FULL_PAYMENT"
+            ? "Payment verified & order placed successfully!"
+            : "Cash on Delivery order confirmed!",
+          "success"
+        );
+      } else {
+        pushToast(data.error || "Order placement failed.", "error");
+      }
+    } catch {
+      pushToast("Server error placing order.", "error");
+    } finally {
+      setSubmittingOrder(false);
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      {/* Verification Banner — shown when user arrives from LinkVerifier */}
-      {verificationBanner && (
-        <div
-          className={`rounded-2xl border px-5 py-4 text-sm font-medium animate-fade-in ${
-            verificationBanner.type === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-amber-200 bg-amber-50 text-amber-800"
-          }`}
-        >
-          {verificationBanner.type === "success" ? "✓ " : "⚠ "}
-          {verificationBanner.text}
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      {/* Header & Step Indicator */}
+      <div className="text-center space-y-3 mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-200">
+          🇮🇳 India-to-Nepal Sourcing Facilitator
         </div>
-      )}
+        <h1 className="font-display text-3xl sm:text-4xl font-black text-neutral-950">
+          Request Any Product from India
+        </h1>
+        <p className="text-xs sm:text-sm text-neutral-500 max-w-lg mx-auto leading-relaxed">
+          Paste product links from Amazon India, Flipkart, Myntra, or any marketplace. We calculate clear landed Nepal prices and deliver directly to your doorstep.
+        </p>
 
-      <form onSubmit={onSubmit} className="space-y-8">
-        {/* Customer Information */}
-        <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-card space-y-5">
-          <h2 className="text-base font-bold text-neutral-900 border-b border-neutral-100 pb-3">
-            Customer Information
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Full Name *
-              </label>
-              <input
-                name="fullName"
-                required
-                placeholder="Your full name"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
+        {/* Step Progress Bar */}
+        <div className="flex items-center justify-center gap-2 pt-4">
+          {[
+            { num: 1, label: "Link" },
+            { num: 2, label: "Verify" },
+            { num: 3, label: "Order Form" },
+            { num: 4, label: "Payment" },
+            { num: 5, label: "Receipt" }
+          ].map((s) => (
+            <div key={s.num} className="flex items-center gap-2">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition-all ${
+                  step === s.num
+                    ? "bg-neutral-950 text-white shadow-md scale-110"
+                    : step > s.num
+                    ? "bg-emerald-600 text-white"
+                    : "bg-neutral-100 text-neutral-400"
+                }`}
+              >
+                {step > s.num ? "✓" : s.num}
+              </div>
+              <span className={`text-[11px] font-bold hidden sm:inline ${step === s.num ? "text-neutral-950" : "text-neutral-400"}`}>
+                {s.label}
+              </span>
+              {s.num < 5 && <div className="h-0.5 w-4 sm:w-8 bg-neutral-200" />}
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Phone Number *
-              </label>
-              <input
-                name="phone"
-                type="tel"
-                required
-                placeholder="9800000000"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Email Address
-              </label>
-              <input
-                name="email"
-                type="email"
-                placeholder="your@email.com"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Nepal Delivery Address *
-              </label>
-              <input
-                name="deliveryLocation"
-                required
-                placeholder="City, District, Province"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Product Information */}
-        <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-card space-y-5">
-          <h2 className="text-base font-bold text-neutral-900 border-b border-neutral-100 pb-3">
-            Product Information
-          </h2>
-
-          {/* URL Input with platform detection */}
-          <div>
-            <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-              Product URL *
+      {/* ─── STEP 1 & 2: PASTE PRODUCT LINK & VERIFY ─── */}
+      {(step === 1 || step === 2) && (
+        <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
+          <div className="space-y-2">
+            <label className="block text-xs font-extrabold uppercase text-neutral-800 tracking-wider">
+              Paste Indian Product Link URL *
             </label>
             <div className="relative">
               <input
                 type="url"
                 value={productUrl}
-                onChange={(e) => handleUrlChange(e.target.value)}
-                required
-                placeholder="https://www.amazon.in/dp/B09XYZ1234"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 pr-36 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
+                onChange={(e) => setProductUrl(e.target.value)}
+                placeholder="https://www.amazon.in/dp/... or https://www.flipkart.com/..."
+                className="w-full rounded-2xl border border-neutral-300 px-4 py-3.5 text-xs sm:text-sm font-medium focus:border-neutral-950 focus:outline-none pr-28 shadow-2xs"
               />
-              {detectedPlatform && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black px-2.5 py-1 text-[10px] font-bold text-white whitespace-nowrap">
-                  ✓ {detectedPlatform}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={handleVerifyUrl}
+                disabled={verifying || !productUrl.trim()}
+                className="absolute right-2 top-2 bottom-2 px-5 rounded-xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 disabled:opacity-40 transition shadow-sm"
+              >
+                {verifying ? "Checking..." : "Verify Link →"}
+              </button>
             </div>
-            <p className="mt-1.5 text-[11px] text-neutral-400">
-              Paste a direct product page URL from:{" "}
-              {supportedPlatforms.map((p) => p.name).join(", ")}
+            <p className="text-[11px] text-neutral-400">
+              Supported stores: Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, BigBasket, and more.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Product Name
-              </label>
-              <input
-                name="productName"
-                placeholder="e.g. Sony WH-1000XM5 Headphones"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Category
-              </label>
-              <select
-                name="productCategory"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
+          {/* Supported Store Badges */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100">
+            <span className="text-[11px] font-bold text-neutral-400">Stores:</span>
+            {["Amazon.in", "Flipkart", "Myntra", "AJIO", "Meesho", "Nykaa"].map((store) => (
+              <span
+                key={store}
+                className="px-2.5 py-1 rounded-full bg-neutral-100 text-[10px] font-bold text-neutral-600"
               >
-                <option value="">Select category…</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {store}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── STEP 3: CUSTOMER & PRODUCT DETAILS (WITH INR AMOUNT) ─── */}
+      {step === 3 && (
+        <form onSubmit={handleProceedToPayment} className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
             <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Quantity
-              </label>
-              <input
-                name="quantity"
-                type="number"
-                defaultValue={1}
-                min={1}
-                max={10}
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
+              <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider">✓ Link Verified</span>
+              <h2 className="font-display text-xl font-black text-neutral-950">
+                Order Request Details ({detectedPlatform})
+              </h2>
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Preferred Size
-              </label>
-              <input
-                name="preferredSize"
-                placeholder="e.g. Medium / 8.5 / 42"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Preferred Color / Variant
-              </label>
-              <input
-                name="preferredColor"
-                placeholder="e.g. Midnight Black"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-                Maximum Budget (NPR)
-              </label>
-              <input
-                name="maximumBudget"
-                placeholder="e.g. Rs. 15,000"
-                className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-              />
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="text-xs font-bold text-neutral-400 hover:text-neutral-900 underline"
+            >
+              Change URL
+            </button>
+          </div>
+
+          {/* Product Information */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400">1. Product Information</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">
+                  Product Name / Title
+                </label>
+                <input
+                  type="text"
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
+                  placeholder="e.g. Sony WH-1000XM5 Wireless Noise Canceling Headphones"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">
+                  Size / Fit (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={size}
+                  onChange={(e) => setSize(e.target.value)}
+                  placeholder="e.g. Medium, US 9, Free Size"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">
+                  Color / Variant (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  placeholder="e.g. Midnight Black, Silver"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">
+                  Quantity *
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-bold focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              {/* Exact INR Product Price */}
+              <div>
+                <label className="block text-[11px] font-black uppercase text-red-600 mb-1">
+                  Exact Indian Price (INR ₹) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 font-black text-neutral-500">₹</span>
+                  <input
+                    type="number"
+                    min={1}
+                    step="any"
+                    required
+                    value={inrPrice}
+                    onChange={(e) => setInrPrice(e.target.value)}
+                    placeholder="e.g. 2000"
+                    className="w-full rounded-xl border-2 border-red-200 pl-8 p-2.5 font-black text-sm text-neutral-900 focus:border-red-600 focus:outline-none shadow-2xs"
+                  />
+                </div>
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  Enter the exact price in Indian Rupees (₹) as shown on the website.
+                </p>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">
-              Additional Notes
+          {/* Customer Information */}
+          <div className="space-y-4 pt-4 border-t border-neutral-100">
+            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400">2. Customer &amp; Delivery Details</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Pratik Sharma"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Phone Number (Nepal) *</label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 9801234567"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. customer@example.com"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">City / Town *</label>
+                <input
+                  type="text"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Kathmandu, Pokhara, Biratnagar"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Delivery Address *</label>
+                <input
+                  type="text"
+                  required
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="e.g. House 42, Baluwatar Marg, Ward 4"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Province</label>
+                <input
+                  type="text"
+                  value={province}
+                  onChange={(e) => setProvince(e.target.value)}
+                  placeholder="e.g. Bagmati Province"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Special Delivery Instructions</label>
+                <input
+                  type="text"
+                  value={deliveryInstructions}
+                  onChange={(e) => setDeliveryInstructions(e.target.value)}
+                  placeholder="e.g. Call before delivery, leave at reception"
+                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="px-5 py-2.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-600 hover:bg-neutral-50"
+            >
+              ← Back
+            </button>
+            <button
+              type="submit"
+              disabled={calculatingPrice}
+              className="px-8 py-3.5 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-neutral-800 disabled:opacity-40 transition shadow-md"
+            >
+              {calculatingPrice ? "Calculating Price..." : "Calculate Price & Choose Payment →"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* ─── STEP 4: TOTAL PAYABLE AMOUNT & PAYMENT METHOD (NO HIDDEN FORMULA) ─── */}
+      {step === 4 && finalNprAmount && (
+        <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
+          <div className="border-b border-neutral-100 pb-4">
+            <span className="text-[10px] font-bold uppercase text-amber-700 tracking-wider">Step 4: Final Review &amp; Payment</span>
+            <h2 className="font-display text-2xl font-black text-neutral-950">
+              Confirm Your Order
+            </h2>
+          </div>
+
+          {/* Clean Order Summary Box */}
+          <div className="rounded-2xl bg-neutral-50 p-5 space-y-3 text-xs">
+            <div className="flex justify-between font-bold text-neutral-900 border-b border-neutral-200/60 pb-2">
+              <span>Product:</span>
+              <span className="text-right truncate max-w-[240px]">{productName || "Sourced Item"} (Qty: {quantity})</span>
+            </div>
+            <div className="flex justify-between text-neutral-600">
+              <span>Entered Indian Price:</span>
+              <span>₹{Number(inrPrice).toLocaleString()} INR</span>
+            </div>
+            <div className="flex justify-between text-neutral-600">
+              <span>Delivery To:</span>
+              <span className="text-right truncate max-w-[240px]">{deliveryAddress}, {city}</span>
+            </div>
+
+            {/* Total Payable Amount (Clean, no hidden formula) */}
+            <div className="flex items-center justify-between pt-3 border-t-2 border-dashed border-neutral-300">
+              <div>
+                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider block">Total Amount Payable:</span>
+                <span className="text-[11px] text-neutral-400">All-inclusive landed price delivered to your address</span>
+              </div>
+              <span className="font-display text-2xl sm:text-3xl font-black text-red-600">
+                {formatNpr(finalNprAmount)}
+              </span>
+            </div>
+          </div>
+
+          {/* Payment Method Selector */}
+          <div className="space-y-3 pt-2">
+            <label className="block text-xs font-extrabold uppercase text-neutral-800 tracking-wider">
+              Select Payment Option *
             </label>
-            <textarea
-              name="additionalNotes"
-              rows={3}
-              placeholder="Any specific requirements, seller preferences, or important notes…"
-              className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition"
-            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Option 1: Cash on Delivery */}
+              <div
+                onClick={() => setPaymentMethod("COD")}
+                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-1.5 ${
+                  paymentMethod === "COD"
+                    ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
+                    : "border-neutral-200 hover:border-neutral-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-neutral-900">💵 Cash on Delivery (COD)</span>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "COD" ? "border-neutral-950 bg-neutral-950" : "border-neutral-300"}`}>
+                    {paymentMethod === "COD" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </div>
+                </div>
+                <p className="text-[11px] text-neutral-500">
+                  Pay {formatNpr(finalNprAmount)} in cash directly to the courier upon delivery in Nepal.
+                </p>
+              </div>
+
+              {/* Option 2: Full Online Payment */}
+              <div
+                onClick={() => setPaymentMethod("FULL_PAYMENT")}
+                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-1.5 ${
+                  paymentMethod === "FULL_PAYMENT"
+                    ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
+                    : "border-neutral-200 hover:border-neutral-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-neutral-900">💳 Full Online Payment</span>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "FULL_PAYMENT" ? "border-neutral-950 bg-neutral-950" : "border-neutral-300"}`}>
+                    {paymentMethod === "FULL_PAYMENT" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </div>
+                </div>
+                <p className="text-[11px] text-neutral-500">
+                  Pay {formatNpr(finalNprAmount)} now via eSewa, Khalti, or Mobile Banking for priority dispatch.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
+            <button
+              type="button"
+              onClick={() => setStep(3)}
+              className="px-5 py-2.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-600 hover:bg-neutral-50"
+            >
+              ← Back to Details
+            </button>
+            <button
+              type="button"
+              onClick={handleFinalOrderSubmit}
+              disabled={submittingOrder}
+              className="px-8 py-3.5 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-red-600 disabled:opacity-40 transition shadow-md hover:scale-105"
+            >
+              {submittingOrder ? "Processing Order..." : `Confirm & Place Order (${formatNpr(finalNprAmount)}) →`}
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Disclaimer */}
-        <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs leading-relaxed text-neutral-500">
-          <strong className="text-neutral-700">Important:</strong> Submitting this form is free and carries no obligation to purchase. Final pricing depends on current product price, exchange rates, international shipping, applicable Nepal customs/taxes, handling, and VEYRA service fee. A detailed quotation will be sent to you before any payment is required.
-        </div>
-
-        {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs font-semibold text-red-700">
-            {error}
+      {/* ─── STEP 5: ORDER CONFIRMATION & PRINTABLE INVOICE ─── */}
+      {step === 5 && confirmedOrder && (
+        <div className="rounded-3xl border border-emerald-200 bg-white p-6 sm:p-10 shadow-sm text-center space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-2xl font-black">
+            ✓
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-2xl bg-black py-4 text-sm font-bold text-white shadow-md hover:bg-neutral-800 disabled:opacity-60 transition"
-        >
-          {loading ? "Submitting Request…" : "Submit Product Request →"}
-        </button>
-      </form>
+          <div className="space-y-1.5">
+            <h2 className="font-display text-2xl sm:text-3xl font-black text-neutral-950">
+              Order Confirmed Successfully!
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-500">
+              Thank you for ordering with LINKOVA Nepal. Your request has been assigned to our India procurement desk.
+            </p>
+          </div>
+
+          {/* Details Pill */}
+          <div className="rounded-2xl bg-neutral-50 p-5 max-w-md mx-auto text-xs space-y-2 text-left border border-neutral-100">
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Order ID:</span>
+              <span className="font-mono font-black text-neutral-900">{confirmedOrder.orderId}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Invoice Number:</span>
+              <span className="font-mono font-bold text-neutral-900">{confirmedOrder.invoiceNumber}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Payment Method:</span>
+              <span className="font-bold text-neutral-900">{confirmedOrder.paymentMethod === "FULL_PAYMENT" ? "Full Online Payment" : "Cash on Delivery"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Payment Status:</span>
+              <span className="font-bold text-emerald-600">{confirmedOrder.paymentStatus}</span>
+            </div>
+            <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold text-neutral-900">
+              <span>Total Amount:</span>
+              <span className="text-red-600">{formatNpr(confirmedOrder.finalAmountNPR)}</span>
+            </div>
+          </div>
+
+          {/* Action Buttons: View Invoice & Back to Store */}
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={confirmedOrder.invoiceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-neutral-800 transition shadow-md"
+            >
+              <span>🖨️ View &amp; Print Official Invoice</span>
+              <span>↗</span>
+            </a>
+
+            <Link
+              href="/"
+              className="px-6 py-3 rounded-full border border-neutral-300 text-neutral-800 text-xs sm:text-sm font-bold hover:bg-neutral-50 transition"
+            >
+              Return to Storefront
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function RequestProductPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
-      {/* Header */}
-      <div className="text-center max-w-xl mx-auto space-y-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold">
-          India Product Sourcing
-        </span>
-        <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">
-          Request a Product
-        </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
-          Found something you like in India? Send us the product link and we&apos;ll check availability and provide you with an estimated price.
-        </p>
-      </div>
-
-      <Suspense
-        fallback={
-          <div className="mx-auto max-w-3xl space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-48 rounded-3xl animate-shimmer"
-              />
-            ))}
-          </div>
-        }
-      >
-        <RequestProductForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="p-12 text-center text-xs text-neutral-400">Loading Order System...</div>}>
+      <RequestProductFlow />
+    </Suspense>
   );
 }

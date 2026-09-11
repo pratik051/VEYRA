@@ -1,5 +1,5 @@
 /**
- * VEYRA Sourcing Platform Registry — SERVER ONLY
+ * LINKOVA Sourcing Platform Registry — SERVER ONLY
  *
  * This file must NEVER be imported by any client component.
  * The INDIA_SOURCE_PIN environment variable is accessed only within
@@ -41,6 +41,7 @@ export function getSourcePin(): string {
 export const APPROVED_DOMAINS = new Set([
   "amazon.in",
   "www.amazon.in",
+  "amzn.in",
   "flipkart.com",
   "www.flipkart.com",
   "myntra.com",
@@ -57,9 +58,78 @@ export const APPROVED_DOMAINS = new Set([
   "www.tatacliq.com",
   "croma.com",
   "www.croma.com",
+  "boat-lifestyle.com",
+  "www.boat-lifestyle.com",
+  "gonoise.com",
+  "www.gonoise.com",
   "reliancedigital.in",
   "www.reliancedigital.in"
 ]);
+
+/** Map from domain root → provider ID used in MarketplaceProduct.source */
+export const DOMAIN_TO_SOURCE_ID: Record<string, string> = {
+  "amazon.in": "amazon-india",
+  "amzn.in": "amazon-india",
+  "flipkart.com": "flipkart",
+  "myntra.com": "myntra",
+  "ajio.com": "ajio",
+  "meesho.com": "meesho",
+  "nykaa.com": "nykaa",
+  "bigbasket.com": "bigbasket",
+  "tatacliq.com": "tatacliq",
+  "croma.com": "croma",
+  "boat-lifestyle.com": "boat",
+  "gonoise.com": "noise",
+  "reliancedigital.in": "reliance-digital"
+};
+
+/** Human-readable marketplace display names */
+export const SOURCE_DISPLAY_NAMES: Record<string, string> = {
+  "amazon-india": "Amazon India",
+  "flipkart": "Flipkart",
+  "myntra": "Myntra",
+  "ajio": "AJIO",
+  "meesho": "Meesho",
+  "nykaa": "Nykaa",
+  "bigbasket": "BigBasket",
+  "tatacliq": "Tata CLiQ",
+  "croma": "Croma",
+  "boat": "boAt",
+  "noise": "Noise",
+  "reliance-digital": "Reliance Digital"
+};
+
+/**
+ * Returns true if the URL belongs to an approved Indian marketplace.
+ * Used by order create API and verify-product-link API.
+ */
+export function isValidMarketplaceUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return APPROVED_DOMAINS.has(hostname) || APPROVED_DOMAINS.has(`www.${hostname}`);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns the source ID for a given URL (e.g. "amazon-india"), or null if not supported.
+ */
+export function getSourceIdFromUrl(url: string): string | null {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return DOMAIN_TO_SOURCE_ID[hostname] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns a human-readable marketplace name for a sourceId.
+ */
+export function getMarketplaceDisplayName(sourceId: string): string {
+  return SOURCE_DISPLAY_NAMES[sourceId] ?? "Indian Marketplace";
+}
 
 /**
  * Platform registry — modular design so new platforms can be added

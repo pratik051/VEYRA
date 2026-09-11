@@ -6,6 +6,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        linkova: {
+          bg: "#fcfcfd",
+          surface: "#ffffff",
+          "surface-2": "#f5f5f5",
+          "surface-3": "#eaeaea",
+          text: "#111114",
+          "text-dark": "#0a0a0b",
+          gold: "#C9A84C",
+          "gold-light": "#E8C97A",
+          "gold-pale": "#f5d98a",
+          "gold-dark": "#b8912e",
+          "gold-dim": "#8a6520",
+          muted: "#6e6e80",
+          border: "rgba(0,0,0,0.06)",
+          "border-gold": "rgba(201,168,76,0.25)"
+        },
         veyra: {
           bg: "#fcfcfd",
           surface: "#ffffff",
@@ -33,8 +49,8 @@ const config: Config = {
         header: "0 1px 0 rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.04)"
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["'Space Grotesk'", "Inter", "system-ui", "sans-serif"]
+        sans: ["var(--font-inter)", "Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["var(--font-space-grotesk)", "'Space Grotesk'", "Inter", "system-ui", "sans-serif"]
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",

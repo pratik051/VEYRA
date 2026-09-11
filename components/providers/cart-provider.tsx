@@ -20,7 +20,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("veyra_cart") || "[]");
+      const saved = JSON.parse(localStorage.getItem("linkova_cart") || localStorage.getItem("veyra_cart") || "[]");
       if (Array.isArray(saved)) setItems(saved);
     } catch (e) {
       console.error(e);
@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const save = (newItems: CartItem[]) => {
     setItems(newItems);
     try {
-      localStorage.setItem("veyra_cart", JSON.stringify(newItems));
+      localStorage.setItem("linkova_cart", JSON.stringify(newItems));
     } catch (e) {
       console.error(e);
     }

@@ -3,6 +3,8 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { CartModel } from "@/lib/models/cart-model";
 
+export const dynamic = "force-dynamic";
+
 type CartItemRecord = {
   _id: unknown;
   productId: string;

@@ -4,7 +4,7 @@ export default function ShippingPolicyPage() {
   return (
     <PolicyTemplate
       title="Shipping & Delivery Policy"
-      summary="VEYRA delivers across all 7 provinces of Nepal. Learn about our delivery timelines, shipping rates, and dispatch procedures."
+      summary="LINKOVA delivers across all 7 provinces of Nepal. Learn about our delivery timelines, shipping rates, and dispatch procedures."
       sections={[
         {
           heading: "Delivery Areas & Coverage",
@@ -20,7 +20,7 @@ export default function ShippingPolicyPage() {
         },
         {
           heading: "Tracking Your Order",
-          content: "Once your package is handed over to our logistics partner, a tracking number and real-time status updates are provided in your VEYRA account and via SMS/WhatsApp."
+          content: "Once your package is handed over to our logistics partner, a tracking number and real-time status updates are provided in your LINKOVA account and via SMS/WhatsApp."
         }
       ]}
     />

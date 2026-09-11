@@ -1,10 +1,10 @@
-# VEYRA API Specification (v1 Draft)
+# LINKOVA API Specification (v1 Draft)
 
-This document defines implementation-ready backend API contracts for VEYRA.
+This document defines implementation-ready backend API contracts for LINKOVA.
 
 - Base URL: `/api`
 - Content-Type: `application/json`
-- Auth (current): session cookie `veyra_session` (httpOnly)
+- Auth (current): session cookie `linkova_session` (httpOnly)
 - Auth (future optional): bearer token support can be added without changing payload schemas
 
 ## 1) Authentication and Accounts
@@ -46,7 +46,7 @@ This document defines implementation-ready backend API contracts for VEYRA.
   "password": "strong-password"
 }
 ```
-- Success `200` returns user object and sets `veyra_session`.
+- Success `200` returns user object and sets `linkova_session`.
 - Errors: `400`, `401`.
 
 ### POST `/auth/logout`
@@ -56,7 +56,7 @@ This document defines implementation-ready backend API contracts for VEYRA.
 
 ### POST `/auth/refresh`
 - Purpose: Rotate session token and extend session expiry for active user.
-- Auth: Logged-in user (valid `veyra_session`)
+- Auth: Logged-in user (valid `linkova_session`)
 - Success `200`:
 ```json
 {
@@ -204,7 +204,7 @@ This document defines implementation-ready backend API contracts for VEYRA.
 ```json
 {
   "message": "Order Confirmed!",
-  "orderId": "VEYRA-ORD-12345",
+  "orderId": "LINKOVA-ORD-12345",
   "paymentStatus": "Pending",
   "orderStatus": "Order Placed",
   "payment": {}
@@ -222,7 +222,7 @@ This document defines implementation-ready backend API contracts for VEYRA.
 ```json
 {
   "message": "Your request has been received...",
-  "requestId": "VEYRA-REQ-12345",
+  "requestId": "LINKOVA-REQ-12345",
   "status": "Pending"
 }
 ```
@@ -313,14 +313,14 @@ This document defines implementation-ready backend API contracts for VEYRA.
 - Request:
 ```json
 {
-  "orderId": "VEYRA-ORD-12345",
+  "orderId": "LINKOVA-ORD-12345",
   "contact": "98XXXXXXXX"
 }
 ```
 - Success `200`:
 ```json
 {
-  "orderId": "VEYRA-ORD-12345",
+  "orderId": "LINKOVA-ORD-12345",
   "currentStep": "Order Placed",
   "timeline": []
 }
@@ -376,7 +376,7 @@ Recommended additional dashboard endpoints:
 
 ## Implementation Notes for Next Task Handoff
 
-1. Keep all auth/session routes cookie-compatible with current `veyra_session`.
+1. Keep all auth/session routes cookie-compatible with current `linkova_session`.
 2. Add customer-facing `/products`, `/products/{slug}`, `/categories` if missing.
 3. Add server-side cart endpoints before advanced checkout orchestration.
 4. For verification pipeline, use explicit request status transitions and audit timestamps.

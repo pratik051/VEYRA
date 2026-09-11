@@ -6,13 +6,13 @@ export default function AboutPage() {
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8 space-y-16">
       {/* Hero Section */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">About VEYRA</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">About LINKOVA</span>
         <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 sm:text-5xl">
           More Than Shopping. <br />
           <span className="gold-text-gradient">It&apos;s Your Choice.</span>
         </h1>
         <p className="text-sm sm:text-base leading-relaxed text-neutral-600">
-          VEYRA is built to make it easier for customers in Nepal to discover fashion, accessories, technology and useful everyday products from India and other available global sources.
+          LINKOVA is built to make it easier for customers in Nepal to discover fashion, accessories, technology and useful everyday products from India and other available global sources.
         </p>
       </div>
 
@@ -21,7 +21,7 @@ export default function AboutPage() {
         <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100 shadow-card">
           <Image
             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80"
-            alt="VEYRA Story & Vision"
+            alt="LINKOVA Story & Vision"
             width={800}
             height={600}
             className="h-80 w-full object-cover"
@@ -29,12 +29,12 @@ export default function AboutPage() {
         </div>
 
         <div className="space-y-4 text-xs sm:text-sm leading-relaxed text-neutral-700">
-          <h2 className="text-2xl font-bold text-neutral-900">Why VEYRA Exists</h2>
+          <h2 className="text-2xl font-bold text-neutral-900">Why LINKOVA Exists</h2>
           <p>
             For shoppers across Kathmandu, Pokhara, Biratnagar, and all 7 provinces of Nepal, finding authentic lifestyle accessories, modern streetwear, compact gadgets, and specific marketplace items from India used to involve complex logistics, uncertainty, and hidden fees.
           </p>
           <p>
-            VEYRA bridges that gap. We offer a curated in-stock catalog of verified essentials and wearables, coupled with a dedicated <strong>Request From India</strong> concierge where you can paste any product URL from Amazon India, Flipkart, Myntra, or Meesho to receive an all-inclusive doorstep quote.
+            LINKOVA bridges that gap. We offer a curated in-stock catalog of verified essentials and wearables, coupled with a dedicated <strong>Request From India</strong> concierge where you can paste any product URL from Amazon India, Flipkart, Myntra, or Meesho to receive an all-inclusive doorstep quote.
           </p>
           <div className="pt-2">
             <Link

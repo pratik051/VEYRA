@@ -16,7 +16,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("veyra_wishlist") || "[]");
+      const saved = JSON.parse(localStorage.getItem("linkova_wishlist") || localStorage.getItem("veyra_wishlist") || "[]");
       if (Array.isArray(saved)) setIds(saved);
     } catch (e) {
       console.error(e);
@@ -26,7 +26,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const save = (newIds: string[]) => {
     setIds(newIds);
     try {
-      localStorage.setItem("veyra_wishlist", JSON.stringify(newIds));
+      localStorage.setItem("linkova_wishlist", JSON.stringify(newIds));
     } catch (e) {
       console.error(e);
     }

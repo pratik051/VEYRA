@@ -1,5 +1,5 @@
 {
-  "name": "veyra",
+  "name": "linkova",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate:user-model": "node scripts/migrations/user-model-migration.js",
+    "set-admin": "node scripts/set-admin.js",
     "test:node": "node tests/run-quote-utils-test.js",
     "test": "vitest"
   },

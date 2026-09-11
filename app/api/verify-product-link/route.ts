@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
         status: "unsupported_platform",
         platform: null,
         platformDisplayName: null,
-        message: `This platform is not currently supported. VEYRA can source products from: ${supportedNames}.`,
+        message: `This platform is not currently supported. LINKOVA can source products from: ${supportedNames}.`,
         canProceed: false,
         canRequestManual: false
       },
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
    * the client.
    *
    * Automatic API-based availability checking is not performed because:
-   * 1. It would require bypassing CAPTCHA / anti-bot systems — which VEYRA
+   * 1. It would require bypassing CAPTCHA / anti-bot systems — which LINKOVA
    *    explicitly does NOT do.
    * 2. Platform Terms of Service prohibit automated scraping.
    *
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
       status: "manual_required",
       platform: platform.id,
       platformDisplayName: platform.displayName,
-      message: `We detected a ${platform.displayName} product link. VEYRA will verify availability and provide you with an all-inclusive price estimate. Submit your request and our team will respond within 2–4 hours.`,
+      message: `We detected a ${platform.displayName} product link. LINKOVA will verify availability and provide you with an all-inclusive price estimate. Submit your request and our team will respond within 2–4 hours.`,
       canProceed: true,
       canRequestManual: true
     },

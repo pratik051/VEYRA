@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { TopBanner } from "@/components/layout/top-banner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CartProvider } from "@/components/providers/cart-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { BackToTop } from "@/components/ui/back-to-top";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter"
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk"
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://veyra.com.np"),
+  metadataBase: new URL("https://linkova.com.np"),
   title: {
-    default: "VEYRA — Your Style. Your Essentials. | Nepal",
-    template: "%s | VEYRA"
+    default: "LINKOVA — Your Style. Your Essentials. | Nepal",
+    template: "%s | LINKOVA"
   },
   description: "Nepal's modern lifestyle shopping & India-to-Nepal product ordering platform. Discover fashion, tech accessories, wearables & essentials.",
   keywords: [
-    "VEYRA",
+    "LINKOVA",
     "Nepal online shopping",
     "Buy from Amazon India in Nepal",
     "Order Flipkart products in Nepal",
@@ -25,33 +40,27 @@ export const metadata: Metadata = {
     "India to Nepal delivery"
   ],
   openGraph: {
-    title: "VEYRA — Your Style. Your Essentials.",
+    title: "LINKOVA — Your Style. Your Essentials.",
     description: "Discover fashion, tech accessories & essentials in Nepal or request direct products from Indian marketplaces.",
     type: "website",
     locale: "en_NP",
-    siteName: "VEYRA"
+    siteName: "LINKOVA"
   }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="flex min-h-screen flex-col bg-veyra-bg text-veyra-text antialiased">
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className="flex min-h-screen flex-col bg-white text-neutral-900 antialiased selection:bg-red-500 selection:text-white">
         <WishlistProvider>
           <ToastProvider>
             <CartProvider>
+              <TopBanner />
               <Header />
               <main className="flex-1 pb-16 md:pb-0">{children}</main>
               <Footer />
               <MobileNav />
+              <BackToTop />
             </CartProvider>
           </ToastProvider>
         </WishlistProvider>

@@ -1,12 +1,16 @@
 {
+  "/shop/page": "app/shop/page.js",
   "/account/page": "app/account/page.js",
+  "/login/page": "app/login/page.js",
+  "/request-product/page": "app/request-product/page.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
   "/page": "app/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/admin/orders/[id]/route": "app/api/admin/orders/[id]/route.js",
-  "/api/admin/product-requests/route": "app/api/admin/product-requests/route.js",
+  "/api/marketplace/products/route": "app/api/marketplace/products/route.js",
+  "/api/user/orders/route": "app/api/user/orders/route.js",
   "/api/admin/products/route": "app/api/admin/products/route.js",
   "/api/admin/orders/route": "app/api/admin/orders/route.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/admin/india-orders/route": "app/api/admin/india-orders/route.js",
+  "/api/admin/marketplace/status/route": "app/api/admin/marketplace/status/route.js",
+  "/api/admin/payments/route": "app/api/admin/payments/route.js",
   "/admin/page": "app/admin/page.js"
 }

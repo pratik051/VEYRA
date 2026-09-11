@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { ProductModel } from "@/lib/models/product-model";
 import { products as staticProducts } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 type ProductRecord = {
   _id?: unknown;
   id?: string;
@@ -36,7 +38,7 @@ function toProductView(item: ProductRecord) {
     slug: String(item.slug ?? ""),
     name: String(item.name ?? ""),
     category: String(item.category ?? ""),
-    brand: String(item.brand ?? "VEYRA"),
+    brand: String(item.brand ?? "LINKOVA"),
     price: Number(item.price ?? 0),
     originalPrice: Number(item.originalPrice ?? 0),
     rating: Number(item.rating ?? 0),
@@ -57,10 +59,14 @@ function toProductView(item: ProductRecord) {
 }
 
 export async function GET(_: Request, { params }: { params: { slug: string } }) {
-  await connectToDatabase();
-  const product = await ProductModel.findOne({ slug: params.slug }).lean<ProductRecord | null>();
-  if (product) {
-    return NextResponse.json({ product: toProductView(product) });
+  try {
+    await connectToDatabase();
+    const product = await ProductModel.findOne({ slug: params.slug }).lean<ProductRecord | null>();
+    if (product) {
+      return NextResponse.json({ product: toProductView(product) });
+    }
+  } catch (error) {
+    console.warn("Database product detail query failed, falling back to static:", error);
   }
 
   const staticProduct = staticProducts.find((item) => item.slug === params.slug);

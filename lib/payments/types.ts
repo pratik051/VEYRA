@@ -1,4 +1,4 @@
-export type PaymentProvider = "eSewa" | "Khalti" | "Bank Transfer" | "Cash on Delivery";
+export type PaymentProvider = "eSewa" | "Khalti" | "MyPay" | "Bank Transfer" | "Cash on Delivery";
 
 export type PaymentInitiationInput = {
   orderId: string;

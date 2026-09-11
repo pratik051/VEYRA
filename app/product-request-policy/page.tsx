@@ -8,7 +8,7 @@ export default function ProductRequestPolicyPage() {
       sections={[
         {
           heading: "Independent Facilitator Disclaimer",
-          content: "VEYRA operates as an independent shopping facilitator and freight concierge in Nepal. We do not claim official partnership with Amazon India, Flipkart, Myntra, Meesho, Ajio, or Tata CLiQ unless explicitly stated. All third-party logos and trademarks belong to their respective owners."
+          content: "LINKOVA operates as an independent shopping facilitator and freight concierge in Nepal. We do not claim official partnership with Amazon India, Flipkart, Myntra, Meesho, Ajio, or Tata CLiQ unless explicitly stated. All third-party logos and trademarks belong to their respective owners."
         },
         {
           heading: "Prohibited & Restricted Items",
@@ -16,7 +16,7 @@ export default function ProductRequestPolicyPage() {
         },
         {
           heading: "Quotation Components",
-          content: "Every custom quote provided by VEYRA includes: Indian marketplace price converted at current exchange rate, international transit freight, estimated Nepal customs duty, handling/packaging fee, and domestic Nepal delivery."
+          content: "Every custom quote provided by LINKOVA includes: Indian marketplace price converted at current exchange rate, international transit freight, estimated Nepal customs duty, handling/packaging fee, and domestic Nepal delivery."
         },
         {
           heading: "Quality Check & Inspection",

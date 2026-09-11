@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return routes.map((route) => ({
-    url: `https://veyra.example${route}`,
+    url: `https://linkova.com.np${route}`,
     lastModified: new Date()
   }));
 }

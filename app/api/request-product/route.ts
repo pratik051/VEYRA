@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     status: "Pending"
   });
   return NextResponse.json({
-    message: "Your request has been received. VEYRA will review the product and contact you with availability and estimated pricing.",
+    message: "Your request has been received. LINKOVA will review the product and contact you with availability and estimated pricing.",
     requestId,
     status: "Pending"
   });

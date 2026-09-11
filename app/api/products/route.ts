@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { ProductModel } from "@/lib/models/product-model";
 import { products as staticProducts } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 type ProductView = {
   id: string;
   slug: string;
@@ -72,7 +74,7 @@ function toProductView(item: ProductRecord): ProductView {
     slug: String(item.slug ?? ""),
     name: String(item.name ?? ""),
     category: String(item.category ?? ""),
-    brand: String(item.brand ?? "VEYRA"),
+    brand: String(item.brand ?? "LINKOVA"),
     price: Number(item.price ?? 0),
     originalPrice: Number(item.originalPrice ?? 0),
     rating: Number(item.rating ?? 0),
@@ -119,7 +121,7 @@ function filterStaticProducts(items: ProductView[], q: string, category: string,
 }
 
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
+  const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "";
   const category = searchParams.get("category") ?? "";
   const sort = (searchParams.get("sort") ?? "newest") as ProductSort;
@@ -133,51 +135,56 @@ export async function GET(req: NextRequest) {
   const isValidSort = sort === "newest" || sort === "price_asc" || sort === "price_desc" || sort === "trending";
   const resolvedSort: ProductSort = isValidSort ? sort : "newest";
 
-  await connectToDatabase();
-
-  const filters: Record<string, unknown> = {};
-  if (category && category.toLowerCase() !== "all") {
-    filters.category = new RegExp(`^${category.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
-  }
-  if (typeof minPrice === "number" || typeof maxPrice === "number") {
-    const priceFilter: Record<string, number> = {};
-    if (typeof minPrice === "number" && Number.isFinite(minPrice)) priceFilter.$gte = minPrice;
-    if (typeof maxPrice === "number" && Number.isFinite(maxPrice)) priceFilter.$lte = maxPrice;
-    filters.price = priceFilter;
-  }
-  if (q.trim()) {
-    const search = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-    filters.$or = [{ name: search }, { category: search }, { brand: search }, { tags: search }];
-  }
-
   const skip = (page - 1) * limit;
-  const sortQuery: Record<string, 1 | -1> = {};
-  if (resolvedSort === "price_asc") sortQuery.price = 1;
-  else if (resolvedSort === "price_desc") sortQuery.price = -1;
-  else if (resolvedSort === "trending") {
-    sortQuery.trending = -1;
-    sortQuery.reviews = -1;
-    sortQuery.createdAt = -1;
-  } else {
-    sortQuery.newArrival = -1;
-    sortQuery.createdAt = -1;
-  }
 
-  const [total, dbItems] = await Promise.all([
-    ProductModel.countDocuments(filters),
-    ProductModel.find(filters).sort(sortQuery).skip(skip).limit(limit).lean<ProductRecord[]>()
-  ]);
+  try {
+    await connectToDatabase();
 
-  if (total > 0) {
-    return NextResponse.json({
-      items: dbItems.map(toProductView),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    });
+    const filters: Record<string, unknown> = {};
+    if (category && category.toLowerCase() !== "all") {
+      filters.category = new RegExp(`^${category.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+    }
+    if (typeof minPrice === "number" || typeof maxPrice === "number") {
+      const priceFilter: Record<string, number> = {};
+      if (typeof minPrice === "number" && Number.isFinite(minPrice)) priceFilter.$gte = minPrice;
+      if (typeof maxPrice === "number" && Number.isFinite(maxPrice)) priceFilter.$lte = maxPrice;
+      filters.price = priceFilter;
+    }
+    if (q.trim()) {
+      const search = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filters.$or = [{ name: search }, { category: search }, { brand: search }, { tags: search }];
+    }
+
+    const sortQuery: Record<string, 1 | -1> = {};
+    if (resolvedSort === "price_asc") sortQuery.price = 1;
+    else if (resolvedSort === "price_desc") sortQuery.price = -1;
+    else if (resolvedSort === "trending") {
+      sortQuery.trending = -1;
+      sortQuery.reviews = -1;
+      sortQuery.createdAt = -1;
+    } else {
+      sortQuery.newArrival = -1;
+      sortQuery.createdAt = -1;
+    }
+
+    const [total, dbItems] = await Promise.all([
+      ProductModel.countDocuments(filters),
+      ProductModel.find(filters).sort(sortQuery).skip(skip).limit(limit).lean<ProductRecord[]>()
+    ]);
+
+    if (total > 0) {
+      return NextResponse.json({
+        items: dbItems.map(toProductView),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
+    }
+  } catch (error) {
+    console.warn("Database product query failed, using static catalog:", error);
   }
 
   const staticViewItems: ProductView[] = staticProducts.map((item) => ({

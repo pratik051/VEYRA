@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/constants";
 import { getSessionUserByToken } from "@/lib/auth/store";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   await connectToDatabase();
   const token = cookies().get(AUTH_COOKIE_NAME)?.value;
