@@ -9,6 +9,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/providers/toast-provider";
 
+interface SavedAddress {
+  _id?: string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  province: string;
+  district: string;
+  city: string;
+  ward?: string;
+  fullAddress: string;
+  landmark?: string;
+  postalCode?: string;
+  country?: string;
+  label?: string;
+  isDefault?: boolean;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
@@ -25,6 +42,28 @@ export default function CheckoutPage() {
   const [paymentMessage, setPaymentMessage] = useState("");
   const { pushToast } = useToast();
 
+  // Saved Addresses State
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<SavedAddress | null>(null);
+  const [isCustomAddress, setIsCustomAddress] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
+
+  // Manual / New Address Form State
+  const [manualForm, setManualForm] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    province: nepalProvinces[2], // Bagmati
+    district: "",
+    city: "",
+    ward: "",
+    fullAddress: "",
+    landmark: "",
+    postalCode: "",
+    label: "Home"
+  });
+
   useEffect(() => {
     if (!items.length) {
       setIsAuthReady(true);
@@ -32,25 +71,60 @@ export default function CheckoutPage() {
     }
 
     let isMounted = true;
-    const checkAuth = async () => {
+    const initAuthAndAddresses = async () => {
       try {
-        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const authRes = await fetch("/api/auth/me", { cache: "no-store" });
         if (!isMounted) return;
 
-        if (!response.ok) {
+        if (!authRes.ok) {
           router.replace("/account?tab=Security%20%26%20Auth");
           return;
+        }
+
+        const authData = await authRes.json();
+        const user = authData.user;
+        if (user) {
+          setManualForm((prev) => ({
+            ...prev,
+            fullName: user.fullName || "",
+            phone: user.phone || "",
+            email: user.email || "",
+            province: user.province || nepalProvinces[2],
+            district: user.district || "",
+            city: user.city || "",
+            ward: user.ward || "",
+            fullAddress: user.fullAddress || "",
+            landmark: user.landmark || ""
+          }));
+        }
+
+        // Fetch user addresses
+        const addrRes = await fetch("/api/user/addresses", { cache: "no-store" });
+        if (addrRes.ok) {
+          const addrData = await addrRes.json();
+          if (addrData.success && Array.isArray(addrData.addresses) && addrData.addresses.length > 0) {
+            setSavedAddresses(addrData.addresses);
+            const def = addrData.defaultAddress || addrData.addresses[0];
+            setSelectedAddress(def);
+            setIsCustomAddress(false);
+          } else {
+            setIsCustomAddress(true);
+            setSaveAsDefault(true);
+          }
+        } else {
+          setIsCustomAddress(true);
+          setSaveAsDefault(true);
         }
 
         setIsAuthReady(true);
       } catch (error) {
         if (!isMounted) return;
-        console.error("Checkout auth check failed", error);
+        console.error("Checkout auth / address check failed", error);
         router.replace("/account?tab=Security%20%26%20Auth");
       }
     };
 
-    void checkAuth();
+    void initAuthAndAddresses();
     return () => {
       isMounted = false;
     };
@@ -70,20 +144,32 @@ export default function CheckoutPage() {
       pushToast("Your cart is empty.", "error");
       return;
     }
-    const form = new FormData(e.currentTarget);
     setLoading(true);
     setError("");
 
+    // Determine which address to send: selected saved address OR custom manual form
+    const activeAddress = (!isCustomAddress && selectedAddress) ? selectedAddress : manualForm;
+
+    if (!activeAddress.fullName || !activeAddress.phone || !activeAddress.fullAddress) {
+      setError("Please complete all required delivery address fields.");
+      pushToast("Please complete all required delivery address fields.", "error");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
-      fullName: String(form.get("fullName") || "").trim(),
-      phone: String(form.get("phone") || "").trim(),
-      email: String(form.get("email") || "").trim(),
-      province: String(form.get("province") || ""),
-      district: String(form.get("district") || ""),
-      city: String(form.get("city") || ""),
-      ward: String(form.get("ward") || ""),
-      fullAddress: String(form.get("fullAddress") || ""),
-      landmark: String(form.get("landmark") || ""),
+      fullName: activeAddress.fullName.trim(),
+      phone: activeAddress.phone.trim(),
+      email: (activeAddress.email || "").trim(),
+      province: activeAddress.province || "Bagmati",
+      district: activeAddress.district || "",
+      city: activeAddress.city || "",
+      ward: activeAddress.ward || "",
+      fullAddress: activeAddress.fullAddress.trim(),
+      landmark: activeAddress.landmark || "",
+      postalCode: activeAddress.postalCode || "",
+      country: "Nepal",
+      saveAsDefault: isCustomAddress ? saveAsDefault : false,
       paymentMethod: selectedPayment,
       items: items.map((item) => ({ productId: item.id, quantity: item.quantity, unitPrice: item.price }))
     };
@@ -248,109 +334,217 @@ export default function CheckoutPage() {
         <form onSubmit={onSubmit} className="space-y-8 lg:col-span-8">
           {/* Customer & Delivery Information */}
           <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-neutral-900 border-b border-neutral-100 pb-3">
-              1. Customer &amp; Delivery Information
-            </h2>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Full Name *</label>
-                <input
-                  name="fullName"
-                  required
-                  placeholder="e.g. Pratik Sharma"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Phone Number *</label>
-                <input
-                  name="phone"
-                  required
-                  placeholder="e.g. 9801234567"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Email Address *</label>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="e.g. pratik@example.com"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              {/* Province Selector */}
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Province *</label>
-                <select
-                  name="province"
-                  required
-                  defaultValue={nepalProvinces[2]} // Bagmati default
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <h2 className="text-base font-bold text-neutral-900">
+                1. Delivery Address
+              </h2>
+              {savedAddresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddressModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-800 hover:bg-neutral-100 hover:border-black transition"
                 >
-                  {nepalProvinces.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">District *</label>
-                <input
-                  name="district"
-                  required
-                  placeholder="e.g. Kathmandu / Kaski / Morang"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">City / Municipality *</label>
-                <input
-                  name="city"
-                  required
-                  placeholder="e.g. Kathmandu Metropolitan"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Ward No. *</label>
-                <input
-                  name="ward"
-                  required
-                  placeholder="e.g. Ward 4"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Full Street Address *</label>
-                <textarea
-                  name="fullAddress"
-                  required
-                  placeholder="e.g. House No. 42, Baluwatar Marg, near Prime Minister Residence"
-                  rows={2}
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Nearest Landmark (Optional)</label>
-                <input
-                  name="landmark"
-                  placeholder="e.g. Opposite Bhatbhateni Supermarket"
-                  className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
-                />
-              </div>
+                  <span>📍</span>
+                  <span>{isCustomAddress ? "Choose Saved Address" : "Change Address"}</span>
+                </button>
+              )}
             </div>
+
+            {/* CASE A: Using Saved / Default Address */}
+            {!isCustomAddress && selectedAddress ? (
+              <div className="rounded-2xl border-2 border-emerald-500/40 bg-emerald-50/30 p-5 space-y-3 transition">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
+                      ✓ {selectedAddress.isDefault ? "Using your default address" : "Using selected address"}
+                    </span>
+                    {selectedAddress.label && (
+                      <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-[10px] font-bold text-neutral-700 uppercase">
+                        {selectedAddress.label}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddressModal(true)}
+                    className="text-xs font-bold text-neutral-900 underline hover:text-red-600 transition"
+                  >
+                    Change Address
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm font-extrabold text-neutral-900">{selectedAddress.fullName}</p>
+                  <p className="text-xs text-neutral-700 leading-relaxed">
+                    {selectedAddress.fullAddress}
+                    {selectedAddress.landmark ? ` (Landmark: ${selectedAddress.landmark})` : ""}
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    {[
+                      selectedAddress.city,
+                      selectedAddress.ward ? `Ward ${selectedAddress.ward}` : "",
+                      selectedAddress.district,
+                      selectedAddress.province,
+                      selectedAddress.country || "Nepal"
+                    ].filter(Boolean).join(", ")}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-emerald-100 flex flex-wrap items-center gap-4 text-xs font-medium text-neutral-700">
+                  <span><strong>Phone:</strong> {selectedAddress.phone}</span>
+                  {selectedAddress.email && <span><strong>Email:</strong> {selectedAddress.email}</span>}
+                </div>
+              </div>
+            ) : (
+              /* CASE B: Manual / New Address Entry Form */
+              <div className="space-y-4">
+                {savedAddresses.length > 0 && (
+                  <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-xs text-amber-800">
+                    <span>Entering a new address for this order.</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const def = savedAddresses.find((a) => a.isDefault) || savedAddresses[0];
+                        setSelectedAddress(def);
+                        setIsCustomAddress(false);
+                      }}
+                      className="font-bold underline hover:text-amber-950"
+                    >
+                      Use Saved Address
+                    </button>
+                  </div>
+                )}
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Full Name *</label>
+                    <input
+                      name="fullName"
+                      required
+                      value={manualForm.fullName}
+                      onChange={(e) => setManualForm({ ...manualForm, fullName: e.target.value })}
+                      placeholder="e.g. Pratik Sharma"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Phone Number *</label>
+                    <input
+                      name="phone"
+                      required
+                      value={manualForm.phone}
+                      onChange={(e) => setManualForm({ ...manualForm, phone: e.target.value })}
+                      placeholder="e.g. 9801234567"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Email Address *</label>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      value={manualForm.email}
+                      onChange={(e) => setManualForm({ ...manualForm, email: e.target.value })}
+                      placeholder="e.g. pratik@example.com"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Province Selector */}
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Province *</label>
+                    <select
+                      name="province"
+                      required
+                      value={manualForm.province}
+                      onChange={(e) => setManualForm({ ...manualForm, province: e.target.value })}
+                      className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    >
+                      {nepalProvinces.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">District *</label>
+                    <input
+                      name="district"
+                      required
+                      value={manualForm.district}
+                      onChange={(e) => setManualForm({ ...manualForm, district: e.target.value })}
+                      placeholder="e.g. Kathmandu / Kaski / Morang"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">City / Municipality *</label>
+                    <input
+                      name="city"
+                      required
+                      value={manualForm.city}
+                      onChange={(e) => setManualForm({ ...manualForm, city: e.target.value })}
+                      placeholder="e.g. Kathmandu Metropolitan"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Ward No. (Optional)</label>
+                    <input
+                      name="ward"
+                      value={manualForm.ward}
+                      onChange={(e) => setManualForm({ ...manualForm, ward: e.target.value })}
+                      placeholder="e.g. Ward 4"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Full Street Address *</label>
+                    <textarea
+                      name="fullAddress"
+                      required
+                      value={manualForm.fullAddress}
+                      onChange={(e) => setManualForm({ ...manualForm, fullAddress: e.target.value })}
+                      placeholder="e.g. House No. 42, Baluwatar Marg, near Prime Minister Residence"
+                      rows={2}
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold uppercase text-neutral-500 mb-1">Nearest Landmark (Optional)</label>
+                    <input
+                      name="landmark"
+                      value={manualForm.landmark}
+                      onChange={(e) => setManualForm({ ...manualForm, landmark: e.target.value })}
+                      placeholder="e.g. Opposite Bhatbhateni Supermarket"
+                      className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-medium focus:border-black focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Save as default address checkbox */}
+                  <div className="sm:col-span-2 pt-2">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-neutral-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={saveAsDefault}
+                        onChange={(e) => setSaveAsDefault(e.target.checked)}
+                        className="h-4 w-4 rounded border-neutral-300 accent-black"
+                      />
+                      <span>Save this address as my default address for future orders</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Payment Method Selector */}
@@ -450,6 +644,90 @@ export default function CheckoutPage() {
           </div>
         </aside>
       </div>
+
+      {/* Address Selection Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <h3 className="text-base font-extrabold text-neutral-900">Select Delivery Address</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-black transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {savedAddresses.map((addr) => {
+                const isSelected = !isCustomAddress && selectedAddress?._id === addr._id;
+                return (
+                  <div
+                    key={addr._id || addr.fullAddress}
+                    onClick={() => {
+                      setSelectedAddress(addr);
+                      setIsCustomAddress(false);
+                      setShowAddressModal(false);
+                    }}
+                    className={`cursor-pointer rounded-2xl border-2 p-4 transition text-xs space-y-1.5 ${
+                      isSelected
+                        ? "border-black bg-neutral-50 shadow-sm"
+                        : "border-neutral-200 hover:border-neutral-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-neutral-900 text-sm">{addr.fullName}</span>
+                        {addr.label && (
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-600 uppercase">
+                            {addr.label}
+                          </span>
+                        )}
+                        {addr.isDefault && (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold text-neutral-900">{isSelected ? "✓ Active" : "Deliver Here →"}</span>
+                    </div>
+                    <p className="text-neutral-700 leading-relaxed">
+                      {addr.fullAddress}
+                      {addr.landmark ? ` (Landmark: ${addr.landmark})` : ""}
+                    </p>
+                    <p className="text-neutral-500">
+                      {[addr.city, addr.ward ? `Ward ${addr.ward}` : "", addr.district, addr.province, addr.country || "Nepal"].filter(Boolean).join(", ")}
+                    </p>
+                    <p className="text-neutral-700 font-semibold pt-1">Phone: {addr.phone}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCustomAddress(true);
+                  setShowAddressModal(false);
+                }}
+                className="w-full sm:w-auto rounded-xl border border-black bg-white px-4 py-2.5 text-xs font-bold text-black hover:bg-neutral-50 transition"
+              >
+                + Add / Enter New Address
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="w-full sm:w-auto rounded-xl bg-black px-5 py-2.5 text-xs font-bold text-white hover:bg-neutral-800 transition"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

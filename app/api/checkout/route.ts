@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 import { OrderModel } from "@/lib/models/order-model";
 import { PaymentModel } from "@/lib/models/payment-model";
 import { ProductModel } from "@/lib/models/product-model";
+import { AddressModel } from "@/lib/models/address-model";
 import { initiatePayment } from "@/lib/payments";
 import { PaymentProvider } from "@/lib/payments/types";
 import { generateId } from "@/lib/utils";
@@ -18,6 +19,10 @@ type CheckoutPayload = {
   city?: string;
   ward?: string;
   fullAddress?: string;
+  landmark?: string;
+  postalCode?: string;
+  country?: string;
+  saveAsDefault?: boolean;
   paymentMethod?: PaymentProvider;
   items?: Array<{ productId: string; quantity: number; unitPrice: number }>;
 };
@@ -52,17 +57,62 @@ export async function POST(req: Request) {
   const orderId = generateId("ORD");
   const paymentMethod = body.paymentMethod || "Cash on Delivery";
 
+  // Construct complete immutable shipping address snapshot
+  const shippingAddress = {
+    fullName: body.fullName.trim(),
+    phone: body.phone.trim(),
+    email: (body.email || user.email || "").trim(),
+    province: (body.province || "Bagmati").trim(),
+    district: (body.district || "").trim(),
+    city: (body.city || "").trim(),
+    ward: (body.ward || "").trim(),
+    fullAddress: body.fullAddress.trim(),
+    addressLine1: body.fullAddress.trim(),
+    addressLine2: "",
+    landmark: (body.landmark || "").trim(),
+    postalCode: (body.postalCode || "").trim(),
+    country: (body.country || "Nepal").trim()
+  };
+
+  // If user requested to save this address as default, save it
+  if (body.saveAsDefault) {
+    try {
+      await AddressModel.updateMany({ userId: user._id }, { $set: { isDefault: false } });
+      await AddressModel.create({
+        userId: user._id,
+        fullName: shippingAddress.fullName,
+        phone: shippingAddress.phone,
+        email: shippingAddress.email,
+        province: shippingAddress.province,
+        district: shippingAddress.district,
+        city: shippingAddress.city,
+        ward: shippingAddress.ward,
+        fullAddress: shippingAddress.fullAddress,
+        addressLine1: shippingAddress.fullAddress,
+        landmark: shippingAddress.landmark,
+        postalCode: shippingAddress.postalCode,
+        country: shippingAddress.country,
+        label: "Home",
+        isDefault: true
+      });
+    } catch (saveErr) {
+      console.warn("Failed to auto-save default address during checkout:", saveErr);
+    }
+  }
+
   await OrderModel.create({
     userId: user._id,
     orderId,
-    fullName: body.fullName,
-    phone: body.phone,
-    email: body.email || "",
-    province: body.province || "",
-    district: body.district || "",
-    city: body.city || "",
-    ward: body.ward || "",
-    fullAddress: body.fullAddress,
+    fullName: shippingAddress.fullName,
+    phone: shippingAddress.phone,
+    email: shippingAddress.email,
+    province: shippingAddress.province,
+    district: shippingAddress.district,
+    city: shippingAddress.city,
+    ward: shippingAddress.ward,
+    fullAddress: shippingAddress.fullAddress,
+    landmark: shippingAddress.landmark,
+    shippingAddress, // Immutable address snapshot preserved forever
     paymentMethod,
     paymentStatus: "Pending",
     orderStatus: "Order Placed",

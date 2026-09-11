@@ -111,6 +111,59 @@ export async function POST(req: Request) {
     const userId = sessionUser ? String(sessionUser._id) : "";
     const customerId = userId;
 
+    // Extract brand, category, canonical URL
+    const brand = String(body.brand || "Generic").trim();
+    const category = String(body.category || "Everyday Essentials").trim();
+    const originalSourceUrl = String(body.originalSourceUrl || productUrl).trim();
+    const verifiedSourceUrl = String(body.verifiedSourceUrl || productUrl).trim();
+    const canonicalSourceUrl = String(body.canonicalSourceUrl || productUrl).trim();
+    const saveAsDefault = Boolean(body.saveAsDefault);
+    const landmark = String(body.landmark || "").trim();
+    const country = String(body.country || "Nepal").trim();
+
+    // Construct immutable shipping address snapshot
+    const shippingAddress = {
+      fullName: customerName || sessionUser?.fullName || "Valued Customer",
+      phone: phone || sessionUser?.phone || "",
+      email: email || sessionUser?.email || "",
+      deliveryAddress,
+      city,
+      district,
+      province,
+      postalCode,
+      country,
+      landmark,
+      deliveryInstructions
+    };
+
+    // If user requested to save this address as default, save it
+    if (saveAsDefault && userId) {
+      try {
+        const { AddressModel } = await import("@/lib/models/address-model");
+        await connectToDatabase();
+        await AddressModel.updateMany({ userId }, { $set: { isDefault: false } });
+        await AddressModel.create({
+          userId,
+          fullName: shippingAddress.fullName,
+          phone: shippingAddress.phone,
+          email: shippingAddress.email,
+          province: shippingAddress.province || "Bagmati",
+          district: shippingAddress.district || "",
+          city: shippingAddress.city || "",
+          ward: "",
+          fullAddress: shippingAddress.deliveryAddress,
+          addressLine1: shippingAddress.deliveryAddress,
+          landmark: shippingAddress.landmark,
+          postalCode: shippingAddress.postalCode,
+          country: shippingAddress.country,
+          label: "Home",
+          isDefault: true
+        });
+      } catch (saveErr) {
+        console.warn("Failed to auto-save default address during India order:", saveErr);
+      }
+    }
+
     const orderPayload = {
       orderId,
       invoiceNumber,
@@ -125,12 +178,18 @@ export async function POST(req: Request) {
       province,
       postalCode,
       deliveryInstructions,
+      shippingAddress, // Immutable address snapshot preserved forever
       // ── Marketplace Snapshot (preserved forever) ──
       marketplace,
       sourceProductId: clientSourceProductId || "",
-      productUrl,          // Original Indian marketplace URL
+      productUrl,          // Active Indian marketplace URL
+      originalSourceUrl,   // Original submitted URL
+      verifiedSourceUrl,   // Verified working URL
+      canonicalSourceUrl,  // Canonical platform URL
       productName,
       productImage,
+      brand,
+      category,
       productVariant,
       size,
       color,

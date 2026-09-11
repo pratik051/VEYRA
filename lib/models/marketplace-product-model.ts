@@ -19,6 +19,9 @@ const MarketplaceProductSchema = new Schema(
     source: { type: String, required: true, index: true },
     sourceProductId: { type: String, required: true, index: true },
     sourceUrl: { type: String, required: true },
+    originalSourceUrl: { type: String, default: "" },
+    verifiedSourceUrl: { type: String, default: "" },
+    canonicalSourceUrl: { type: String, default: "" },
     title: { type: String, required: true, index: "text" },
     slug: { type: String, required: true, unique: true, index: true },
     description: { type: String, default: "" },
@@ -65,7 +68,26 @@ const MarketplaceProductSchema = new Schema(
     specs: { type: Map, of: String, default: {} },
     isActive: { type: Boolean, default: true, index: true },
     featured: { type: Boolean, default: false, index: true },
-    lastSyncedAt: { type: Date, default: Date.now, index: true }
+    lastSyncedAt: { type: Date, default: Date.now, index: true },
+    // Verification & Quality Control
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "verified", "failed"],
+      default: "pending",
+      index: true
+    },
+    verificationCheckedAt: { type: Date, default: Date.now },
+    verificationError: { type: String, default: "" },
+    imageValidationStatus: {
+      type: String,
+      enum: ["valid", "invalid", "pending"],
+      default: "pending"
+    },
+    priceValidationStatus: {
+      type: String,
+      enum: ["valid", "invalid", "pending"],
+      default: "pending"
+    }
   },
   { timestamps: true }
 );
@@ -73,12 +95,13 @@ const MarketplaceProductSchema = new Schema(
 // Compound Unique Index to prevent duplicate products per marketplace
 MarketplaceProductSchema.index({ source: 1, sourceProductId: 1 }, { unique: true });
 
-// Compound Indexes for high-performance section queries
-MarketplaceProductSchema.index({ isActive: 1, isFlashSale: 1, discountPercentage: -1 });
-MarketplaceProductSchema.index({ isActive: 1, isBestSeller: 1, rating: -1 });
-MarketplaceProductSchema.index({ isActive: 1, isTrending: 1, trendingScore: -1 });
-MarketplaceProductSchema.index({ isActive: 1, isNewArrival: 1, createdAt: -1 });
-MarketplaceProductSchema.index({ isActive: 1, category: 1, priceINR: 1 });
+// Compound Indexes for high-performance storefront and verification queries
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, isFlashSale: 1, discountPercentage: -1 });
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, isBestSeller: 1, rating: -1 });
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, isTrending: 1, trendingScore: -1 });
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, isNewArrival: 1, createdAt: -1 });
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, category: 1, priceINR: 1 });
+MarketplaceProductSchema.index({ isActive: 1, verificationStatus: 1, source: 1 });
 
 export const MarketplaceProductModel =
   models.MarketplaceProduct || model<IMarketplaceProductDoc>("MarketplaceProduct", MarketplaceProductSchema);

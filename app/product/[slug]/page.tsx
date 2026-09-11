@@ -345,16 +345,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 </button>
               </div>
 
-              {product.sourceUrl && (
+              {(product.verifiedSourceUrl || product.canonicalSourceUrl || product.sourceUrl) && (
                 <div className="text-center pt-1">
                   <a
-                    href={product.sourceUrl}
+                    href={product.verifiedSourceUrl || product.canonicalSourceUrl || product.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 transition"
                   >
                     <span>🇮🇳</span>
-                    <span>Open Original Product on {product.source ? product.source.replace("amazon-india", "Amazon India").replace("tatacliq", "Tata CLiQ").replace("boat", "boAt").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Indian Store"}</span>
+                    <span>Open Verified Product on {product.source ? product.source.replace("amazon-india", "Amazon India").replace("tatacliq", "Tata CLiQ").replace("boat", "boAt").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Indian Marketplace"}</span>
                     <span>↗</span>
                   </a>
                 </div>

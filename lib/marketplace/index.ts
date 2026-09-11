@@ -81,7 +81,7 @@ export async function getMarketplaceProducts(options?: {
 }): Promise<{ products: CustomerMarketplaceProduct[]; total: number }> {
   await connectDB();
 
-  const query: any = { isActive: true };
+  const query: any = { isActive: true, verificationStatus: "verified" };
 
   if (options?.category && options.category !== "All") {
     query.category = new RegExp(`^${options.category}$`, "i");
@@ -190,7 +190,10 @@ export async function getMarketplaceProducts(options?: {
     return {
       source: doc.source,
       sourceProductId: doc.sourceProductId,
-      sourceUrl: doc.sourceUrl,
+      sourceUrl: doc.verifiedSourceUrl || doc.canonicalSourceUrl || doc.sourceUrl,
+      originalSourceUrl: doc.originalSourceUrl || doc.sourceUrl,
+      verifiedSourceUrl: doc.verifiedSourceUrl || doc.sourceUrl,
+      canonicalSourceUrl: doc.canonicalSourceUrl || doc.sourceUrl,
       title: doc.title,
       name: doc.title,
       slug: doc.slug,
@@ -220,6 +223,8 @@ export async function getMarketplaceProducts(options?: {
       variants: doc.variants,
       specs: doc.specs,
       lastSyncedAt: doc.lastSyncedAt,
+      verificationStatus: doc.verificationStatus,
+      verificationCheckedAt: doc.verificationCheckedAt,
       finalAmountNPR: finalAmount
     };
   });

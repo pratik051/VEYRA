@@ -10,8 +10,8 @@ export const MeeshoProvider: MarketplaceProvider = {
     return [
       {
         source: "meesho",
-        sourceProductId: "18928391",
-        sourceUrl: "https://www.meesho.com/p/18928391",
+        sourceProductId: "MSH-CLEAN-7IN1",
+        sourceUrl: "https://www.meesho.com/search?q=7+in+1+Tech+Cleaning+Kit",
         title: "Multi-Functional 7-in-1 Tech Cleaning Kit for Earbuds, Keyboard & Phone",
         slug: "meesho-7in1-tech-cleaning-kit",
         description: "Compact desk and gadget cleaning kit with high-density brush, silicone pen nib, flocking sponge, keycap puller and spray bottle.",
@@ -43,8 +43,8 @@ export const MeeshoProvider: MarketplaceProvider = {
       },
       {
         source: "meesho",
-        sourceProductId: "21983011",
-        sourceUrl: "https://www.meesho.com/p/21983011",
+        sourceProductId: "MSH-LEATHER-WALLET",
+        sourceUrl: "https://www.meesho.com/search?q=Men+Leather+Wallet+RFID",
         title: "Vintage Top-Grain Leather RFID Protected Bi-Fold Men's Wallet",
         slug: "meesho-vintage-leather-rfid-wallet",
         description: "Handcrafted genuine leather slim pocket wallet with 8 card slots, 2 cash compartments, and RFID blocking lining.",
@@ -60,218 +60,220 @@ export const MeeshoProvider: MarketplaceProvider = {
         rating: 4.5,
         reviewCount: 1640,
         availability: "in_stock",
-        isNewArrival: true,
         isDeal: true,
-        dealBadge: "Special Price",
-        trendingScore: 82,
-        badges: ["SPECIAL PRICE", "58% OFF"],
-        tags: ["wallet", "leather", "rfid", "accessories", "mens-fashion"],
+        dealBadge: "58% OFF",
+        trendingScore: 84,
+        badges: ["GENUINE LEATHER", "58% OFF"],
+        tags: ["wallet", "leather", "accessories", "rfid", "mens-wallet"],
         variants: [
-          { name: "Color", values: ["Vintage Brown", "Classic Black", "Tan"] }
+          { name: "Color", values: ["Vintage Tan", "Deep Coffee", "Classic Black"] }
         ],
         specs: {
-          "Material": "100% Genuine Full-Grain Leather",
-          "Protection": "13.56 MHz RFID Blocking Layer",
-          "Dimensions": "11.5 cm x 9.5 cm"
+          "Material": "100% Top-Grain Leather",
+          "Slots": "8 Card Slots + ID Window + 2 Cash Compartments",
+          "Security": "RFID Blocking Technology"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "33491823",
-        sourceUrl: "https://www.meesho.com/p/33491823",
-        title: "Jaipuri Printed Pure Cotton Anarkali Kurti Set with Dupatta",
-        slug: "meesho-jaipuri-cotton-anarkali-kurti-set",
-        description: "Handcrafted traditional Jaipuri floral block-printed breathable cotton Anarkali flared kurti with matching pant and chiffon dupatta.",
+        sourceProductId: "MSH-ANARKALI-KURTI",
+        sourceUrl: "https://www.meesho.com/search?q=Cotton+Anarkali+Kurti+Set",
+        title: "Floral Printed Pure Cotton Anarkali Kurti with Pant & Dupatta Set",
+        slug: "meesho-cotton-anarkali-kurti-set",
+        description: "Traditional Jaipuri block floral printed pure cotton flared Anarkali kurti set paired with matching ankle pant and chiffon dupatta.",
         images: [
-          "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80",
           "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
         ],
-        brand: "Jaipur Fab",
+        brand: "Jaipuri Libas",
         category: "Fashion",
         subcategory: "Ethnic Wear",
-        priceINR: 799,
-        originalPriceINR: 1999,
-        discountPercentage: 60,
+        priceINR: 899,
+        originalPriceINR: 2199,
+        discountPercentage: 59,
         rating: 4.7,
-        reviewCount: 4120,
+        reviewCount: 5410,
         availability: "in_stock",
         isBestSeller: true,
-        bestsellerRank: 2,
+        bestsellerRank: 1,
         isDeal: true,
-        dealBadge: "Mega Clearance 60% OFF",
+        dealBadge: "59% OFF Maha Deal",
         isTrending: true,
-        trendingScore: 92,
-        badges: ["#2 BEST SELLER", "60% OFF"],
-        tags: ["kurti", "anarkali", "cotton", "ethnic", "meesho-fashion"],
+        trendingScore: 94,
+        badges: ["#1 ETHNIC WEAR", "59% OFF"],
+        tags: ["kurti", "anarkali", "ethnic", "cotton", "suit-set"],
         variants: [
-          { name: "Size", values: ["S", "M", "L", "XL", "XXL"] },
-          { name: "Color", values: ["Indigo Blue", "Maroon Red", "Sage Green"] }
+          { name: "Size", values: ["M", "L", "XL", "XXL", "3XL"] },
+          { name: "Color", values: ["Royal Indigo", "Maroon Crimson", "Emerald Teal"] }
         ],
         specs: {
-          "Fabric": "100% Pure Cambric Cotton",
+          "Fabric": "100% Breathable Cotton (60x60)",
           "Sleeve Length": "Three-Quarter Sleeves",
-          "Pattern": "Handblock Floral Print"
+          "Dupatta Length": "2.2 Meters Chiffon"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "44910281",
-        sourceUrl: "https://www.meesho.com/p/44910281",
-        title: "Ergonomic Aluminium Foldable Laptop Stand with 7-Level Height Adjustment",
-        slug: "meesho-foldable-aluminium-laptop-stand",
-        description: "Universal cooling riser stand for 10-15.6 inch laptops, MacBook, and tablets with anti-slip silicone pads and heat ventilation.",
+        sourceProductId: "MSH-LAPTOP-STAND",
+        sourceUrl: "https://www.meesho.com/search?q=Foldable+Aluminum+Laptop+Stand",
+        title: "Ergonomic Foldable Aluminum Laptop Riser with 6-Level Height Adjustment",
+        slug: "meesho-foldable-aluminum-laptop-stand",
+        description: "Ultra-portable sturdy aluminum alloy laptop riser for desk, improving posture and ventilation for laptops up to 17 inches.",
         images: [
-          "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80"
         ],
-        brand: "DeskPro",
+        brand: "ErgoLift",
         category: "Tech & Gadgets",
-        subcategory: "Stands & Mounts",
+        subcategory: "Laptop Accessories",
         priceINR: 349,
         originalPriceINR: 899,
         discountPercentage: 61,
         rating: 4.6,
-        reviewCount: 1890,
+        reviewCount: 3820,
         availability: "in_stock",
         isFlashSale: true,
         isDeal: true,
-        dealBadge: "Flash Deal",
-        trendingScore: 88,
-        badges: ["FLASH SALE", "61% OFF"],
-        tags: ["laptop-stand", "desk-accessory", "ergonomic", "wfh"],
+        dealBadge: "61% OFF Flash Sale",
+        trendingScore: 89,
+        badges: ["ERGO DESIGN", "61% OFF"],
+        tags: ["laptop-stand", "aluminum", "ergonomic", "desk-setup", "accessories"],
         specs: {
-          "Material": "Aviation Grade Aluminium Alloy",
-          "Weight Capacity": "Up to 15 kg",
-          "Folded Size": "24 cm x 4.5 cm"
+          "Material": "Anodized Aluminum Alloy + Non-Slip Silicone",
+          "Compatibility": "10\" to 17.3\" Laptops & Tablets",
+          "Weight Capacity": "Up to 10 kg"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "55819201",
-        sourceUrl: "https://www.meesho.com/p/55819201",
-        title: "Smart Thermos Stainless Steel Temperature Display Water Bottle 500ml",
-        slug: "meesho-smart-temperature-display-bottle",
-        description: "Double-walled vacuum insulated flask with smart LED touch temperature lid. Keeps beverages hot for 12h or cold for 24h.",
+        sourceProductId: "MSH-SMART-THERMOS",
+        sourceUrl: "https://www.meesho.com/search?q=Smart+LED+Temperature+Thermos",
+        title: "Smart LED Temperature Display Vacuum Insulated Stainless Steel Bottle (500ml)",
+        slug: "meesho-smart-led-temperature-thermos",
+        description: "Double wall 304 food-grade stainless steel bottle with touch LED digital temperature display screen on lid. Keeps drinks hot/cold for 24h.",
         images: [
           "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "HydroSmart",
         category: "Everyday Essentials",
-        subcategory: "Flasks & Bottles",
-        priceINR: 399,
-        originalPriceINR: 999,
-        discountPercentage: 60,
+        subcategory: "Drinkware",
+        priceINR: 299,
+        originalPriceINR: 799,
+        discountPercentage: 62,
         rating: 4.5,
-        reviewCount: 3100,
+        reviewCount: 4290,
         availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 2,
         isDeal: true,
-        dealBadge: "Trending 60% OFF",
-        isTrending: true,
-        trendingScore: 89,
-        badges: ["TRENDING", "60% OFF"],
-        tags: ["flask", "temperature-display", "water-bottle", "gym"],
+        dealBadge: "62% OFF",
+        trendingScore: 91,
+        badges: ["LED TOUCH DISPLAY", "62% OFF"],
+        tags: ["thermos", "water-bottle", "smart-bottle", "stainless-steel", "travel"],
         variants: [
-          { name: "Color", values: ["Matte Black", "Rose Gold", "Navy Blue", "Silver"] }
+          { name: "Color", values: ["Matte Black", "Rose Gold", "Navy Blue", "Pearl White"] }
         ],
         specs: {
           "Capacity": "500 ml",
-          "Material": "Food Grade 304 Stainless Steel",
-          "Battery Life": "500 days built-in LED lid"
+          "Insulation": "24h Cold / 12h Hot Vacuum Seal",
+          "Lid Feature": "Waterproof LED Touch Screen (No charging required)"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "66728192",
-        sourceUrl: "https://www.meesho.com/p/66728192",
-        title: "Korean Aesthetic Minimalist Canvas Crossbody Shoulder Bag",
-        slug: "meesho-korean-canvas-crossbody-bag",
-        description: "Chic aesthetic daily college and casual messenger tote bag with multiple pockets, durable zipper, and adjustable strap.",
+        sourceProductId: "MSH-CANVAS-TOTE",
+        sourceUrl: "https://www.meesho.com/search?q=Canvas+Shoulder+Tote+Bag",
+        title: "Heavy-Duty Aesthetic Canvas Shoulder Tote Bag with Zipper & Inner Pockets",
+        slug: "meesho-aesthetic-canvas-shoulder-tote-bag",
+        description: "Spacious aesthetic cotton canvas tote bag with robust inner zipper pocket and sturdy reinforced shoulder straps.",
         images: [
-          "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80"
         ],
-        brand: "SeoulVibe",
-        category: "Fashion",
-        subcategory: "Bags",
-        priceINR: 429,
-        originalPriceINR: 1099,
-        discountPercentage: 61,
-        rating: 4.6,
-        reviewCount: 1540,
+        brand: "BohoCarry",
+        category: "Bags",
+        subcategory: "Tote Bags",
+        priceINR: 299,
+        originalPriceINR: 799,
+        discountPercentage: 62,
+        rating: 4.7,
+        reviewCount: 2980,
         availability: "in_stock",
-        isNewArrival: true,
         isDeal: true,
-        dealBadge: "New Trend",
-        trendingScore: 84,
-        badges: ["NEW ARRIVAL", "61% OFF"],
-        tags: ["canvas-bag", "korean-style", "tote", "crossbody", "women-bags"],
+        dealBadge: "Maha Super Deal",
+        trendingScore: 88,
+        badges: ["ECO FRIENDLY", "62% OFF"],
+        tags: ["tote-bag", "canvas", "college-bag", "aesthetic", "cotton"],
         variants: [
-          { name: "Color", values: ["Off White", "Olive Green", "Charcoal Black"] }
+          { name: "Print", values: ["Minimalist Leaves", "Vintage Bookstore", "Floral Sun"] }
         ],
         specs: {
-          "Material": "Heavy-Duty Cotton Canvas",
-          "Compartments": "1 Main zipper + 2 Outer pockets + 1 Inner slip"
+          "Material": "12oz 100% Eco Cotton Canvas",
+          "Dimensions": "15\" x 16\" x 4\"",
+          "Closure": "Top Zipper + Internal Key Pocket"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "77819283",
-        sourceUrl: "https://www.meesho.com/p/77819283",
-        title: "Automatic Wireless Water Dispenser Pump for 20L Water Cans",
-        slug: "meesho-automatic-water-can-dispenser-pump",
-        description: "USB rechargeable smart drinking water pump dispenser with silicon food-grade hose, one-touch dispensing, and fast USB-C charging.",
+        sourceProductId: "MSH-WATER-PUMP",
+        sourceUrl: "https://www.meesho.com/search?q=Automatic+Water+Bottle+Dispenser",
+        title: "Wireless Automatic Rechargeable Electric Water Bottle Pump Dispenser",
+        slug: "meesho-automatic-rechargeable-water-dispenser",
+        description: "One-touch electric water pump for standard 20L jars. USB rechargeable 1200mAh battery dispenses up to 6 large bottles on a single charge.",
         images: [
-          "https://images.unsplash.com/photo-1584285418504-0051b3d37704?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80"
         ],
-        brand: "AquaFlow",
+        brand: "AquaPure",
         category: "Everyday Essentials",
         subcategory: "Home Appliances",
-        priceINR: 299,
+        priceINR: 249,
         originalPriceINR: 699,
-        discountPercentage: 57,
+        discountPercentage: 64,
         rating: 4.4,
-        reviewCount: 2890,
+        reviewCount: 6810,
         availability: "in_stock",
         isBestSeller: true,
         bestsellerRank: 3,
         isDeal: true,
-        dealBadge: "Daily Steal",
+        dealBadge: "64% OFF",
         trendingScore: 86,
-        badges: ["DAILY STEAL", "57% OFF"],
-        tags: ["water-pump", "kitchen", "home-essentials", "rechargeable"],
+        badges: ["USB RECHARGEABLE", "64% OFF"],
+        tags: ["water-pump", "kitchen-gadgets", "home-appliances", "rechargeable"],
         specs: {
-          "Battery": "1200mAh USB Rechargeable",
-          "Compatibility": "Standard 20L, 15L & 10L Canisters"
+          "Battery": "1200 mAh USB Rechargeable",
+          "Tube": "Food Grade Silicone Hose (BPA Free)",
+          "Fit": "Universal 2 to 5 Gallon Water Jars"
         }
       },
       {
         source: "meesho",
-        sourceProductId: "88910293",
-        sourceUrl: "https://www.meesho.com/p/88910293",
-        title: "Ceramic Electric Coffee Mug Warmer Set with Spoon & Gift Box",
-        slug: "meesho-ceramic-coffee-mug-warmer-set",
-        description: "Smart 55°C constant temperature heating coaster plate with ceramic matching lid mug. Perfect for coffee, tea, and warm milk at desk.",
+        sourceProductId: "MSH-MUG-WARMER",
+        sourceUrl: "https://www.meesho.com/search?q=Smart+Coffee+Mug+Warmer",
+        title: "Smart 3-Temperature USB Desktop Coffee & Tea Mug Warmer Plate (55°C)",
+        slug: "meesho-smart-coffee-mug-warmer-plate",
+        description: "Keep your coffee, tea, or milk constantly warm at your desk. Features auto shut-off, 3 heat settings (45°C/55°C/75°C), and waterproof glass panel.",
         images: [
           "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "WarmCup",
         category: "Everyday Essentials",
-        subcategory: "Kitchenware",
-        priceINR: 599,
-        originalPriceINR: 1499,
+        subcategory: "Kitchen Gadgets",
+        priceINR: 399,
+        originalPriceINR: 999,
         discountPercentage: 60,
-        rating: 4.7,
-        reviewCount: 1420,
+        rating: 4.6,
+        reviewCount: 1980,
         availability: "in_stock",
+        isNewArrival: true,
         isDeal: true,
-        dealBadge: "60% OFF Deal",
-        trendingScore: 85,
-        badges: ["GIFT CHOICE", "60% OFF"],
-        tags: ["coffee-warmer", "ceramic-mug", "desk-accessory", "tea"],
+        dealBadge: "60% OFF",
+        trendingScore: 89,
+        badges: ["DESK ESSENTIAL", "60% OFF"],
+        tags: ["mug-warmer", "coffee", "desk-setup", "gadgets", "office"],
         variants: [
-          { name: "Color", values: ["Emerald Green", "Pastel Pink", "Classic White"] }
+          { name: "Color", values: ["Matte Pink", "Nordic Green", "Pure White"] }
         ],
         specs: {
-          "Heating Temp": "Constant 55°C (131°F)",
-          "Auto Shutoff": "Gravity Sensor Power On/Off"
+          "Temperature Levels": "45°C, 55°C, 75°C Adjustable",
+          "Safety": "8-Hour Auto Power Off",
+          "Power": "20W USB Powered"
         }
       }
     ];

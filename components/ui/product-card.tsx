@@ -49,6 +49,10 @@ export type AnyProduct = {
   source?: string;
   sourceProductId?: string;
   sourceUrl?: string;
+  originalSourceUrl?: string;
+  verifiedSourceUrl?: string;
+  canonicalSourceUrl?: string;
+  verificationStatus?: "pending" | "verified" | "failed";
   availability?: string;
   lastSyncedAt?: Date;
 };

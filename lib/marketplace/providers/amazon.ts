@@ -10,189 +10,8 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
     return [
       {
         source: "amazon-india",
-        sourceProductId: "AMZ-ECHO-DOT-5",
-        sourceUrl: "https://www.amazon.in/s?k=Echo+Dot+5th+Gen+Smart+speaker+with+Alexa",
-        title: "Echo Dot (5th Gen) Smart Speaker with Bigger Sound, Motion Detection & Alexa",
-        slug: "amazon-echo-dot-5th-gen-alexa",
-        description: "Best sounding Echo Dot yet: Enjoy an improved audio experience compared to any previous Echo Dot with Alexa for clearer vocals, deeper bass, and vibrant sound in any room.",
-        images: [
-          "https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1518444065439-e933c06ce9cd?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Amazon",
-        category: "Tech & Gadgets",
-        subcategory: "Smart Speakers",
-        priceINR: 4499,
-        originalPriceINR: 5499,
-        discountPercentage: 18,
-        rating: 4.6,
-        reviewCount: 5840,
-        availability: "in_stock",
-        isFlashSale: true,
-        isBestSeller: true,
-        bestsellerRank: 1,
-        isDeal: true,
-        dealBadge: "Today's Deal",
-        isTrending: true,
-        trendingScore: 96,
-        badges: ["TODAY'S DEAL", "#1 BEST SELLER"],
-        tags: ["alexa", "speaker", "smart-home", "bluetooth", "gadget", "amazon"],
-        variants: [
-          { name: "Color", values: ["Black", "Glacier White", "Deep Sea Blue"] }
-        ],
-        specs: {
-          "Audio": "1.73\" front-firing speaker",
-          "Connectivity": "Dual-band Wi-Fi & Bluetooth",
-          "Voice Assistant": "Alexa Built-in",
-          "Sensors": "Motion detection + Temperature sensor"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-KINDLE-PW-16",
-        sourceUrl: "https://www.amazon.in/s?k=Kindle+Paperwhite+16GB",
-        title: "Kindle Paperwhite 16GB (6.8\" Glare-Free Display, Adjustable Warm Light, IPX8)",
-        slug: "amazon-kindle-paperwhite-16gb",
-        description: "Now with a 6.8\" display and thinner borders, adjustable warm light, up to 10 weeks of battery life, and 20% faster page turns.",
-        images: [
-          "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Amazon",
-        category: "Tech & Gadgets",
-        subcategory: "E-Readers",
-        priceINR: 13999,
-        originalPriceINR: 14999,
-        discountPercentage: 7,
-        rating: 4.8,
-        reviewCount: 3950,
-        availability: "in_stock",
-        isBestSeller: true,
-        bestsellerRank: 2,
-        isTrending: true,
-        trendingScore: 92,
-        badges: ["#2 BEST SELLER", "WARM LIGHT"],
-        tags: ["kindle", "books", "reading", "ereader", "amazon"],
-        variants: [
-          { name: "Storage", values: ["16GB", "32GB Signature Edition"] }
-        ],
-        specs: {
-          "Display": "6.8\" Paperwhite display with 300 ppi",
-          "Waterproofing": "IPX8 waterproof",
-          "Battery Life": "Up to 10 weeks on single charge",
-          "Weight": "205 grams"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-FIRETV-4K",
-        sourceUrl: "https://www.amazon.in/s?k=Fire+TV+Stick+4K+with+Alexa+Voice+Remote",
-        title: "Fire TV Stick 4K with Alexa Voice Remote (Dolby Vision, HDR10+, Dolby Atmos)",
-        slug: "amazon-fire-tv-stick-4k",
-        description: "Cinematic 4K streaming with Dolby Vision, HDR10+, and immersive Dolby Atmos audio. Access 12,000+ apps and channels.",
-        images: [
-          "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Amazon",
-        category: "Tech & Gadgets",
-        subcategory: "Streaming Devices",
-        priceINR: 3999,
-        originalPriceINR: 5999,
-        discountPercentage: 33,
-        rating: 4.7,
-        reviewCount: 6210,
-        availability: "in_stock",
-        isFlashSale: true,
-        isBestSeller: true,
-        bestsellerRank: 3,
-        isDeal: true,
-        dealBadge: "Lightning Deal",
-        trendingScore: 95,
-        badges: ["LIGHTNING DEAL", "33% OFF"],
-        tags: ["firetv", "streaming", "4k", "alexa", "entertainment"],
-        specs: {
-          "Resolution": "4K Ultra HD up to 60fps",
-          "Audio": "Dolby Atmos Audio",
-          "Wi-Fi": "Wi-Fi 6 Support",
-          "Remote": "Alexa Voice Remote with TV Power & Volume"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-OP-NORD-CE4",
-        sourceUrl: "https://www.amazon.in/s?k=OnePlus+Nord+CE4+5G",
-        title: "OnePlus Nord CE4 5G (8GB RAM, 128GB Storage, 100W SUPERVOOC, 5500mAh)",
-        slug: "amazon-oneplus-nord-ce4-5g-smartphone",
-        description: "Qualcomm Snapdragon 7 Gen 3 powerhouse with 120Hz Fluid AMOLED display, Sony LYT-600 OIS camera, and 100W ultra-fast charging.",
-        images: [
-          "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "OnePlus",
-        category: "Tech & Gadgets",
-        subcategory: "Smartphones",
-        priceINR: 24999,
-        originalPriceINR: 26999,
-        discountPercentage: 7,
-        rating: 4.5,
-        reviewCount: 8420,
-        availability: "in_stock",
-        isBestSeller: true,
-        bestsellerRank: 1,
-        isDeal: true,
-        dealBadge: "Amazon's Choice",
-        trendingScore: 98,
-        badges: ["AMAZON'S CHOICE", "100W FAST CHARGE"],
-        tags: ["oneplus", "5g", "smartphone", "android", "fast-charging"],
-        variants: [
-          { name: "Color", values: ["Celadon Marble", "Dark Chrome"] },
-          { name: "Storage", values: ["8GB+128GB", "8GB+256GB"] }
-        ],
-        specs: {
-          "Processor": "Qualcomm Snapdragon 7 Gen 3",
-          "Display": "6.7\" 120Hz AMOLED FHD+",
-          "Camera": "50MP Sony LYT-600 with OIS",
-          "Battery": "5500 mAh with 100W SUPERVOOC"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-SONY-XM4",
-        sourceUrl: "https://www.amazon.in/s?k=Sony+WH-1000XM4+Wireless+Noise+Cancelling+Headphones",
-        title: "Sony WH-1000XM4 Industry Leading Wireless Active Noise Cancelling Headphones",
-        slug: "amazon-sony-wh-1000xm4-anc-headphones",
-        description: "Dual Noise Sensor technology with HD Noise Cancelling Processor QN1, Speak-to-chat, Multipoint Bluetooth connection and 30h battery.",
-        images: [
-          "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Sony",
-        category: "Tech & Gadgets",
-        subcategory: "Headphones",
-        priceINR: 19990,
-        originalPriceINR: 29990,
-        discountPercentage: 33,
-        rating: 4.8,
-        reviewCount: 12400,
-        availability: "in_stock",
-        isBestSeller: true,
-        bestsellerRank: 1,
-        isDeal: true,
-        dealBadge: "Deal of the Month",
-        isTrending: true,
-        trendingScore: 97,
-        badges: ["TOP RATED 4.8★", "33% OFF"],
-        tags: ["sony", "headphones", "anc", "wireless", "audiophile"],
-        variants: [
-          { name: "Color", values: ["Black", "Silver", "Midnight Blue"] }
-        ],
-        specs: {
-          "ANC": "Industry-leading Dual Sensor Noise Cancellation",
-          "Battery": "Up to 30 Hours (10 min charge = 5 hours playback)",
-          "Microphone": "Built-in Mic for clear calls with Alexa/Google Assistant"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-BASICS-PB-20K",
-        sourceUrl: "https://www.amazon.in/s?k=Amazon+Basics+20000mAh+22.5W+Fast+Charging+Power+Bank",
+        sourceProductId: "B0D96JNKFN",
+        sourceUrl: "https://www.amazon.in/Charging-Devices-Simultaneously-Smartphones-Speakers/dp/B0D96JNKFN",
         title: "Amazon Basics 20000mAh 22.5W Fast Charging Power Bank (Triple Output, Type-C PD)",
         slug: "amazon-basics-20000mah-22w-power-bank",
         description: "Heavy-duty 20,000mAh external battery pack with Power Delivery 22.5W fast output, multi-protection circuitry, and metallic casing.",
@@ -221,69 +40,238 @@ export const AmazonIndiaProvider: MarketplaceProvider = {
       },
       {
         source: "amazon-india",
-        sourceProductId: "AMZ-SANDISK-128",
-        sourceUrl: "https://www.amazon.in/s?k=SanDisk+Ultra+128GB+microSDXC+UHS-I+Memory+Card",
-        title: "SanDisk Ultra 128GB microSDXC UHS-I Memory Card (140MB/s Read, Class 10, A1)",
-        slug: "amazon-sandisk-ultra-128gb-microsd-card",
-        description: "Ideal for Android smartphones, action cameras, tablets, and Nintendo Switch with fast 140MB/s transfer speed and A1 app performance.",
+        sourceProductId: "B071Z8M4KX",
+        sourceUrl: "https://www.amazon.in/dp/B071Z8M4KX",
+        title: "boAt Bassheads 100 in-Ear Wired Headphones with Super Extra Bass & Mic",
+        slug: "amazon-boat-bassheads-100-wired-earphones",
+        description: "The #1 all-time bestselling wired earphones in India with 10mm dynamic drivers, hawk-inspired ergonomic design, and in-line microphone.",
+        images: [
+          "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "boAt",
+        category: "Tech & Gadgets",
+        subcategory: "Earphones",
+        priceINR: 399,
+        originalPriceINR: 999,
+        discountPercentage: 60,
+        rating: 4.5,
+        reviewCount: 384000,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isFlashSale: true,
+        isDeal: true,
+        dealBadge: "60% OFF Mega Deal",
+        isTrending: true,
+        trendingScore: 99,
+        badges: ["#1 ALL TIME BEST SELLER", "60% OFF"],
+        tags: ["boat", "bassheads", "earphones", "audio", "wired"],
+        variants: [
+          { name: "Color", values: ["Furious Red", "Black", "White", "Taffy Pink"] }
+        ],
+        specs: {
+          "Drivers": "10mm Dynamic Bass Drivers",
+          "Connector": "3.5mm Gold-Plated Audio Jack",
+          "Cable": "1.2m Tangle-Free Cable with Inline Mic"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B01SX0R424",
+        sourceUrl: "https://www.amazon.in/dp/B01SX0R424",
+        title: "SanDisk Ultra Dual 64GB USB 3.0 OTG Flash Drive for Smartphones & Computers",
+        slug: "amazon-sandisk-ultra-dual-64gb-otg-drive",
+        description: "Dual micro-USB and high-speed USB 3.0 connectors to easily transfer files between OTG-enabled Android devices and PCs up to 150MB/s.",
         images: [
           "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "SanDisk",
         category: "Tech & Gadgets",
         subcategory: "Storage",
-        priceINR: 899,
-        originalPriceINR: 1800,
-        discountPercentage: 50,
+        priceINR: 599,
+        originalPriceINR: 1150,
+        discountPercentage: 48,
         rating: 4.6,
-        reviewCount: 22100,
+        reviewCount: 92400,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isDeal: true,
+        dealBadge: "48% OFF",
+        trendingScore: 94,
+        badges: ["#1 BEST SELLER", "DUAL OTG"],
+        tags: ["sandisk", "pendrive", "otg", "usb3", "storage"],
+        specs: {
+          "Capacity": "64 GB",
+          "Speed": "Up to 150 MB/s High-Speed USB 3.0",
+          "Compatibility": "Dual Micro-USB & USB 3.0 Connectors"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B0BY8JZ22K",
+        sourceUrl: "https://www.amazon.in/dp/B0BY8JZ22K",
+        title: "OnePlus Nord CE 3 Lite 5G (8GB RAM, 128GB Storage, 108MP Camera, 67W SUPERVOOC)",
+        slug: "amazon-oneplus-nord-ce3-lite-5g-smartphone",
+        description: "Powered by Qualcomm Snapdragon 695 5G processor, stunning 108MP primary camera with 3x lossless zoom, and 67W fast charging.",
+        images: [
+          "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "OnePlus",
+        category: "Tech & Gadgets",
+        subcategory: "Smartphones",
+        priceINR: 16999,
+        originalPriceINR: 19999,
+        discountPercentage: 15,
+        rating: 4.5,
+        reviewCount: 48200,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isDeal: true,
+        dealBadge: "Amazon's Choice",
+        trendingScore: 98,
+        badges: ["AMAZON'S CHOICE", "108MP CAMERA"],
+        tags: ["oneplus", "5g", "smartphone", "android", "fast-charging"],
+        variants: [
+          { name: "Color", values: ["Pastel Lime", "Chromatic Gray"] },
+          { name: "Storage", values: ["8GB+128GB", "8GB+256GB"] }
+        ],
+        specs: {
+          "Processor": "Qualcomm Snapdragon 695 5G",
+          "Display": "6.72\" 120Hz FHD+ Adaptive Refresh",
+          "Camera": "108MP Triple Camera System with 3x Zoom",
+          "Battery": "5000 mAh with 67W SUPERVOOC Fast Charge"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B09NVPSCQT",
+        sourceUrl: "https://www.amazon.in/dp/B09NVPSCQT",
+        title: "Noise ColorFit Pulse Grand 1.69\" HD Display Smartwatch with 60 Sports Modes",
+        slug: "amazon-noise-colorfit-pulse-grand-smartwatch",
+        description: "1.69\" vivid curved glass display, 24/7 heart rate and SpO2 monitor, IP68 water resistance, and 150+ cloud-based watch faces.",
+        images: [
+          "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Noise",
+        category: "Watches",
+        subcategory: "Smartwatches",
+        priceINR: 1299,
+        originalPriceINR: 3999,
+        discountPercentage: 68,
+        rating: 4.4,
+        reviewCount: 118000,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isFlashSale: true,
+        isDeal: true,
+        dealBadge: "68% OFF Mega Deal",
+        trendingScore: 97,
+        badges: ["#1 SMARTWATCH", "68% OFF"],
+        tags: ["noise", "smartwatch", "fitness", "pulse-grand", "wearable"],
+        variants: [
+          { name: "Color", values: ["Jet Black", "Champagne Grey", "Rose Pink", "Electric Blue"] }
+        ],
+        specs: {
+          "Display": "1.69\" LCD Screen (240x280 px)",
+          "Battery Life": "Up to 7 Days Battery Life (Fast Charging 15 min = 1 day)",
+          "Water Resistance": "IP68 Water Resistant"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B098NS6PVG",
+        sourceUrl: "https://www.amazon.in/dp/B098NS6PVG",
+        title: "Portronics Konnect L 1.2M Fast Charging Type-C to Type-C Braided Cable (65W)",
+        slug: "amazon-portronics-konnect-typec-cable",
+        description: "Heavy duty nylon braided 65W Power Delivery cable with reinforced zinc alloy metal connectors and 480Mbps data transfer.",
+        images: [
+          "https://images.unsplash.com/photo-1601593346740-925612772716?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Portronics",
+        category: "Mobile Accessories",
+        subcategory: "Cables",
+        priceINR: 249,
+        originalPriceINR: 699,
+        discountPercentage: 64,
+        rating: 4.5,
+        reviewCount: 32000,
+        availability: "in_stock",
+        isDeal: true,
+        dealBadge: "64% OFF",
+        trendingScore: 89,
+        badges: ["65W FAST CHARGE", "64% OFF"],
+        tags: ["portronics", "type-c", "cable", "fast-charging", "mobile"],
+        specs: {
+          "Power": "65W Power Delivery Fast Charging",
+          "Length": "1.2 Meters Nylon Braided",
+          "Data Transfer": "480 Mbps High Speed"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B08HN62F2C",
+        sourceUrl: "https://www.amazon.in/dp/B08HN62F2C",
+        title: "Wipro 16A Wi-Fi Smart Plug with Energy Monitoring & Alexa Voice Control",
+        slug: "amazon-wipro-16a-smart-plug-energy-monitor",
+        description: "Control heavy home appliances like Geysers, ACs and Microwaves from anywhere with the Wipro Next Smart App, Alexa and Google Assistant.",
+        images: [
+          "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Wipro",
+        category: "Tech & Gadgets",
+        subcategory: "Smart Home",
+        priceINR: 999,
+        originalPriceINR: 2290,
+        discountPercentage: 56,
+        rating: 4.6,
+        reviewCount: 45000,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isDeal: true,
+        dealBadge: "56% OFF",
+        trendingScore: 93,
+        badges: ["#1 SMART PLUG", "ENERGY MONITOR"],
+        tags: ["wipro", "smart-plug", "alexa", "energy-meter", "smart-home"],
+        specs: {
+          "Current Rating": "16 Amp (Suitable for AC, Geyser, Water Heater)",
+          "Wireless": "Direct 2.4GHz Wi-Fi (No Hub Required)",
+          "Monitoring": "Real-time energy consumption statistics"
+        }
+      },
+      {
+        source: "amazon-india",
+        sourceProductId: "B00N4OBBXK",
+        sourceUrl: "https://www.amazon.in/dp/B00N4OBBXK",
+        title: "Amazon Basics Extended Gaming Mouse Pad Desk Mat (Anti-Fray Stitched Edges)",
+        slug: "amazon-basics-extended-gaming-mouse-pad",
+        description: "Extra-large gaming desk pad with high-quality cloth surface for smooth glide and non-slip rubber base to keep your keyboard and mouse in place.",
+        images: [
+          "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Amazon Basics",
+        category: "Everyday Essentials",
+        subcategory: "Desk Accessories",
+        priceINR: 499,
+        originalPriceINR: 995,
+        discountPercentage: 50,
+        rating: 4.7,
+        reviewCount: 88000,
         availability: "in_stock",
         isBestSeller: true,
         bestsellerRank: 1,
         isDeal: true,
         dealBadge: "50% OFF",
         trendingScore: 92,
-        badges: ["#1 BEST SELLER", "50% OFF"],
-        tags: ["sandisk", "microsd", "storage", "memory-card", "accessories"],
+        badges: ["AMAZON BASICS", "50% OFF"],
+        tags: ["mouse-pad", "desk-mat", "amazonbasics", "gaming", "office"],
         specs: {
-          "Capacity": "128 GB",
-          "Speed": "Up to 140 MB/s",
-          "Class": "Class 10, U1, A1 rated"
-        }
-      },
-      {
-        source: "amazon-india",
-        sourceProductId: "AMZ-BASICS-BP-DAILY",
-        sourceUrl: "https://www.amazon.in/s?k=Amazon+Basics+Daily+Laptop+Backpack",
-        title: "Amazon Basics Daily Multi-Pocket Ergonomic Water-Resistant Laptop Backpack",
-        slug: "amazon-ergonomic-daily-laptop-backpack",
-        description: "Durable lightweight travel and office backpack with dedicated 15.6 inch padded laptop compartment and anti-theft back pocket.",
-        images: [
-          "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Amazon Basics",
-        category: "Bags",
-        subcategory: "Backpacks",
-        priceINR: 1299,
-        originalPriceINR: 2499,
-        discountPercentage: 48,
-        rating: 4.5,
-        reviewCount: 890,
-        availability: "in_stock",
-        isNewArrival: true,
-        isFlashSale: true,
-        isDeal: true,
-        dealBadge: "Deal of the Day",
-        trendingScore: 84,
-        badges: ["DEAL OF THE DAY", "48% OFF"],
-        tags: ["backpack", "laptop-bag", "office", "travel", "water-resistant"],
-        variants: [
-          { name: "Color", values: ["Obsidian Black", "Slate Gray", "Navy Blue"] }
-        ],
-        specs: {
-          "Capacity": "28 Liters",
-          "Material": "Water-Repellent Polyester",
-          "Laptop Fit": "Up to 15.6 inches"
+          "Dimensions": "900 x 400 x 3 mm (Extended XXL)",
+          "Material": "Micro-Weave Cloth + Natural Rubber Base",
+          "Edges": "Reinforced Anti-Fray Stitched Border"
         }
       }
     ];

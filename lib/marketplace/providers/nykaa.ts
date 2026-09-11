@@ -10,8 +10,8 @@ export const NykaaProvider: MarketplaceProvider = {
     return [
       {
         source: "nykaa",
-        sourceProductId: "7819200",
-        sourceUrl: "https://www.nykaa.com/p/7819200",
+        sourceProductId: "NYK-MINIMALIST-10NIA",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Minimalist+10%25+Niacinamide+Serum",
         title: "Minimalist 10% Niacinamide + Zinc 1% Blemish & Oil Control Face Serum",
         slug: "nykaa-minimalist-10-niacinamide-serum",
         description: "Aloe vera based lightweight daily facial serum to reduce sebum activity, fade hyperpigmentation, and strengthen skin barrier.",
@@ -41,8 +41,8 @@ export const NykaaProvider: MarketplaceProvider = {
       },
       {
         source: "nykaa",
-        sourceProductId: "7819201",
-        sourceUrl: "https://www.nykaa.com/p/7819201",
+        sourceProductId: "NYK-MAYB-SUPERSTAY",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Maybelline+Superstay+Matte+Ink",
         title: "Maybelline New York Superstay Matte Ink Liquid Lipstick",
         slug: "nykaa-maybelline-superstay-matte-ink",
         description: "Flawless matte liquid lipstick that lasts up to 16 hours. Highly-pigmented color formula with precision arrow applicator.",
@@ -74,8 +74,8 @@ export const NykaaProvider: MarketplaceProvider = {
       },
       {
         source: "nykaa",
-        sourceProductId: "7819202",
-        sourceUrl: "https://www.nykaa.com/p/7819202",
+        sourceProductId: "NYK-DOTKEY-SUNSCREEN",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Dot+and+Key+Sunscreen+SPF+50",
         title: "Dot & Key Vitamin C + E Super Bright Sunscreen Aqua Gel SPF 50+ PA+++",
         slug: "nykaa-dot-and-key-vitamin-c-sunscreen-spf50",
         description: "Zero white-cast, ultra-light water sunscreen infused with Vitamin C and Sicilian Blood Orange to protect against UV and blue light.",
@@ -107,8 +107,8 @@ export const NykaaProvider: MarketplaceProvider = {
       },
       {
         source: "nykaa",
-        sourceProductId: "7819203",
-        sourceUrl: "https://www.nykaa.com/p/7819203",
+        sourceProductId: "NYK-LOREAL-EXTRA-OIL",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Loreal+Extraordinary+Oil+Serum",
         title: "L'Oreal Paris Extraordinary Oil Hair Serum with 6 Rare Floral Extracts",
         slug: "nykaa-loreal-extraordinary-oil-hair-serum",
         description: "Weightless multi-use hair serum that provides 4x more shine, controls frizz for 24h, and protects against heat damage.",
@@ -137,8 +137,8 @@ export const NykaaProvider: MarketplaceProvider = {
       },
       {
         source: "nykaa",
-        sourceProductId: "7819204",
-        sourceUrl: "https://www.nykaa.com/p/7819204",
+        sourceProductId: "NYK-LANEIGE-LIPMASK",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Laneige+Lip+Sleeping+Mask+Berry",
         title: "Laneige Lip Sleeping Mask EX in Berry (Antioxidant Complex)",
         slug: "nykaa-laneige-lip-sleeping-mask-berry",
         description: "Cult-favorite overnight lip mask with Berry Fruit Complex and Vitamin C that melts away dead skin cells for plump, supple lips.",
@@ -168,8 +168,8 @@ export const NykaaProvider: MarketplaceProvider = {
       },
       {
         source: "nykaa",
-        sourceProductId: "7819205",
-        sourceUrl: "https://www.nykaa.com/p/7819205",
+        sourceProductId: "NYK-CETAPHIL-GENTLE",
+        sourceUrl: "https://www.nykaa.com/search/result/?q=Cetaphil+Gentle+Skin+Cleanser",
         title: "Cetaphil Gentle Skin Cleanser for Dry to Normal Sensitive Skin",
         slug: "nykaa-cetaphil-gentle-skin-cleanser",
         description: "Dermatologist recommended soap-free, non-foaming hydrating facial cleanser with Niacinamide, Panthenol, and Glycerin.",

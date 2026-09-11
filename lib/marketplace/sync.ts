@@ -2,6 +2,7 @@ import { connectDB } from "../db/mongodb";
 import { MarketplaceProductModel } from "../models/marketplace-product-model";
 import { MarketplaceProduct, SyncResult, MarketplaceProvider } from "./types";
 import { getAllProviders, getEnabledProviders } from "./index";
+import { verifyProductRecord } from "./verification";
 
 /**
  * Calculates dynamic trending score based on available signals:
@@ -86,6 +87,7 @@ export function applyDailyMarketplaceFluctuation(p: MarketplaceProduct): Marketp
 
 /**
  * Executes automatic product sync across all enabled Indian marketplace providers.
+ * Audits every product through the Verification Engine before publication.
  */
 export async function syncMarketplaceProducts(specificProviderId?: string): Promise<SyncResult[]> {
   await connectDB();
@@ -109,10 +111,16 @@ export async function syncMarketplaceProducts(specificProviderId?: string): Prom
         const trendingScore = calculateTrendingScore(p);
         const dynamicBadges = assignDynamicBadges(p);
 
+        // ─── Backend Independent Verification ───
+        const verification = await verifyProductRecord(p);
+
         const updateDoc = {
           source: p.source,
           sourceProductId: p.sourceProductId,
-          sourceUrl: p.sourceUrl,
+          sourceUrl: verification.verifiedSourceUrl || p.sourceUrl,
+          originalSourceUrl: verification.originalSourceUrl || p.sourceUrl,
+          verifiedSourceUrl: verification.verifiedSourceUrl || "",
+          canonicalSourceUrl: verification.canonicalSourceUrl || "",
           title: p.title,
           slug: p.slug,
           description: p.description || "",
@@ -138,7 +146,13 @@ export async function syncMarketplaceProducts(specificProviderId?: string): Prom
           tags: p.tags || [],
           variants: p.variants || [],
           specs: p.specs || {},
-          isActive: true,
+          // Only published if verified = true
+          isActive: verification.verified,
+          verificationStatus: verification.verified ? "verified" : "failed",
+          verificationCheckedAt: new Date(),
+          verificationError: verification.error || "",
+          imageValidationStatus: verification.imageValidationStatus,
+          priceValidationStatus: verification.priceValidationStatus,
           lastSyncedAt: new Date()
         };
 

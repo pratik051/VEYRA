@@ -52,6 +52,13 @@ function RequestProductFlow() {
   const [province, setProvince] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
+
+  // Saved Addresses State
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<any | null>(null);
+  const [isCustomAddress, setIsCustomAddress] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   const [productName, setProductName] = useState("");
   const [productVariant, setProductVariant] = useState("");
@@ -76,6 +83,38 @@ function RequestProductFlow() {
     paymentMethod: string;
     paymentStatus: string;
   } | null>(null);
+
+  // Pre-fill user & addresses on mount
+  useEffect(() => {
+    async function loadAddresses() {
+      try {
+        const res = await fetch("/api/user/addresses", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
+            setSavedAddresses(data.addresses);
+            const def = data.defaultAddress || data.addresses[0];
+            setSelectedAddress(def);
+            setFullName(def.fullName || "");
+            setPhone(def.phone || "");
+            setEmail(def.email || "");
+            setDeliveryAddress(def.fullAddress || "");
+            setCity(def.city || "");
+            setDistrict(def.district || "");
+            setProvince(def.province || "");
+            setPostalCode(def.postalCode || "");
+            setIsCustomAddress(false);
+          } else {
+            setIsCustomAddress(true);
+            setSaveAsDefault(true);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load user addresses in request-product:", err);
+      }
+    }
+    loadAddresses();
+  }, []);
 
   // Pre-fill from URL params if passed from product page or LinkVerifier
   useEffect(() => {
@@ -177,6 +216,7 @@ function RequestProductFlow() {
           province,
           postalCode,
           deliveryInstructions,
+          saveAsDefault: isCustomAddress ? saveAsDefault : false,
           productUrl,
           productName: productName || "Indian Marketplace Sourced Product",
           productVariant,
@@ -400,90 +440,183 @@ function RequestProductFlow() {
 
           {/* Customer Information */}
           <div className="space-y-4 pt-4 border-t border-neutral-100">
-            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400">2. Customer &amp; Delivery Details</h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Pratik Sharma"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Phone Number (Nepal) *</label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 9801234567"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. customer@example.com"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">City / Town *</label>
-                <input
-                  type="text"
-                  required
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. Kathmandu, Pokhara, Biratnagar"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Delivery Address *</label>
-                <input
-                  type="text"
-                  required
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  placeholder="e.g. House 42, Baluwatar Marg, Ward 4"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Province</label>
-                <input
-                  type="text"
-                  value={province}
-                  onChange={(e) => setProvince(e.target.value)}
-                  placeholder="e.g. Bagmati Province"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Special Delivery Instructions</label>
-                <input
-                  type="text"
-                  value={deliveryInstructions}
-                  onChange={(e) => setDeliveryInstructions(e.target.value)}
-                  placeholder="e.g. Call before delivery, leave at reception"
-                  className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
-                />
-              </div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400">2. Customer &amp; Delivery Details</h3>
+              {savedAddresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddressModal(true)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-neutral-800 underline hover:text-black"
+                >
+                  📍 {isCustomAddress ? "Use Saved Address" : "Change Address"}
+                </button>
+              )}
             </div>
+
+            {/* CASE A: Using Saved / Default Address */}
+            {!isCustomAddress && selectedAddress ? (
+              <div className="rounded-2xl border-2 border-emerald-500/40 bg-emerald-50/30 p-4 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                      ✓ {selectedAddress.isDefault ? "Using your default address" : "Using selected address"}
+                    </span>
+                    {selectedAddress.label && (
+                      <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-neutral-700 uppercase">
+                        {selectedAddress.label}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddressModal(true)}
+                    className="text-xs font-bold text-neutral-900 underline hover:text-red-600"
+                  >
+                    Change Address
+                  </button>
+                </div>
+
+                <div className="space-y-0.5">
+                  <p className="font-extrabold text-neutral-900">{selectedAddress.fullName}</p>
+                  <p className="text-neutral-700 leading-relaxed">
+                    {selectedAddress.fullAddress}
+                    {selectedAddress.landmark ? ` (Landmark: ${selectedAddress.landmark})` : ""}
+                  </p>
+                  <p className="text-neutral-500">
+                    {[selectedAddress.city, selectedAddress.ward ? `Ward ${selectedAddress.ward}` : "", selectedAddress.district, selectedAddress.province, selectedAddress.country || "Nepal"].filter(Boolean).join(", ")}
+                  </p>
+                </div>
+
+                <div className="pt-1.5 border-t border-emerald-100 flex flex-wrap items-center gap-4 text-neutral-700 font-medium">
+                  <span><strong>Phone:</strong> {selectedAddress.phone}</span>
+                  {selectedAddress.email && <span><strong>Email:</strong> {selectedAddress.email}</span>}
+                </div>
+              </div>
+            ) : (
+              /* CASE B: Manual / Custom Address Inputs */
+              <div className="space-y-3">
+                {savedAddresses.length > 0 && (
+                  <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                    <span>Entering a new address for this request.</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const def = savedAddresses.find((a) => a.isDefault) || savedAddresses[0];
+                        setSelectedAddress(def);
+                        setFullName(def.fullName || "");
+                        setPhone(def.phone || "");
+                        setEmail(def.email || "");
+                        setDeliveryAddress(def.fullAddress || "");
+                        setCity(def.city || "");
+                        setDistrict(def.district || "");
+                        setProvince(def.province || "");
+                        setPostalCode(def.postalCode || "");
+                        setIsCustomAddress(false);
+                      }}
+                      className="font-bold underline hover:text-amber-950"
+                    >
+                      Use Saved Address
+                    </button>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Pratik Sharma"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Phone Number (Nepal) *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 9801234567"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. customer@example.com"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">City / Town *</label>
+                    <input
+                      type="text"
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="e.g. Kathmandu, Pokhara, Biratnagar"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Full Delivery Address *</label>
+                    <input
+                      type="text"
+                      required
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      placeholder="e.g. House 42, Baluwatar Marg, Ward 4"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Province</label>
+                    <input
+                      type="text"
+                      value={province}
+                      onChange={(e) => setProvince(e.target.value)}
+                      placeholder="e.g. Bagmati Province"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-neutral-600 mb-1">Special Delivery Instructions</label>
+                    <input
+                      type="text"
+                      value={deliveryInstructions}
+                      onChange={(e) => setDeliveryInstructions(e.target.value)}
+                      placeholder="e.g. Call before delivery, leave at reception"
+                      className="w-full rounded-xl border border-neutral-300 p-2.5 font-medium focus:border-neutral-950 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Save as default address checkbox */}
+                  <div className="sm:col-span-2 pt-1">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-neutral-800 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={saveAsDefault}
+                        onChange={(e) => setSaveAsDefault(e.target.checked)}
+                        className="h-4 w-4 rounded border-neutral-300 accent-black"
+                      />
+                      <span>Save this address as my default address for future orders</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
@@ -669,6 +802,98 @@ function RequestProductFlow() {
             >
               Return to Storefront
             </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Address Selection Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <h3 className="text-base font-extrabold text-neutral-900">Select Delivery Address</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-black transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {savedAddresses.map((addr) => {
+                const isSelected = !isCustomAddress && selectedAddress?._id === addr._id;
+                return (
+                  <div
+                    key={addr._id || addr.fullAddress}
+                    onClick={() => {
+                      setSelectedAddress(addr);
+                      setFullName(addr.fullName || "");
+                      setPhone(addr.phone || "");
+                      setEmail(addr.email || "");
+                      setDeliveryAddress(addr.fullAddress || "");
+                      setCity(addr.city || "");
+                      setDistrict(addr.district || "");
+                      setProvince(addr.province || "");
+                      setPostalCode(addr.postalCode || "");
+                      setIsCustomAddress(false);
+                      setShowAddressModal(false);
+                    }}
+                    className={`cursor-pointer rounded-2xl border-2 p-4 transition text-xs space-y-1.5 ${
+                      isSelected
+                        ? "border-black bg-neutral-50 shadow-sm"
+                        : "border-neutral-200 hover:border-neutral-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-neutral-900 text-sm">{addr.fullName}</span>
+                        {addr.label && (
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-600 uppercase">
+                            {addr.label}
+                          </span>
+                        )}
+                        {addr.isDefault && (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold text-neutral-900">{isSelected ? "✓ Active" : "Deliver Here →"}</span>
+                    </div>
+                    <p className="text-neutral-700 leading-relaxed">
+                      {addr.fullAddress}
+                      {addr.landmark ? ` (Landmark: ${addr.landmark})` : ""}
+                    </p>
+                    <p className="text-neutral-500">
+                      {[addr.city, addr.ward ? `Ward ${addr.ward}` : "", addr.district, addr.province, addr.country || "Nepal"].filter(Boolean).join(", ")}
+                    </p>
+                    <p className="text-neutral-700 font-semibold pt-1">Phone: {addr.phone}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCustomAddress(true);
+                  setShowAddressModal(false);
+                }}
+                className="w-full sm:w-auto rounded-xl border border-black bg-white px-4 py-2.5 text-xs font-bold text-black hover:bg-neutral-50 transition"
+              >
+                + Add / Enter New Address
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(false)}
+                className="w-full sm:w-auto rounded-xl bg-black px-5 py-2.5 text-xs font-bold text-white hover:bg-neutral-800 transition"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

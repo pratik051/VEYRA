@@ -9,6 +9,25 @@ const OrderItemSchema = new Schema(
   { _id: false }
 );
 
+const ShippingAddressSchema = new Schema(
+  {
+    fullName: { type: String, required: true },
+    phone: { type: String, required: true },
+    email: { type: String, default: "" },
+    province: { type: String, default: "" },
+    district: { type: String, default: "" },
+    city: { type: String, default: "" },
+    ward: { type: String, default: "" },
+    fullAddress: { type: String, required: true },
+    addressLine1: { type: String, default: "" },
+    addressLine2: { type: String, default: "" },
+    postalCode: { type: String, default: "" },
+    country: { type: String, default: "Nepal" },
+    landmark: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
 const OrderSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
@@ -21,6 +40,8 @@ const OrderSchema = new Schema(
     city: { type: String, default: "" },
     ward: { type: String, default: "" },
     fullAddress: { type: String, required: true },
+    landmark: { type: String, default: "" },
+    shippingAddress: { type: ShippingAddressSchema },
     paymentMethod: { type: String, required: true },
     paymentStatus: { type: String, default: "Pending" },
     orderStatus: { type: String, default: "Order Placed" },

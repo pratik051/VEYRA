@@ -11,6 +11,9 @@ export interface MarketplaceProduct {
   source: string; // e.g., 'amazon-india', 'flipkart', 'myntra', 'meesho', 'nykaa', 'ajio', 'tatacliq', 'croma', 'boat', 'noise'
   sourceProductId: string;
   sourceUrl: string;
+  originalSourceUrl?: string;
+  verifiedSourceUrl?: string;
+  canonicalSourceUrl?: string;
   title: string;
   slug: string;
   description: string;
@@ -39,6 +42,12 @@ export interface MarketplaceProduct {
   lastSyncedAt?: Date;
   isActive?: boolean;
   featured?: boolean;
+  // Verification states
+  verificationStatus?: "pending" | "verified" | "failed";
+  verificationCheckedAt?: Date;
+  verificationError?: string;
+  imageValidationStatus?: "valid" | "invalid" | "pending";
+  priceValidationStatus?: "valid" | "invalid" | "pending";
 }
 
 export interface MarketplaceProviderConfig {

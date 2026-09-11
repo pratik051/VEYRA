@@ -10,136 +10,130 @@ export const TataCliqProvider: MarketplaceProvider = {
     return [
       {
         source: "tatacliq",
-        sourceProductId: "TC-WAT-90812",
-        sourceUrl: "https://www.tatacliq.com/p-TC-WAT-90812",
-        title: "Titan Neo Splash Blue Textured Dial Analog Stainless Steel Watch",
+        sourceProductId: "CLI-TITAN-NEO",
+        sourceUrl: "https://www.tatacliq.com/search/?searchCategory=all&text=Titan+Neo+Splash+Watch",
+        title: "Titan Neo Splash Quartz Analog Blue Dial Stainless Steel Watch",
         slug: "tatacliq-titan-neo-splash-analog-watch",
-        description: "Modern minimalist analog watch with ocean blue sunburst dial, mineral glass crystal, and solid stainless steel linked bracelet.",
+        description: "Sophisticated analog blue dial timepiece with mineral glass crystal, date display and solid stainless steel linked bracelet.",
         images: [
-          "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "Titan",
         category: "Watches",
         subcategory: "Analog Watches",
-        priceINR: 4295,
-        originalPriceINR: 5995,
+        priceINR: 4995,
+        originalPriceINR: 6995,
         discountPercentage: 28,
-        rating: 4.7,
-        reviewCount: 780,
+        rating: 4.8,
+        reviewCount: 1450,
         availability: "in_stock",
         isBestSeller: true,
         bestsellerRank: 1,
-        isNewArrival: true,
         isDeal: true,
-        dealBadge: "Tata CLiQ Luxury Deal",
-        trendingScore: 86,
-        badges: ["#1 BEST SELLER", "28% OFF"],
+        dealBadge: "Tata CLiQ Certified",
+        trendingScore: 92,
+        badges: ["TATA CERTIFIED", "28% OFF"],
         tags: ["titan", "watch", "analog", "stainless-steel", "mens-watch"],
-        variants: [
-          { name: "Strap", values: ["Silver Stainless Steel", "Mesh Steel", "Leather"] }
-        ],
         specs: {
           "Case Diameter": "42 mm",
-          "Glass": "Scratch-Resistant Mineral Crystal",
-          "Water Resistance": "50m Water Resistant"
+          "Water Resistance": "50 Meters",
+          "Glass": "Scratch-Resistant Mineral Crystal"
         }
       },
       {
         source: "tatacliq",
-        sourceProductId: "TC-WAT-90813",
-        sourceUrl: "https://www.tatacliq.com/p-TC-WAT-90813",
-        title: "Casio Edifice Solar Powered Chronograph with Sapphire Crystal",
+        sourceProductId: "CLI-CASIO-EDIFICE",
+        sourceUrl: "https://www.tatacliq.com/search/?searchCategory=all&text=Casio+Edifice+Solar+Watch",
+        title: "Casio Edifice Solar-Powered Slim Sapphire Crystal Chronograph Watch",
         slug: "tatacliq-casio-edifice-solar-chronograph",
-        description: "Motorsports inspired solar charging high-performance chronograph with anti-reflective sapphire glass and 100m water resistance.",
+        description: "Motorsport inspired ultra-slim chronograph featuring Tough Solar charging technology and anti-reflective coated sapphire crystal glass.",
         images: [
-          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "Casio",
         category: "Watches",
-        subcategory: "Chronograph",
+        subcategory: "Solar Chronograph",
         priceINR: 11995,
-        originalPriceINR: 15995,
-        discountPercentage: 25,
-        rating: 4.9,
-        reviewCount: 1420,
-        availability: "in_stock",
-        isBestSeller: true,
-        bestsellerRank: 1,
-        isDeal: true,
-        dealBadge: "25% OFF Luxury",
-        isTrending: true,
-        trendingScore: 95,
-        badges: ["EDIFICE SOLAR", "SAPPHIRE GLASS"],
-        tags: ["casio", "edifice", "solar", "chronograph", "luxury-watch"],
-        specs: {
-          "Power": "Tough Solar (Never needs battery replacement)",
-          "Glass": "Scratch-Proof Sapphire Crystal",
-          "Water Resistance": "100 Meters / 10 BAR"
-        }
-      },
-      {
-        source: "tatacliq",
-        sourceProductId: "TC-WAT-90814",
-        sourceUrl: "https://www.tatacliq.com/p-TC-WAT-90814",
-        title: "Tommy Hilfiger Men Decker Multi-Function Black Leather Watch",
-        slug: "tatacliq-tommy-hilfiger-decker-leather-watch",
-        description: "Distinguished sporty luxury timepiece with multi-eye sub-dials, iconic TH flag crest, and premium contrast stitched genuine leather band.",
-        images: [
-          "https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=800&q=80"
-        ],
-        brand: "Tommy Hilfiger",
-        category: "Watches",
-        subcategory: "Multi-Function",
-        priceINR: 8995,
         originalPriceINR: 14995,
-        discountPercentage: 40,
-        rating: 4.8,
+        discountPercentage: 20,
+        rating: 4.9,
         reviewCount: 980,
         availability: "in_stock",
         isDeal: true,
-        dealBadge: "40% OFF Tata Exclusive",
-        trendingScore: 92,
-        badges: ["EXCLUSIVE DEAL", "40% OFF"],
-        tags: ["tommy-hilfiger", "designer-watch", "leather", "luxury"],
+        dealBadge: "20% OFF",
+        trendingScore: 95,
+        badges: ["TOUGH SOLAR", "SAPPHIRE GLASS"],
+        tags: ["casio", "edifice", "solar", "sapphire", "chronograph"],
         specs: {
-          "Dial Color": "Sunray Jet Black with Rose Gold Accents",
-          "Case": "46 mm Ion-Plated Stainless Steel",
-          "Strap": "Calfskin Leather Band"
+          "Power": "Tough Solar (High-Efficiency Solar Cell)",
+          "Glass": "Sapphire Crystal with Non-Reflective Coating",
+          "Water Resistance": "100 Meters / 10 Bar"
         }
       },
       {
         source: "tatacliq",
-        sourceProductId: "TC-WAT-90815",
-        sourceUrl: "https://www.tatacliq.com/p-TC-WAT-90815",
-        title: "Fastrack Limitless FS1 Pro 1.96\" Super AMOLED BT Calling Smartwatch",
-        slug: "tatacliq-fastrack-limitless-fs1-pro-smartwatch",
-        description: "Arched Super AMOLED display with 410x502 resolution, NitroFast single-sync Bluetooth calling, AI voice assistant and 110+ sports modes.",
+        sourceProductId: "CLI-TOMMY-DECKER",
+        sourceUrl: "https://www.tatacliq.com/search/?searchCategory=all&text=Tommy+Hilfiger+Watch",
+        title: "Tommy Hilfiger Decker Men Multifunction Blue Silicone Sport Watch",
+        slug: "tatacliq-tommy-hilfiger-decker-watch",
+        description: "Sporty American styling with iconic Tommy Hilfiger sub-eyes, brushed ion-plated case and flexible blue branded silicone strap.",
         images: [
-          "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80"
+          "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Tommy Hilfiger",
+        category: "Watches",
+        subcategory: "Sport Watches",
+        priceINR: 8750,
+        originalPriceINR: 12500,
+        discountPercentage: 30,
+        rating: 4.7,
+        reviewCount: 620,
+        availability: "in_stock",
+        isDeal: true,
+        dealBadge: "30% OFF Festive",
+        trendingScore: 89,
+        badges: ["DESIGNER LUXURY", "30% OFF"],
+        tags: ["tommy-hilfiger", "watch", "sport", "silicone", "luxury"],
+        specs: {
+          "Case Size": "46 mm",
+          "Movement": "Multifunction Day & Date",
+          "Strap": "Durable Embossed Silicone"
+        }
+      },
+      {
+        source: "tatacliq",
+        sourceProductId: "CLI-FASTRACK-FS1",
+        sourceUrl: "https://www.tatacliq.com/search/?searchCategory=all&text=Fastrack+Smartwatch",
+        title: "Fastrack FS1 Pro 1.96\" Super AMOLED BT Calling Smartwatch",
+        slug: "tatacliq-fastrack-fs1-pro-amoled-smartwatch",
+        description: "Largest-in-class 1.96 inch Super AMOLED arched display with NitroFast charging, SingleSync BT calling and 110+ sports modes.",
+        images: [
+          "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80"
         ],
         brand: "Fastrack",
         category: "Watches",
         subcategory: "Smartwatches",
-        priceINR: 2495,
-        originalPriceINR: 4995,
-        discountPercentage: 50,
+        priceINR: 2795,
+        originalPriceINR: 7995,
+        discountPercentage: 65,
         rating: 4.5,
         reviewCount: 3100,
         availability: "in_stock",
         isBestSeller: true,
-        bestsellerRank: 2,
+        bestsellerRank: 1,
+        isFlashSale: true,
         isDeal: true,
-        dealBadge: "50% Flash Deal",
-        trendingScore: 89,
-        badges: ["AMOLED DISPLAY", "50% OFF"],
-        tags: ["smartwatch", "fastrack", "amoled", "bluetooth-calling"],
+        dealBadge: "65% Mega Flash Sale",
+        trendingScore: 93,
+        badges: ["SUPER AMOLED", "65% OFF"],
+        tags: ["fastrack", "smartwatch", "amoled", "bluetooth-calling"],
         variants: [
-          { name: "Color", values: ["Jet Black", "Teal Blue", "Olive Green"] }
+          { name: "Color", values: ["Teal Blue", "Classic Black", "Carbon Grey"] }
         ],
         specs: {
-          "Display": "1.96\" Super AMOLED 410x502px",
-          "Calling": "SingleSync BT Calling with Mic & Speaker",
-          "Battery": "Up to 7 Days Standard Use"
+          "Display": "1.96\" Super AMOLED (410x502 px)",
+          "Battery": "Up to 7 Days Battery Life",
+          "Water Resistance": "IP68 Water & Dust Resistant"
         }
       }
     ];

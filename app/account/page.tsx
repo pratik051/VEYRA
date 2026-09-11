@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useWishlist } from "@/components/providers/wishlist-provider";
-import { products } from "@/lib/data";
+import { products, nepalProvinces } from "@/lib/data";
 import { ProductCard } from "@/components/ui/product-card";
 import { formatNpr } from "@/lib/utils";
 import { useToast } from "@/components/providers/toast-provider";
@@ -163,12 +163,47 @@ function AccountContent() {
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
+  // Address Management State
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showAddAddressForm, setShowAddAddressForm] = useState(false);
+  const [addressSubmitting, setAddressSubmitting] = useState(false);
+  const [newAddressForm, setNewAddressForm] = useState({
+    fullName: "",
+    phone: "",
+    province: "Bagmati",
+    district: "",
+    city: "",
+    ward: "",
+    fullAddress: "",
+    landmark: "",
+    label: "Home",
+    isDefault: false
+  });
+
   // Quick Sourcing Input inside Dashboard (BankDash Quick Transfer Style)
   const [quickSourcingUrl, setQuickSourcingUrl] = useState("");
   const [quickInrPrice, setQuickInrPrice] = useState("");
 
   const { ids, clear: clearWishlist } = useWishlist();
   const { pushToast } = useToast();
+
+  const loadAddresses = useCallback(async () => {
+    setLoadingAddresses(true);
+    try {
+      const res = await fetch("/api/user/addresses", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.addresses)) {
+          setSavedAddresses(data.addresses);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load saved addresses:", err);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  }, []);
 
   const loadMe = useCallback(async () => {
     try {
@@ -191,6 +226,11 @@ function AccountContent() {
           fullAddress: dataUser.fullAddress || "",
           landmark: dataUser.landmark || ""
         });
+        setNewAddressForm((prev) => ({
+          ...prev,
+          fullName: dataUser.fullName || "",
+          phone: dataUser.phone || ""
+        }));
       }
     } catch {
       setUser(null);
@@ -229,6 +269,79 @@ function AccountContent() {
     }
   }, [user, fetchOrders]);
 
+  useEffect(() => {
+    if (user) {
+      loadAddresses();
+    }
+  }, [user, loadAddresses]);
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const res = await fetch(`/api/user/addresses/${id}/default`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Default address updated.", "success");
+        loadAddresses();
+      } else {
+        pushToast(data.error || "Failed to set default address.", "error");
+      }
+    } catch {
+      pushToast("Network error setting default address.", "error");
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this delivery address?")) return;
+    try {
+      const res = await fetch(`/api/user/addresses/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Address deleted successfully.", "success");
+        loadAddresses();
+      } else {
+        pushToast(data.error || "Failed to delete address.", "error");
+      }
+    } catch {
+      pushToast("Network error deleting address.", "error");
+    }
+  };
+
+  const handleAddAddress = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setAddressSubmitting(true);
+    try {
+      const res = await fetch("/api/user/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAddressForm)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("New delivery address saved!", "success");
+        setShowAddAddressForm(false);
+        setNewAddressForm({
+          fullName: user?.fullName || "",
+          phone: user?.phone || "",
+          province: "Bagmati",
+          district: "",
+          city: "",
+          ward: "",
+          fullAddress: "",
+          landmark: "",
+          label: "Home",
+          isDefault: false
+        });
+        loadAddresses();
+      } else {
+        pushToast(data.error || "Failed to add address.", "error");
+      }
+    } catch {
+      pushToast("Network error adding address.", "error");
+    } finally {
+      setAddressSubmitting(false);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     pushToast("Signed out successfully.", "info");
@@ -250,7 +363,7 @@ function AccountContent() {
         return;
       }
       setUser(data.user || null);
-      pushToast("Profile & Address updated successfully!", "success");
+      pushToast("Profile updated successfully!", "success");
     } catch {
       pushToast("Network error updating profile.", "error");
     } finally {
@@ -1041,8 +1154,8 @@ function AccountContent() {
                 ))}
               </div>
 
-              {/* Edit Profile & Shipping Form */}
-              {(settingsTab === "profile" || settingsTab === "shipping") && (
+              {/* 1. Edit Profile Form */}
+              {settingsTab === "profile" && (
                 <form onSubmit={saveProfile} className="space-y-6 max-w-2xl">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -1070,96 +1183,253 @@ function AccountContent() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                        Province
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.province}
-                        placeholder="e.g. Bagmati Province"
-                        onChange={(e) => setProfileForm((prev) => ({ ...prev, province: e.target.value }))}
-                        className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                        District
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.district}
-                        placeholder="e.g. Kathmandu"
-                        onChange={(e) => setProfileForm((prev) => ({ ...prev, district: e.target.value }))}
-                        className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                        City / Municipality
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.city}
-                        placeholder="e.g. Lalitpur"
-                        onChange={(e) => setProfileForm((prev) => ({ ...prev, city: e.target.value }))}
-                        className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                        Ward Number
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.ward}
-                        placeholder="e.g. 03"
-                        onChange={(e) => setProfileForm((prev) => ({ ...prev, ward: e.target.value }))}
-                        className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                        Nearest Landmark
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.landmark}
-                        placeholder="e.g. Opposite City Mall"
-                        onChange={(e) => setProfileForm((prev) => ({ ...prev, landmark: e.target.value }))}
-                        className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                      Full Doorstep Delivery Address
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={profileForm.fullAddress}
-                      placeholder="e.g. House #12, Shanti Marga, Baneshwor, Kathmandu"
-                      onChange={(e) => setProfileForm((prev) => ({ ...prev, fullAddress: e.target.value }))}
-                      className="w-full rounded-2xl bg-[#F5F7FA] border border-slate-200/80 px-4 py-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                    />
-                  </div>
-
                   <button
                     type="submit"
                     disabled={isSavingProfile}
                     className="rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 shadow-md shadow-blue-600/20 transition active:scale-95 cursor-pointer"
                   >
-                    {isSavingProfile ? "Saving Details..." : "Save Settings & Address"}
+                    {isSavingProfile ? "Saving Profile..." : "Save Profile"}
                   </button>
                 </form>
+              )}
+
+              {/* 2. Shipping Addresses Subtab */}
+              {settingsTab === "shipping" && (
+                <div className="space-y-6 max-w-3xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-900">Saved Delivery Addresses</h4>
+                      <p className="text-xs text-slate-500">Your default address is automatically loaded during checkout.</p>
+                    </div>
+                    {!showAddAddressForm && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAddAddressForm(true)}
+                        className="rounded-2xl bg-black text-white text-xs font-bold px-4 py-2 hover:bg-neutral-800 transition"
+                      >
+                        + Add New Address
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Add New Address Form */}
+                  {showAddAddressForm && (
+                    <form onSubmit={handleAddAddress} className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6 space-y-4 animate-in fade-in">
+                      <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                        <h5 className="text-xs font-black uppercase text-slate-800">Add New Delivery Address</h5>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddAddressForm(false)}
+                          className="text-xs font-bold text-slate-400 hover:text-black"
+                        >
+                          ✕ Cancel
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Full Name *</label>
+                          <input
+                            required
+                            value={newAddressForm.fullName}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, fullName: e.target.value })}
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Phone Number *</label>
+                          <input
+                            required
+                            value={newAddressForm.phone}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, phone: e.target.value })}
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Province *</label>
+                          <select
+                            required
+                            value={newAddressForm.province}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, province: e.target.value })}
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          >
+                            {nepalProvinces.map((p) => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">District *</label>
+                          <input
+                            required
+                            value={newAddressForm.district}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, district: e.target.value })}
+                            placeholder="e.g. Kathmandu"
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">City / Municipality *</label>
+                          <input
+                            required
+                            value={newAddressForm.city}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, city: e.target.value })}
+                            placeholder="e.g. Kathmandu Metropolitan"
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Ward Number (Optional)</label>
+                          <input
+                            value={newAddressForm.ward}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, ward: e.target.value })}
+                            placeholder="e.g. 04"
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Full Street Address *</label>
+                          <textarea
+                            required
+                            rows={2}
+                            value={newAddressForm.fullAddress}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, fullAddress: e.target.value })}
+                            placeholder="e.g. House #42, Baluwatar Marg, Near PM Residence"
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Nearest Landmark (Optional)</label>
+                          <input
+                            value={newAddressForm.landmark}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, landmark: e.target.value })}
+                            placeholder="e.g. Opposite Bhatbhateni"
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Address Label</label>
+                          <select
+                            value={newAddressForm.label}
+                            onChange={(e) => setNewAddressForm({ ...newAddressForm, label: e.target.value })}
+                            className="w-full rounded-xl bg-white border border-slate-300 p-2.5 font-medium focus:border-blue-600 focus:outline-none"
+                          >
+                            <option value="Home">Home</option>
+                            <option value="Office">Office</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-2 pt-1">
+                          <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={newAddressForm.isDefault}
+                              onChange={(e) => setNewAddressForm({ ...newAddressForm, isDefault: e.target.checked })}
+                              className="h-4 w-4 rounded border-slate-300 accent-blue-600"
+                            />
+                            <span>Set as default delivery address</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-200/60">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddAddressForm(false)}
+                          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={addressSubmitting}
+                          className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {addressSubmitting ? "Saving..." : "Save Address"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Saved Addresses List */}
+                  {loadingAddresses ? (
+                    <div className="text-xs text-slate-400 py-4">Loading saved addresses...</div>
+                  ) : savedAddresses.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-500 space-y-2">
+                      <p className="text-xl">📍</p>
+                      <p className="font-bold text-slate-800">No saved addresses yet</p>
+                      <p>Add a delivery address to enable instant 1-click checkout.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {savedAddresses.map((addr) => (
+                        <div
+                          key={addr._id || addr.fullAddress}
+                          className={`rounded-2xl border p-4 space-y-2 text-xs transition relative ${
+                            addr.isDefault
+                              ? "border-blue-600 bg-blue-50/20 shadow-xs"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-extrabold text-slate-900">{addr.fullName}</span>
+                              {addr.label && (
+                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-600 uppercase">
+                                  {addr.label}
+                                </span>
+                              )}
+                            </div>
+                            {addr.isDefault && (
+                              <span className="rounded-full bg-blue-100 text-blue-700 font-extrabold text-[10px] px-2 py-0.5">
+                                ✓ Default
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="text-slate-700 leading-relaxed">
+                            {addr.fullAddress}
+                            {addr.landmark ? ` (Landmark: ${addr.landmark})` : ""}
+                          </p>
+                          <p className="text-slate-500">
+                            {[addr.city, addr.ward ? `Ward ${addr.ward}` : "", addr.district, addr.province, addr.country || "Nepal"].filter(Boolean).join(", ")}
+                          </p>
+                          <p className="text-slate-800 font-semibold pt-1">Phone: {addr.phone}</p>
+
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            {!addr.isDefault ? (
+                              <button
+                                type="button"
+                                onClick={() => handleSetDefaultAddress(addr._id)}
+                                className="text-blue-600 font-bold hover:underline"
+                              >
+                                Set as Default
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-bold text-emerald-600">✓ Primary Address</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddress(addr._id)}
+                              className="text-red-500 font-semibold hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Security & Access Subtab */}

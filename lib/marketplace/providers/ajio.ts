@@ -10,8 +10,8 @@ export const AjioProvider: MarketplaceProvider = {
     return [
       {
         source: "ajio",
-        sourceProductId: "46091823",
-        sourceUrl: "https://www.ajio.com/p/46091823",
+        sourceProductId: "AJIO-PUMA-WIRED",
+        sourceUrl: "https://www.ajio.com/search/?text=Puma+Wired+Sneakers",
         title: "Puma Mens Wired Pro Lightweight Cushioned Daily Sneakers",
         slug: "ajio-puma-wired-pro-sneakers",
         description: "Breathable air mesh running and lifestyle trainers with SoftFoam+ comfort sockliner for instant step-in cushioning.",
@@ -47,8 +47,8 @@ export const AjioProvider: MarketplaceProvider = {
       },
       {
         source: "ajio",
-        sourceProductId: "46091824",
-        sourceUrl: "https://www.ajio.com/p/46091824",
+        sourceProductId: "AJIO-GAP-ARCH-LOGO",
+        sourceUrl: "https://www.ajio.com/search/?text=GAP+Sweatshirt",
         title: "GAP Mens Iconic Arch Logo Relaxed Fit French Terry Sweatshirt",
         slug: "ajio-gap-arch-logo-french-terry-sweatshirt",
         description: "Classic American casual style with the iconic felt embroidered GAP arch logo, ribbed crew neck, cuffs and straight hem.",
@@ -83,8 +83,8 @@ export const AjioProvider: MarketplaceProvider = {
       },
       {
         source: "ajio",
-        sourceProductId: "46091825",
-        sourceUrl: "https://www.ajio.com/p/46091825",
+        sourceProductId: "AJIO-SUPERDRY-POLO",
+        sourceUrl: "https://www.ajio.com/search/?text=Superdry+Polo",
         title: "Superdry Vintage Destroyed Polo Shirt with Embroidered Chest Logo",
         slug: "ajio-superdry-vintage-destroyed-polo",
         description: "Signature classic pique cotton polo with contrast collar tipping, side vents and subtle distressed heritage wash.",
@@ -116,8 +116,8 @@ export const AjioProvider: MarketplaceProvider = {
       },
       {
         source: "ajio",
-        sourceProductId: "46091826",
-        sourceUrl: "https://www.ajio.com/p/46091826",
+        sourceProductId: "AJIO-NETPLAY-OXFORD",
+        sourceUrl: "https://www.ajio.com/search/?text=Netplay+Oxford+Shirt",
         title: "Netplay Slim Fit Pure Oxford Cotton Button-Down Formal Shirt",
         slug: "ajio-netplay-slim-fit-oxford-shirt",
         description: "Versatile corporate and smart-casual long-sleeve oxford shirt with button-down collar and patch pocket.",

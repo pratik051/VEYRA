@@ -39,12 +39,29 @@ export interface IIndiaOrder {
   province?: string;
   postalCode?: string;
   deliveryInstructions?: string;
-  // Marketplace snapshot (preserved forever even if product is removed)
+  shippingAddress?: {
+    fullName: string;
+    phone: string;
+    email?: string;
+    deliveryAddress: string;
+    city?: string;
+    district?: string;
+    province?: string;
+    postalCode?: string;
+    country?: string;
+    deliveryInstructions?: string;
+  };
+  // Immutable Marketplace Snapshot
   marketplace?: string;           // e.g. "amazon-india", "myntra", "flipkart"
   sourceProductId?: string;       // e.g. "B08N5XSG8Z"
-  productUrl: string;             // Original Indian marketplace product URL
+  productUrl: string;             // Active product URL
+  originalSourceUrl?: string;     // URL originally submitted/imported
+  verifiedSourceUrl?: string;     // Verified working URL
+  canonicalSourceUrl?: string;    // Marketplace canonical product URL
   productName: string;
   productImage?: string;
+  brand?: string;
+  category?: string;
   productVariant?: string;
   size?: string;
   color?: string;
@@ -78,12 +95,29 @@ const IndiaOrderSchema = new Schema<IIndiaOrder>(
     province: { type: String, default: "", trim: true },
     postalCode: { type: String, default: "", trim: true },
     deliveryInstructions: { type: String, default: "", trim: true },
+    shippingAddress: {
+      fullName: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      email: { type: String, default: "" },
+      deliveryAddress: { type: String, default: "" },
+      city: { type: String, default: "" },
+      district: { type: String, default: "" },
+      province: { type: String, default: "" },
+      postalCode: { type: String, default: "" },
+      country: { type: String, default: "Nepal" },
+      deliveryInstructions: { type: String, default: "" }
+    },
     // Marketplace snapshot fields
     marketplace: { type: String, default: "", index: true },
     sourceProductId: { type: String, default: "" },
     productUrl: { type: String, required: true, trim: true },
+    originalSourceUrl: { type: String, default: "" },
+    verifiedSourceUrl: { type: String, default: "" },
+    canonicalSourceUrl: { type: String, default: "" },
     productName: { type: String, required: true, trim: true },
     productImage: { type: String, default: "" },
+    brand: { type: String, default: "" },
+    category: { type: String, default: "" },
     productVariant: { type: String, default: "" },
     size: { type: String, default: "" },
     color: { type: String, default: "" },

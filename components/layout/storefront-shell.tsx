@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { SupportChat } from "@/components/support/support-chat";
 
 const ISOLATED_ROUTES = ["/dashboard", "/account", "/admin", "/login", "/signup"];
 
@@ -29,6 +30,7 @@ export function StorefrontShell({ children }: { children: React.ReactNode }) {
       <Footer />
       <MobileNav />
       <BackToTop />
+      <SupportChat />
     </>
   );
 }
