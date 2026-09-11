@@ -55,81 +55,67 @@ LINKOVA enforces strict architectural and server-side separation between **Admin
 
 ---
 
-## 🔍 Product Availability & Verification Engine
+## 🔍 Product Order Flow & Admin Verification Model
 
-LINKOVA features an enterprise multi-stage verification engine designed to eliminate false-negative rejections while ensuring strict orderability guarantees:
+LINKOVA provides a friction-free customer experience where customers can paste any marketplace product link and submit their order request smoothly without being blocked by automated scraper false-negatives:
 
-1. **Intelligent URL Normalization & Product ID Extraction:**
-   - **Tracking Stripping:** Automatically removes tracking/UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `shared`, etc.) without altering the customer's `originalSourceUrl`.
-   - **Marketplace Path Normalization:** Resolves marketplace-specific suffixes (e.g., Myntra `/buy` paths) into clean canonical product addresses.
-   - **Strong Product Identity Extraction:** Extracts authoritative marketplace identifiers (`sourceProductId`) such as Myntra numeric IDs (`12187850`), Amazon ASINs (`B0...`), and Flipkart PIDs.
+1. **Seamless Customer Flow:**
+   ```text
+   Customer pastes Indian marketplace link
+          ↓
+   Link is parsed & metadata captured
+          ↓
+   Customer confirms variant, quantity & delivery details
+          ↓
+   Customer submits order (Status: Requested • Awaiting Admin Verification)
+          ↓
+   Admin reviews product link & verifies availability in India
+   ```
 
-2. **Accurate Availability Distinction (Never Guess Availability):**
-   - **Explicit Confirmation Only:** A product is ONLY marked `❌ Out of Stock` when the marketplace explicitly confirms that the exact variant is out of stock.
-   - **Parser/API/Network Failures:** Timeouts, scraper limits, missing metadata, or blocked requests are categorized as `UNKNOWN` (`⚠️ Availability Could Not Be Confirmed`), **NEVER** `OUT_OF_STOCK`.
-   - **Delivery Status States:** Distinguishes between `DELIVERY_AVAILABLE`, `DELIVERY_UNAVAILABLE`, and `UNKNOWN`.
+2. **Customer-Facing Availability State:**
+   - Instead of blocking orders with automatic failures (`Out of Stock`, `Delivery Unconfirmed`), orders are accepted with the clear status `⏳ Awaiting Admin Verification`.
+   - Customers can track live progress in `/account` with real-time badges.
 
-3. **Authoritative UI Presentation (No Contradictory Badges):**
-   - **Verified & Orderable:** `✓ Product Verified` • `✓ In Stock` • `✓ Delivery Available` ➔ Instant Order Creation.
-   - **Confirmed Out of Stock:** `✓ Product Verified` • `❌ Out of Stock` ➔ Request Product Option.
-   - **Product Found (Unconfirmed Availability):** `✓ Product Found` • `⚠️ Availability Could Not Be Confirmed` ➔ Request Product Option.
-   - **Invalid Product / URL:** `✕ Product Could Not Be Verified` ➔ Check Another Link.
-
-4. **Strict Backend Orderability Criteria:**
-   - Orders can proceed ONLY when `productFound === true`, `productIdentityVerified === true`, `stockStatus === "IN_STOCK"`, `deliveryStatus === "DELIVERY_AVAILABLE"`, and `priceStatus === "VERIFIED"`.
-   - A fresh backend re-verification is executed at the exact moment of final order submission.
-
-5. **Private Transit Security & Structured Audit Logging:**
-   - The internal transit destination is configured securely on the server and is never exposed in customer responses, public APIs, or UI components.
-   - Structured server logs (`[VERIFICATION_AUDIT]`) record verification stages, failure reasons, and timestamps for diagnostics without logging any confidential credentials.
-
----
-
-## 🔄 Request Product & Alternative Sourcing Flow
-
-When an item is unavailable for direct automated ordering, LINKOVA enables a collaborative sourcing flow:
-
-1. **Customer Product Request (`/request-product`):**
-   - Customers can submit a product request with custom quantities, sizes, and colors.
-   - The backend records the original URL, identifiers, and verification failure snapshot.
-2. **Admin Review & Verified Alternative Link:**
-   - Admins inspect the request in the Admin Dashboard (`/admin`).
-   - Admins can locate an alternative product link (e.g. from an authorized seller or alternative marketplace).
-   - **Independent Verification:** The backend independently verifies the alternative product's stock, delivery, and pricing before allowing it to be offered.
-3. **Customer Review & Conversion:**
-   - The customer receives the verified alternative card in `/account` under *Sourcing Quotes* with landed NPR pricing.
-   - Customers can **Accept Alternative** (which re-verifies on the backend and converts to a live order) or **Decline**.
-   - Full traceability preserves both the original requested URL and the final verified source URL on the order snapshot.
+3. **Admin Manual Verification Workflow (`/admin`):**
+   - **Direct Product Inspection:** Admins can click `Open Original Product ↗` (opens in a new tab) to inspect the live marketplace listing directly.
+   - **Verification Modal:** Allows procurement staff to review and record:
+     - **Verification Status:** `Pending Verification`, `Verified / Orderable`, `Unavailable`, `Alternative Required`, `Rejected`.
+     - **Marketplace Stock & Delivery Status:** `Available`, `Unavailable`, `Not Checked`.
+     - **Verified INR Price & Variant:** Confirmed purchase price in Indian Rupees (₹) and verified size/color.
+     - **Alternative Sourcing:** If `Alternative Required`, admin provides an `alternativeSourceUrl`. Both original and alternative URLs remain preserved on the order for complete audit traceability.
+     - **Admin Note:** Transparent notes visible to the customer on their order card.
 
 ---
 
 ## 🎫 Customer Account & Support Tickets
 
-Users can report issues and get help with a ticket workflow:
+Users can manage orders and get help with a dedicated ticket workflow in `/account`:
 
-- **Raise a Ticket:** Select from problem categories (*Order Problem, Payment Problem, Product Problem, Delivery Problem, Account Problem, Website/Technical Problem, Refund/Return Problem, Other*), specify subject, detailed description, and optionally link to an existing Order ID.
-- **Security Isolation:** The customer's User ID is automatically inferred from the authenticated session. Users can only view and reply to their own tickets.
-- **Conversation Thread:** Full message history between the customer and support agents with real-time status updates (*Open, In Progress, Waiting for User, Resolved, Closed*).
+- **Live Orders & Invoices:** View order milestones, admin verification badges, sourcing notes, and downloadable PDF invoices.
+- **Alternative Link Review:** If an alternative item is sourced by admin, customers can inspect the proposed alternative directly.
+- **Raise a Ticket:** Select from problem categories (*Order Problem, Payment Problem, Product Problem, Delivery Problem, Account Problem, Website/Technical Problem, Refund/Return Problem, Other*), specify subject, detailed description, and link to an existing Order ID.
+- **Security Isolation:** Customer User ID is automatically inferred from session. Users can only view and reply to their own tickets.
+- **Conversation Thread:** Full message history between customer and support agents with real-time status updates (*Open, In Progress, Waiting for User, Resolved, Closed*).
 - **Privacy Protection:** Internal staff notes written by administrators are stripped server-side and never returned to customers.
 
 ---
 
 ## 🛡️ Admin Management Portal
 
-The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
+The LINKOVA Admin Console (`/admin`) provides comprehensive oversight of operations:
 
 - **Real-Time DB Metrics:** Live counts for Total Sourcing Volume, India Orders, Product Requests, Store Orders, Pending Payment Reviews, and User Problems.
-- **Product Requests & Alternative Link Sourcing:**
-   - Filter by status (*Pending, Reviewing, Alternative Found, Waiting for User, Converted, Closed*).
-   - Submit and independently verify alternative marketplace links.
+- **India Orders & Verification Desk:**
+   - Direct `Open Original Product ↗` links for all submitted orders.
+   - Dedicated `Verify Link` modal to set orderability, stock status, verified prices, and admin notes.
+   - Milestone tracking (*Requested ➔ Verified ➔ Confirmed ➔ Purchased ➔ In Transit ➔ Arrived in Nepal ➔ Out for Delivery ➔ Delivered*).
 - **User Problems / Support Center:**
    - Status filters (*All, Open, In Progress, Waiting for User, Resolved, Closed*) and category filters.
    - Search by Ticket ID, Customer Name, Email, Order ID, or Subject.
    - Comprehensive ticket detail slide-over with customer profile, problem description, live linked Order snapshot, and complete message thread.
    - **Dual Reply System:** Toggle between *Reply to Customer* (visible in user account) and *Internal Note* (visible only to admins).
    - Live status and priority updates.
-- **Order Management & Invoices:** Real-time milestone updates and PDF invoice generation.
-- **Marketplace Verification & Sync:** Automated validation of Indian marketplace product feeds and catalog imports.
+- **Order Management & Invoices:** Real-time milestone updates and printable PDF invoice generation.
 
 ---
 

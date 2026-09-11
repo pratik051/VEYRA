@@ -81,36 +81,17 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // ── FRESH SERVER-SIDE STOCK & DELIVERY AVAILABILITY RECHECK ───────────────
-    // A fresh verification is performed at the exact moment of order placement.
-    const availabilityCheck = await checkProductAvailabilityAndDelivery({
-      url: productUrl,
-      variant: { size, color, name: productVariant },
-      quantity
-    });
-
-    if (!availabilityCheck.orderable) {
-      let customErrorMsg = "This product is currently unavailable for direct ordering.";
-      if (availabilityCheck.stockStatus === "OUT_OF_STOCK") {
-        customErrorMsg = "This product or selected variant is confirmed out of stock on the marketplace.";
-      } else if (availabilityCheck.deliveryStatus === "DELIVERY_UNAVAILABLE") {
-        customErrorMsg = "Delivery is currently unavailable for this marketplace product.";
-      } else if (availabilityCheck.stockStatus === "UNKNOWN" || availabilityCheck.deliveryStatus === "UNKNOWN") {
-        customErrorMsg = "We couldn't confirm availability right now. You can request this product and our admin team can review it.";
-      }
-
-      return NextResponse.json(
-        {
-          error: customErrorMsg,
-          reason: availabilityCheck.reason,
-          stockStatus: availabilityCheck.stockStatusText,
-          deliveryStatus: availabilityCheck.deliveryStatusText,
-          canOrder: false,
-          orderable: false,
-          verificationStatus: availabilityCheck.verificationStatus
-        },
-        { status: 400 }
-      );
+    // ── INFORMATIONAL MARKETPLACE METADATA CAPTURE (NON-BLOCKING) ─────────────
+    // Scraper/API failures NEVER block the customer. Admin manually verifies every link.
+    let availabilityCheck: any = { orderable: true, canOrder: true };
+    try {
+      availabilityCheck = await checkProductAvailabilityAndDelivery({
+        url: productUrl,
+        variant: { size, color, name: productVariant },
+        quantity
+      });
+    } catch {
+      // Best-effort fallback
     }
 
     // Auto-detect source ID from URL
@@ -233,14 +214,18 @@ export async function POST(req: Request) {
       paymentMethod,
       paymentStatus,
       paymentTransactionId: paymentTransactionId || (paymentMethod === "FULL_PAYMENT" ? `TXN-${randomBytes(4).toString("hex").toUpperCase()}` : ""),
-      orderStatus,
+      orderStatus: "Requested",
       invoiceUrl,
       // Sourcing Availability Snapshot
-      stockStatus: availabilityCheck.stockStatusText,
-      deliveryStatus: availabilityCheck.deliveryStatusText,
+      stockStatus: "Awaiting Admin Verification",
+      deliveryStatus: "Awaiting Admin Verification",
       postalCodeChecked: "Internal Depot",
       canOrder: true,
       availabilityCheckedAt: new Date(),
+      // Admin Manual Verification
+      adminVerificationStatus: "Pending Verification",
+      adminStockStatus: "Not Checked",
+      adminDeliveryStatus: "Not Checked",
       createdAt: new Date(),
       updatedAt: new Date()
     };

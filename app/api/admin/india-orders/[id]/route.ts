@@ -64,6 +64,35 @@ export async function PATCH(
   if (body.orderStatus) updates.orderStatus = body.orderStatus;
   if (body.paymentStatus) updates.paymentStatus = body.paymentStatus;
   if (body.paymentTransactionId !== undefined) updates.paymentTransactionId = body.paymentTransactionId;
+  
+  // Admin Manual Verification fields
+  if (body.adminVerificationStatus) {
+    updates.adminVerificationStatus = body.adminVerificationStatus;
+    updates.adminVerifiedAt = new Date();
+    
+    // Synchronize orderStatus and stockStatus if verified or alternative
+    if (body.adminVerificationStatus === "Verified / Orderable") {
+      updates.orderStatus = "Verified";
+      updates.stockStatus = "In Stock";
+      updates.deliveryStatus = "Delivery Available";
+    } else if (body.adminVerificationStatus === "Alternative Required") {
+      updates.stockStatus = "Alternative Required";
+    } else if (body.adminVerificationStatus === "Unavailable") {
+      updates.stockStatus = "Unavailable";
+    } else if (body.adminVerificationStatus === "Rejected") {
+      updates.orderStatus = "Cancelled";
+      updates.stockStatus = "Rejected";
+    }
+  }
+  if (body.adminStockStatus !== undefined) updates.adminStockStatus = body.adminStockStatus;
+  if (body.adminDeliveryStatus !== undefined) updates.adminDeliveryStatus = body.adminDeliveryStatus;
+  if (body.adminVerifiedPriceINR !== undefined) updates.adminVerifiedPriceINR = Number(body.adminVerifiedPriceINR);
+  if (body.adminVerifiedVariant !== undefined) updates.adminVerifiedVariant = body.adminVerifiedVariant;
+  if (body.adminNote !== undefined) updates.adminNote = body.adminNote;
+  if (body.alternativeSourceUrl !== undefined) updates.alternativeSourceUrl = body.alternativeSourceUrl;
+  if (body.alternativePriceINR !== undefined) updates.alternativePriceINR = Number(body.alternativePriceINR);
+  if (body.alternativeStatus !== undefined) updates.alternativeStatus = body.alternativeStatus;
+
   updates.updatedAt = new Date();
 
   try {

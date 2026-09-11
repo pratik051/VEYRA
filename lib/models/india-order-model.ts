@@ -24,6 +24,16 @@ export const PAYMENT_METHODS = [
   "FULL_PAYMENT"
 ] as const;
 
+export const ADMIN_VERIFICATION_STATUSES = [
+  "Pending Verification",
+  "Verified / Orderable",
+  "Unavailable",
+  "Alternative Required",
+  "Rejected"
+] as const;
+
+export type AdminVerificationStatus = (typeof ADMIN_VERIFICATION_STATUSES)[number];
+
 export interface IIndiaOrder {
   _id?: string;
   orderId: string;
@@ -55,7 +65,7 @@ export interface IIndiaOrder {
   marketplace?: string;           // e.g. "amazon-india", "myntra", "flipkart"
   sourceProductId?: string;       // e.g. "B08N5XSG8Z"
   productUrl: string;             // Active product URL
-  originalSourceUrl?: string;     // URL originally submitted/imported
+  originalSourceUrl?: string;     // URL originally submitted by customer
   verifiedSourceUrl?: string;     // Verified working URL
   canonicalSourceUrl?: string;    // Marketplace canonical product URL
   productName: string;
@@ -81,6 +91,19 @@ export interface IIndiaOrder {
   postalCodeChecked?: string;
   canOrder?: boolean;
   availabilityCheckedAt?: Date;
+  // Admin Manual Verification
+  adminVerificationStatus?: AdminVerificationStatus;
+  adminVerifiedAt?: Date;
+  adminVerifiedBy?: string;
+  adminStockStatus?: "Available" | "Unavailable" | "Not Checked";
+  adminDeliveryStatus?: "Available" | "Unavailable" | "Not Checked";
+  adminVerifiedPriceINR?: number;
+  adminVerifiedVariant?: string;
+  adminNote?: string;
+  // Alternative Sourcing
+  alternativeSourceUrl?: string;
+  alternativePriceINR?: number;
+  alternativeStatus?: "pending" | "accepted" | "rejected";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -135,14 +158,32 @@ const IndiaOrderSchema = new Schema<IIndiaOrder>(
     paymentMethod: { type: String, enum: PAYMENT_METHODS, required: true },
     paymentStatus: { type: String, enum: PAYMENT_STATUSES, default: "Pending", index: true },
     paymentTransactionId: { type: String, default: "" },
-    orderStatus: { type: String, enum: ORDER_STATUSES, default: "Confirmed", index: true },
+    orderStatus: { type: String, enum: ORDER_STATUSES, default: "Requested", index: true },
     invoiceUrl: { type: String, default: "" },
     // Sourcing Availability Snapshot
-    stockStatus: { type: String, default: "In Stock" },
-    deliveryStatus: { type: String, default: "Delivery available" },
+    stockStatus: { type: String, default: "Awaiting Admin Verification" },
+    deliveryStatus: { type: String, default: "Awaiting Admin Verification" },
     postalCodeChecked: { type: String, default: "" },
     canOrder: { type: Boolean, default: true },
-    availabilityCheckedAt: { type: Date, default: Date.now }
+    availabilityCheckedAt: { type: Date, default: Date.now },
+    // Admin Manual Verification Fields
+    adminVerificationStatus: {
+      type: String,
+      enum: ADMIN_VERIFICATION_STATUSES,
+      default: "Pending Verification",
+      index: true
+    },
+    adminVerifiedAt: { type: Date },
+    adminVerifiedBy: { type: String, default: "" },
+    adminStockStatus: { type: String, enum: ["Available", "Unavailable", "Not Checked"], default: "Not Checked" },
+    adminDeliveryStatus: { type: String, enum: ["Available", "Unavailable", "Not Checked"], default: "Not Checked" },
+    adminVerifiedPriceINR: { type: Number },
+    adminVerifiedVariant: { type: String, default: "" },
+    adminNote: { type: String, default: "" },
+    // Alternative Sourcing
+    alternativeSourceUrl: { type: String, default: "" },
+    alternativePriceINR: { type: Number },
+    alternativeStatus: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" }
   },
   { timestamps: true }
 );

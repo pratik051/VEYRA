@@ -13,6 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@google/genai": "^2.22.0",
     "@types/nodemailer": "^8.0.1",
     "firebase": "^10.13.1",
     "firebase-admin": "12.4.0",

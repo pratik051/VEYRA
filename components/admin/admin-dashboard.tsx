@@ -51,6 +51,7 @@ type AdminIndiaOrder = {
   marketplace?: string;
   sourceProductId?: string;
   productUrl: string;
+  originalSourceUrl?: string;
   productName: string;
   productImage?: string;
   productVariant?: string;
@@ -72,6 +73,17 @@ type AdminIndiaOrder = {
   postalCodeChecked?: string;
   canOrder?: boolean;
   availabilityCheckedAt?: string;
+  adminVerificationStatus?: "Pending Verification" | "Verified / Orderable" | "Unavailable" | "Alternative Required" | "Rejected";
+  adminVerifiedAt?: string;
+  adminVerifiedBy?: string;
+  adminStockStatus?: "Available" | "Unavailable" | "Not Checked";
+  adminDeliveryStatus?: "Available" | "Unavailable" | "Not Checked";
+  adminVerifiedPriceINR?: number;
+  adminVerifiedVariant?: string;
+  adminNote?: string;
+  alternativeSourceUrl?: string;
+  alternativePriceINR?: number;
+  alternativeStatus?: "None" | "Proposed" | "Accepted" | "Rejected";
   createdAt?: string;
 };
 
@@ -248,6 +260,66 @@ export function AdminDashboard() {
   // Full order detail panel (fetches fresh from API, not stale table row)
   const [selectedOrderDetail, setSelectedOrderDetail] = useState<AdminIndiaOrder | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+
+  // Manual Product Link Verification Modal State for India Orders
+  const [orderVerificationModalOpen, setOrderVerificationModalOpen] = useState(false);
+  const [verifyingOrder, setVerifyingOrder] = useState<AdminIndiaOrder | null>(null);
+  const [adminVerificationStatus, setAdminVerificationStatus] = useState<string>("Pending Verification");
+  const [adminStockStatus, setAdminStockStatus] = useState<string>("Available");
+  const [adminDeliveryStatus, setAdminDeliveryStatus] = useState<string>("Available");
+  const [adminVerifiedPriceINR, setAdminVerifiedPriceINR] = useState<string>("");
+  const [adminVerifiedVariant, setAdminVerifiedVariant] = useState<string>("");
+  const [alternativeSourceUrl, setAlternativeSourceUrl] = useState<string>("");
+  const [adminNote, setAdminNote] = useState<string>("");
+  const [savingVerification, setSavingVerification] = useState(false);
+
+  const openOrderVerificationModal = (order: AdminIndiaOrder) => {
+    setVerifyingOrder(order);
+    setAdminVerificationStatus(order.adminVerificationStatus || "Pending Verification");
+    setAdminStockStatus(order.adminStockStatus || "Available");
+    setAdminDeliveryStatus(order.adminDeliveryStatus || "Available");
+    setAdminVerifiedPriceINR(order.adminVerifiedPriceINR ? String(order.adminVerifiedPriceINR) : (order.indianPriceINR ? String(order.indianPriceINR) : ""));
+    setAdminVerifiedVariant(order.adminVerifiedVariant || order.productVariant || "");
+    setAlternativeSourceUrl(order.alternativeSourceUrl || "");
+    setAdminNote(order.adminNote || "");
+    setOrderVerificationModalOpen(true);
+  };
+
+  const handleSaveOrderVerification = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!verifyingOrder) return;
+    setSavingVerification(true);
+    try {
+      const res = await fetch(`/api/admin/india-orders/${verifyingOrder._id || verifyingOrder.orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminVerificationStatus,
+          adminStockStatus,
+          adminDeliveryStatus,
+          adminVerifiedPriceINR: adminVerifiedPriceINR ? Number(adminVerifiedPriceINR) : undefined,
+          adminVerifiedVariant,
+          alternativeSourceUrl,
+          adminNote,
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Product link verification status updated successfully!", "success");
+        setOrderVerificationModalOpen(false);
+        await loadAll();
+        if (selectedOrderDetail && (selectedOrderDetail._id === verifyingOrder._id || selectedOrderDetail.orderId === verifyingOrder.orderId)) {
+          openOrderDetail(verifyingOrder.orderId);
+        }
+      } else {
+        pushToast(data.error || "Failed to update verification.", "error");
+      }
+    } catch {
+      pushToast("Network error saving order verification.", "error");
+    } finally {
+      setSavingVerification(false);
+    }
+  };
 
   // Open order details: fetch fresh data from API
   const openOrderDetail = async (orderId: string) => {
@@ -681,6 +753,8 @@ export function AdminDashboard() {
       case "Confirmed":
       case "PAID":
       case "verified":
+      case "Verified":
+      case "Verified / Orderable":
       case "Resolved":
         return "bg-emerald-100 text-emerald-800 border-emerald-200";
       case "In Transit":
@@ -689,16 +763,20 @@ export function AdminDashboard() {
       case "In Progress":
         return "bg-blue-100 text-blue-800 border-blue-200";
       case "Pending":
+      case "Pending Verification":
       case "Requested":
-      case "Verified":
       case "submitted":
       case "Open":
         return "bg-amber-100 text-amber-800 border-amber-200";
       case "Waiting for User":
+      case "Alternative Required":
+      case "Alternative Found":
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "Cancelled":
       case "Failed":
       case "rejected":
+      case "Rejected":
+      case "Unavailable":
       case "Closed":
         return "bg-rose-100 text-rose-800 border-rose-200";
       default:
@@ -1049,6 +1127,7 @@ export function AdminDashboard() {
                     <th className="pb-3">INR Price</th>
                     <th className="pb-3">Final NPR</th>
                     <th className="pb-3">Payment</th>
+                    <th className="pb-3">Link Verification</th>
                     <th className="pb-3">Order Status</th>
                     <th className="pb-3 text-right">Actions</th>
                   </tr>
@@ -1056,7 +1135,7 @@ export function AdminDashboard() {
                 <tbody className="divide-y divide-slate-100">
                   {indiaOrdersList.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="py-16 text-center">
+                      <td colSpan={9} className="py-16 text-center">
                         <div className="flex flex-col items-center gap-3 text-slate-400">
                           <span className="text-4xl">📭</span>
                           <span className="text-sm font-bold">No India orders yet</span>
@@ -1080,10 +1159,15 @@ export function AdminDashboard() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 max-w-[200px]">
+                      <td className="py-3.5 max-w-[220px]">
                         <span className="font-bold text-slate-800 line-clamp-1 block">{o.productName}</span>
-                        <a href={o.productUrl} target="_blank" rel="noreferrer" className="text-[10px] text-blue-600 hover:underline font-mono truncate block">
-                          Link ↗
+                        <a
+                          href={o.originalSourceUrl || o.productUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 underline mt-0.5"
+                        >
+                          Open Original Product ↗
                         </a>
                       </td>
                       <td className="py-3.5 font-bold text-slate-700">
@@ -1108,6 +1192,20 @@ export function AdminDashboard() {
                         </select>
                       </td>
                       <td className="py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border inline-block mb-1.5 ${getStatusBadge(o.adminVerificationStatus || "Pending Verification")}`}>
+                          {o.adminVerificationStatus || "Pending Verification"}
+                        </span>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => openOrderVerificationModal(o)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 font-bold text-[10px] transition cursor-pointer"
+                          >
+                            🔍 Verify Link
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3.5">
                         <select
                           defaultValue={o.orderStatus}
                           onChange={(e) => updateIndiaOrderStatus(o._id || o.orderId, e.target.value, o.paymentStatus)}
@@ -1124,10 +1222,10 @@ export function AdminDashboard() {
                           <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td className="py-3.5 text-right space-y-1">
+                      <td className="py-3.5 text-right space-y-1.5">
                         <button
                           onClick={() => openOrderDetail(o.orderId)}
-                          className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer block w-full"
                         >
                           Details ➔
                         </button>
@@ -1872,67 +1970,99 @@ export function AdminDashboard() {
                   <InfoRow label="Size" value={selectedOrderDetail.size || "—"} />
                   <InfoRow label="Color" value={selectedOrderDetail.color || "—"} />
                 </div>
-                {selectedOrderDetail.productUrl && (
-                  <div className="mt-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Original Indian Product URL</span>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={selectedOrderDetail.productUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 text-[11px] text-blue-600 hover:underline font-mono truncate block"
-                      >
-                        {selectedOrderDetail.productUrl}
-                      </a>
-                      <a
-                        href={selectedOrderDetail.productUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] transition"
-                      >
-                        🇮🇳 Open ↗
-                      </a>
-                    </div>
+                {/* Submitted Link & Open Original Product */}
+                <div className="mt-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Customer Submitted Indian Product Link
+                  </span>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <a
+                      href={selectedOrderDetail.originalSourceUrl || selectedOrderDetail.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-[11px] text-blue-600 hover:underline font-mono truncate p-2.5 rounded-xl bg-slate-50 border border-slate-200 block"
+                    >
+                      {selectedOrderDetail.originalSourceUrl || selectedOrderDetail.productUrl}
+                    </a>
+                    <a
+                      href={selectedOrderDetail.originalSourceUrl || selectedOrderDetail.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs transition shadow-xs flex items-center justify-center gap-1"
+                    >
+                      🇮🇳 Open Original Product ↗
+                    </a>
                   </div>
-                )}
+                </div>
               </section>
 
-              {/* SOURCING AVAILABILITY */}
-              <section className="border-t border-slate-100 pt-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Sourcing &amp; Delivery Eligibility Verification
-                  </h3>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    Destination: <strong className="text-slate-800">Internal Transit Hub (Verified)</strong>
-                  </span>
+              {/* ADMIN PRODUCT VERIFICATION & SOURCING */}
+              <section className="border-t border-slate-100 pt-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-700">Admin Control</span>
+                    <h3 className="text-xs font-black text-slate-900">
+                      Product Link Verification &amp; Sourcing Status
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openOrderVerificationModal(selectedOrderDetail)}
+                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black transition cursor-pointer shadow-xs"
+                  >
+                    🔍 Verify / Update Product Link
+                  </button>
                 </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Verification Status</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border inline-block mt-1 ${getStatusBadge(selectedOrderDetail.adminVerificationStatus || "Pending Verification")}`}>
+                      {selectedOrderDetail.adminVerificationStatus || "Pending Verification"}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">Stock Status</span>
-                    <span className="font-black text-slate-900 mt-1 block">
-                      {selectedOrderDetail.stockStatus || "✓ In Stock"}
+                    <span className="font-bold text-slate-900 mt-1 block">
+                      {selectedOrderDetail.adminStockStatus || selectedOrderDetail.stockStatus || "Awaiting Verification"}
                     </span>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Delivery Sourcing</span>
-                    <span className="font-black text-slate-900 mt-1 block">
-                      {selectedOrderDetail.deliveryStatus || "✓ Delivery available"}
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Delivery Status</span>
+                    <span className="font-bold text-slate-900 mt-1 block">
+                      {selectedOrderDetail.adminDeliveryStatus || selectedOrderDetail.deliveryStatus || "Awaiting Verification"}
                     </span>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Can Order</span>
-                    <span className="font-black text-emerald-700 mt-1 block">
-                      ✓ YES
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Verified INR Price</span>
+                    <span className="font-bold text-slate-900 mt-1 block">
+                      {selectedOrderDetail.adminVerifiedPriceINR ? `₹${selectedOrderDetail.adminVerifiedPriceINR.toLocaleString()} INR` : `₹${selectedOrderDetail.indianPriceINR.toLocaleString()} INR (Entered)`}
                     </span>
                   </div>
+                </div>
+
+                {/* Verified Variant & Alternative Link Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Last Checked</span>
-                    <span className="font-mono text-[11px] text-slate-700 mt-1 block">
-                      {selectedOrderDetail.availabilityCheckedAt
-                        ? new Date(selectedOrderDetail.availabilityCheckedAt).toLocaleDateString()
-                        : "Verified on Placement"}
-                    </span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Verified Variant / Note</span>
+                    <p className="font-medium text-slate-800 mt-0.5">
+                      {selectedOrderDetail.adminVerifiedVariant || selectedOrderDetail.productVariant || selectedOrderDetail.adminNote || "None specified"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Alternative Source Link</span>
+                    {selectedOrderDetail.alternativeSourceUrl ? (
+                      <a
+                        href={selectedOrderDetail.alternativeSourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] font-bold text-purple-700 hover:underline block truncate mt-0.5"
+                      >
+                        {selectedOrderDetail.alternativeSourceUrl} ↗
+                      </a>
+                    ) : (
+                      <span className="text-slate-400 mt-0.5 block">No alternative required</span>
+                    )}
                   </div>
                 </div>
               </section>
@@ -2481,6 +2611,202 @@ export function AdminDashboard() {
                   className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black transition disabled:opacity-50 shadow-md cursor-pointer"
                 >
                   {alternativeSubmitting ? "Verifying Alternative..." : "Verify & Submit Alternative ➔"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 7. INDIA ORDER PRODUCT LINK MANUAL VERIFICATION MODAL ─── */}
+      {orderVerificationModalOpen && verifyingOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          onClick={() => setOrderVerificationModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Admin Sourcing Desk</span>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  Verify Product Link ({verifyingOrder.orderId})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOrderVerificationModalOpen(false)}
+                className="rounded-full p-1 text-slate-400 hover:text-black hover:bg-slate-100 transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Customer Submitted Product Summary */}
+            <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-2 text-xs">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400">Customer Submitted Item:</span>
+                  <p className="font-extrabold text-slate-900 text-sm mt-0.5">{verifyingOrder.productName}</p>
+                  <p className="text-slate-600 text-[11px] mt-0.5">
+                    Customer: <strong>{verifyingOrder.customerName}</strong> ({verifyingOrder.phone}) • Quantity: <strong>{verifyingOrder.quantity}</strong>
+                  </p>
+                </div>
+                <span className="font-mono font-black text-red-600 text-sm bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">
+                  ₹{Number(verifyingOrder.indianPriceINR).toLocaleString()} INR
+                </span>
+              </div>
+
+              {/* Direct Open Button */}
+              <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500 font-mono truncate">
+                  {verifyingOrder.originalSourceUrl || verifyingOrder.productUrl}
+                </span>
+                <a
+                  href={verifyingOrder.originalSourceUrl || verifyingOrder.productUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs transition shadow-xs flex items-center justify-center gap-1 shrink-0"
+                >
+                  🇮🇳 Open Original Product ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Form to Update Verification Status */}
+            <form onSubmit={handleSaveOrderVerification} className="space-y-4 text-xs">
+              {/* Verification Status */}
+              <div>
+                <label className="text-[11px] font-black uppercase text-slate-700 block mb-1">
+                  Product Link Verification Status *
+                </label>
+                <select
+                  value={adminVerificationStatus}
+                  onChange={(e) => setAdminVerificationStatus(e.target.value)}
+                  className="w-full rounded-xl border-2 border-purple-200 bg-white p-2.5 font-bold text-slate-900 focus:border-purple-600 focus:outline-none"
+                >
+                  <option value="Pending Verification">⏳ Pending Verification</option>
+                  <option value="Verified / Orderable">✓ Verified / Orderable</option>
+                  <option value="Unavailable">❌ Unavailable</option>
+                  <option value="Alternative Required">🔄 Alternative Required</option>
+                  <option value="Rejected">🚫 Rejected</option>
+                </select>
+              </div>
+
+              {/* Stock & Delivery Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                    Marketplace Stock Status *
+                  </label>
+                  <select
+                    value={adminStockStatus}
+                    onChange={(e) => setAdminStockStatus(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white p-2 font-semibold text-slate-800 focus:border-purple-600 focus:outline-none"
+                  >
+                    <option value="Available">✓ Available</option>
+                    <option value="Unavailable">❌ Unavailable</option>
+                    <option value="Not Checked">⏳ Not Checked</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                    Marketplace Delivery Status *
+                  </label>
+                  <select
+                    value={adminDeliveryStatus}
+                    onChange={(e) => setAdminDeliveryStatus(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white p-2 font-semibold text-slate-800 focus:border-purple-600 focus:outline-none"
+                  >
+                    <option value="Available">✓ Available</option>
+                    <option value="Unavailable">❌ Unavailable</option>
+                    <option value="Not Checked">⏳ Not Checked</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Verified Price & Verified Variant */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                    Verified Indian Price (INR ₹)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    step="any"
+                    placeholder="e.g. 1999"
+                    value={adminVerifiedPriceINR}
+                    onChange={(e) => setAdminVerifiedPriceINR(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2 font-bold text-slate-900 focus:border-purple-600 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                    Verified Variant / Size / Color
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Size L / Midnight Black"
+                    value={adminVerifiedVariant}
+                    onChange={(e) => setAdminVerifiedVariant(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2 font-medium text-slate-800 focus:border-purple-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Alternative Source URL (If Alternative Required) */}
+              {(adminVerificationStatus === "Alternative Required" || alternativeSourceUrl) && (
+                <div className="p-3 rounded-2xl bg-purple-50/70 border border-purple-200 space-y-2">
+                  <label className="text-[10px] font-black uppercase text-purple-900 block">
+                    Alternative Product Link URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.flipkart.com/... or alternative store link"
+                    value={alternativeSourceUrl}
+                    onChange={(e) => setAlternativeSourceUrl(e.target.value)}
+                    className="w-full rounded-xl border border-purple-300 bg-white p-2 font-mono text-[11px] focus:border-purple-600 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-purple-800">
+                    Both the customer's original link and this alternative link will be preserved on the order.
+                  </p>
+                </div>
+              )}
+
+              {/* Admin Note */}
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">
+                  Admin Verification Note (Visible to Customer in Order Details)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Product link verified with official brand seller. Proceeding with India transit dispatch."
+                  value={adminNote}
+                  onChange={(e) => setAdminNote(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2 font-medium text-slate-800 focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setOrderVerificationModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingVerification}
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition disabled:opacity-50 shadow-md cursor-pointer"
+                >
+                  {savingVerification ? "Saving..." : "Save Verification & Update Order ➔"}
                 </button>
               </div>
             </form>

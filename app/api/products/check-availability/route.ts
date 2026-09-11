@@ -56,12 +56,22 @@ export async function POST(req: NextRequest) {
     const sessionUser = token ? await getSessionUserByToken(token) : null;
     const isAdmin = sessionUser?.role === "admin";
 
+    // Non-blocking customer flow: all valid marketplace URLs can be submitted for admin verification
+    const customerResponse = {
+      ...result,
+      canOrder: true,
+      orderable: true,
+      stockStatusText: "⏳ Awaiting Admin Verification",
+      deliveryStatusText: "⏳ Awaiting Admin Verification",
+      message: "Product captured. Admin will manually verify before processing."
+    };
+
     // Strip internal debug audit if not an admin
-    if (!isAdmin && result._internalAudit) {
-      delete result._internalAudit;
+    if (!isAdmin && customerResponse._internalAudit) {
+      delete customerResponse._internalAudit;
     }
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(isAdmin ? result : customerResponse, { status: 200 });
   } catch (err: any) {
     console.error("[API /api/products/check-availability] Error:", err);
     return NextResponse.json(

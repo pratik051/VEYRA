@@ -42,9 +42,15 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
       const data = await res.json();
       setState({ phase: "result", data, url: trimmed });
     } catch {
+      // In case of any network issue, still allow customer to continue
       setState({
-        phase: "error",
-        message: "Network error. Please check your connection and try again."
+        phase: "result",
+        data: {
+          product: { name: "Requested Indian Marketplace Product" },
+          canOrder: true,
+          orderable: true
+        },
+        url: trimmed
       });
     }
   };
@@ -56,16 +62,6 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
       ...(result.product?.name ? { name: encodeURIComponent(result.product.name) } : {}),
       ...(result.product?.priceINR ? { inr: String(result.product.priceINR) } : {}),
       ...(result.product?.sourceProductId ? { sid: result.product.sourceProductId } : {})
-    });
-    router.push(`/request-product?${params.toString()}`);
-  };
-
-  const handleRequestProduct = (result: any, productUrl: string) => {
-    const params = new URLSearchParams({
-      url: productUrl,
-      requestMode: "alternative",
-      ...(result.product?.name ? { name: encodeURIComponent(result.product.name) } : {}),
-      ...(result.product?.priceINR ? { inr: String(result.product.priceINR) } : {})
     });
     router.push(`/request-product?${params.toString()}`);
   };
@@ -116,10 +112,10 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
                       d="M4 12a8 8 0 018-8v8z"
                     />
                   </svg>
-                  Checking…
+                  Processing…
                 </span>
               ) : (
-                "Check Product"
+                "Check / Continue →"
               )}
             </button>
           </div>
@@ -130,7 +126,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
               <span className="font-medium text-neutral-500">
                 {PLATFORM_DISPLAY_NAMES.join(" • ")}
               </span>
-              . Product availability and live pricing are verified in real-time.
+              . Submit any Indian product link for instant manual review and Nepal delivery.
             </p>
           )}
         </form>
@@ -149,194 +145,56 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
         </div>
       )}
 
-      {/* Result states */}
+      {/* Result Card: Informative & Unblocked */}
       {state.phase === "result" && (
         <div className="animate-fade-in space-y-3">
-          {/* STATE 1 — Verified & Orderable */}
-          {state.data.orderable && state.data.inStock && state.data.deliveryAvailable ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 space-y-4">
-              <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow-xs">
-                    ✓
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-sm font-bold shadow-xs">
+                  📦
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-blue-800 border border-blue-200">
+                      {state.data.product?.source || "Marketplace Link"}
+                    </span>
+                    <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                      ⏳ Awaiting Admin Verification
+                    </span>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-black text-emerald-950">
-                      Product Verified &amp; Orderable
-                    </h3>
-                    <p className="text-xs text-emerald-800 mt-0.5 font-medium line-clamp-1">
-                      {state.data.product?.name || "Verified Indian Marketplace Product"}
-                    </p>
-                  </div>
-                </div>
-
-                {state.data.product?.priceINR ? (
-                  <span className="rounded-xl bg-white px-3 py-1.5 text-xs font-black text-emerald-900 border border-emerald-200 shadow-2xs">
-                    ₹{state.data.product.priceINR.toLocaleString()} INR
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Status Badges Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">Product Verified</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">In Stock</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">Delivery Available</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <button
-                  onClick={() => handleContinueOrder(state.data, state.url)}
-                  className="rounded-xl bg-red-600 px-5 py-2.5 text-xs font-black text-white hover:bg-red-700 shadow-sm transition cursor-pointer"
-                >
-                  ⚡ Order Now (Doorstep Nepal Delivery) →
-                </button>
-                <a
-                  href={state.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition"
-                >
-                  View Source ↗
-                </a>
-                <button
-                  onClick={handleReset}
-                  className="ml-auto text-xs font-semibold text-neutral-500 hover:text-neutral-900 cursor-pointer"
-                >
-                  Check another link
-                </button>
-              </div>
-            </div>
-          ) : state.data.stockStatus === "OUT_OF_STOCK" ? (
-            /* STATE 2 — Confirmed Out of Stock */
-            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-5 space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-xs">
-                  ✕
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-red-950">
-                    Product Confirmed Out of Stock
+                  <h3 className="text-sm font-bold text-slate-900 mt-1 line-clamp-2">
+                    {state.data.product?.name || "Marketplace Product Link Captured"}
                   </h3>
-                  <p className="mt-1 text-xs text-red-800 leading-relaxed font-medium">
-                    {state.data.message || "This product or selected variant is confirmed out of stock on the marketplace."}
-                  </p>
                 </div>
               </div>
 
-              {/* Status Badges Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">Product Verified</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
-                  <span className="text-red-600 font-bold">❌</span>
-                  <span className="font-semibold text-neutral-800">Out of Stock</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => handleRequestProduct(state.data, state.url)}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-black shadow-sm transition cursor-pointer"
-                >
-                  📋 Request Product (Get Alternative Link) →
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition cursor-pointer"
-                >
-                  Check Another Link
-                </button>
-              </div>
+              {state.data.product?.priceINR ? (
+                <span className="rounded-xl bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-900 border border-slate-200 shadow-2xs">
+                  ₹{state.data.product.priceINR.toLocaleString()} INR
+                </span>
+              ) : null}
             </div>
-          ) : state.data.productFound ? (
-            /* STATE 3 — Product Found but Availability Cannot Be Confirmed */
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-bold shadow-xs">
-                  ⚠️
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-amber-950">
-                    Product Found — Availability Could Not Be Confirmed
-                  </h3>
-                  <p className="mt-1 text-xs text-amber-800 leading-relaxed font-medium">
-                    {state.data.message || "We found the product, but live stock or delivery confirmation is temporarily unconfirmed. You can request this item and our team will verify it for you."}
-                  </p>
-                </div>
-              </div>
 
-              {/* Status Badges Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span className="font-semibold text-neutral-800">Product Found</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className="text-amber-600 font-bold">⚠️</span>
-                  <span className="font-semibold text-neutral-800">Stock Unconfirmed</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className="text-amber-600 font-bold">⚠️</span>
-                  <span className="font-semibold text-neutral-800">Delivery Unconfirmed</span>
-                </div>
-              </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Your link is captured. You can submit your order request now. Our operations team will verify stock, variant, and delivery before final purchasing.
+            </p>
 
-              <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => handleRequestProduct(state.data, state.url)}
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-black shadow-sm transition cursor-pointer"
-                >
-                  📋 Request Product (Get Alternative Link) →
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition cursor-pointer"
-                >
-                  Check Another Link
-                </button>
-              </div>
+            <div className="flex items-center gap-3 pt-2 flex-wrap">
+              <button
+                onClick={() => handleContinueOrder(state.data, state.url)}
+                className="rounded-2xl bg-black px-6 py-3 text-xs font-black text-white hover:bg-neutral-800 shadow-sm transition cursor-pointer flex items-center gap-2"
+              >
+                <span>Continue to Order / Request →</span>
+              </button>
+              <button
+                onClick={handleReset}
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+              >
+                ← Check Another Link
+              </button>
             </div>
-          ) : (
-            /* STATE 4 — Invalid Product / URL */
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-600 text-white text-xs font-bold shadow-xs">
-                  ✕
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-neutral-950">
-                    ✕ Product Could Not Be Verified
-                  </h3>
-                  <p className="mt-1 text-xs text-neutral-600 leading-relaxed font-medium">
-                    {state.data.message || "We could not verify this product link. Please make sure the link is from a supported Indian marketplace and points directly to an active product page."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <button
-                  onClick={handleReset}
-                  className="rounded-xl bg-neutral-950 text-white px-5 py-2.5 text-xs font-bold hover:bg-neutral-800 transition cursor-pointer"
-                >
-                  Check Another Link
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>

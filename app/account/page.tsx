@@ -21,6 +21,7 @@ export type CustomerOrder = {
   productName: string;
   productImage?: string;
   productUrl?: string;
+  originalSourceUrl?: string;
   marketplace?: string;
   quantity: number;
   variant?: string;
@@ -31,6 +32,12 @@ export type CustomerOrder = {
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
+  adminVerificationStatus?: string;
+  adminStockStatus?: string;
+  adminDeliveryStatus?: string;
+  adminNote?: string;
+  alternativeSourceUrl?: string;
+  alternativeStatus?: string;
   shippingAddress?: {
     customerName: string;
     phone: string;
@@ -946,6 +953,19 @@ function AccountContent() {
                         <div className="flex items-center gap-2">
                           <span
                             className={`rounded-full px-3 py-0.5 text-[11px] font-bold border ${
+                              ord.adminVerificationStatus === "Verified / Orderable"
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : ord.adminVerificationStatus === "Alternative Required"
+                                ? "bg-purple-50 text-purple-800 border-purple-200"
+                                : ord.adminVerificationStatus === "Unavailable" || ord.adminVerificationStatus === "Rejected"
+                                ? "bg-rose-50 text-rose-800 border-rose-200"
+                                : "bg-amber-50 text-amber-800 border-amber-200"
+                            }`}
+                          >
+                            {ord.adminVerificationStatus || "⏳ Awaiting Admin Verification"}
+                          </span>
+                          <span
+                            className={`rounded-full px-3 py-0.5 text-[11px] font-bold border ${
                               ord.orderStatus === "Delivered"
                                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                                 : ord.orderStatus === "Cancelled"
@@ -982,15 +1002,29 @@ function AccountContent() {
                               <span>Qty: <strong>{ord.quantity}</strong></span>
                               {ord.variant && <span>• Variant: <strong>{ord.variant}</strong></span>}
                             </div>
-                            {ord.productUrl && (
+                            {ord.originalSourceUrl || ord.productUrl ? (
                               <a
-                                href={ord.productUrl}
+                                href={ord.originalSourceUrl || ord.productUrl}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-[11px] text-blue-600 font-bold hover:underline inline-flex items-center gap-1"
                               >
                                 View Indian Product Link ↗
                               </a>
+                            ) : null}
+                            {ord.alternativeSourceUrl && (
+                              <div className="mt-1 p-2 rounded-xl bg-purple-50 border border-purple-200 text-[11px] text-purple-900">
+                                <strong>Admin Sourced Alternative:</strong>{" "}
+                                <a
+                                  href={ord.alternativeSourceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline font-bold"
+                                >
+                                  View Alternative Product ↗
+                                </a>
+                                {ord.adminNote && <p className="mt-0.5 text-slate-600">{ord.adminNote}</p>}
+                              </div>
                             )}
                           </div>
                         </div>
