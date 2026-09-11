@@ -1,5 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { GoogleAuthProvider, getAuth } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  OAuthProvider,
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  type ConfirmationResult
+} from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -27,6 +34,16 @@ if (googleProvider) {
   googleProvider.setCustomParameters({ prompt: "select_account" });
 }
 
+export const appleProvider = firebaseAuth ? new OAuthProvider("apple.com") : null;
+
+if (appleProvider) {
+  appleProvider.addScope("email");
+  appleProvider.addScope("name");
+}
+
 export const firebaseAnalytics = firebaseApp && typeof window !== "undefined"
   ? isSupported().then((supported) => (supported ? getAnalytics(firebaseApp) : null))
   : null;
+
+export { RecaptchaVerifier, signInWithPhoneNumber };
+export type { ConfirmationResult };

@@ -177,7 +177,7 @@ The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
 | **Language** | TypeScript 5 (Strict Mode) |
 | **Styling** | Tailwind CSS 3.4 + Custom Tokens |
 | **Database** | MongoDB with Mongoose ODM |
-| **Authentication** | Google OAuth2 + Firebase Client SDK + HTTP-Only Session Cookies |
+| **Authentication** | Google OAuth2 + Apple OAuth2 (`apple.com`) + Firebase Phone SMS OTP Auth + HTTP-Only Session Cookies |
 | **Icons & Brand** | SVG Vector Brand Engine & Marketplace Logos |
 | **Typography** | Inter & Space Grotesk via `next/font/google` |
 
