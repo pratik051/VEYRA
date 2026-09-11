@@ -172,7 +172,7 @@ export function Header() {
 
             {/* Wishlist Link */}
             <Link
-              href="/dashboard?tab=wishlist"
+              href="/account?tab=wishlist"
               aria-label="Wishlist"
               className="relative flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
             >

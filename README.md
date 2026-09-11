@@ -82,7 +82,6 @@ LINKOVA features an enterprise multi-stage verification engine designed to elimi
 5. **Private Transit Security & Structured Audit Logging:**
    - The internal transit destination is configured securely on the server and is never exposed in customer responses, public APIs, or UI components.
    - Structured server logs (`[VERIFICATION_AUDIT]`) record verification stages, failure reasons, and timestamps for diagnostics without logging any confidential credentials.
-   - Admins can use the **Live Link Verification & Diagnostics Debug Panel** in the Admin Dashboard to test and inspect raw marketplace links.
 
 ---
 
@@ -177,7 +176,7 @@ The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
 | **Language** | TypeScript 5 (Strict Mode) |
 | **Styling** | Tailwind CSS 3.4 + Custom Tokens |
 | **Database** | MongoDB with Mongoose ODM |
-| **Authentication** | Google OAuth2 + Apple OAuth2 (`apple.com`) + Firebase Phone SMS OTP Auth + HTTP-Only Session Cookies |
+| **Authentication** | Google OAuth2 + Apple OAuth2 (`apple.com`) + Nodemailer Email OTP Password Reset + HTTP-Only Session Cookies |
 | **Icons & Brand** | SVG Vector Brand Engine & Marketplace Logos |
 | **Typography** | Inter & Space Grotesk via `next/font/google` |
 
@@ -196,6 +195,10 @@ MONGO_URI=${MONGODB_URI}
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=YOUR_SECURE_ADMIN_PASSWORD
+
+# SMTP Email (Gmail App Password for OTP Password Reset)
+SMTP_USER=YOUR_EMAIL@gmail.com
+SMTP_PASS=YOUR_16_DIGIT_GMAIL_APP_PASSWORD
 
 # Nepal Payment Gateways
 ESEWA_MERCHANT_CODE=YOUR_ESEWA_MERCHANT_CODE
