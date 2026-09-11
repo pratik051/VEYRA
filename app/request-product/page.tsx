@@ -41,6 +41,11 @@ function RequestProductFlow() {
   const [detectedPlatform, setDetectedPlatform] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [stockStatus, setStockStatus] = useState("In Stock");
+  const [deliveryStatus, setDeliveryStatus] = useState("Available to 854331");
+  const [canOrder, setCanOrder] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
+  const [productImage, setProductImage] = useState("");
 
   // Step 3: Customer & Product Details
   const [fullName, setFullName] = useState("");
@@ -135,28 +140,78 @@ function RequestProductFlow() {
       if (inrParam) setInrPrice(inrParam);
       if (nameParam) setProductName(decodeURIComponent(nameParam));
       if (sourceProductIdParam) setSourceProductId(sourceProductIdParam);
-      setIsVerified(true);
-      setStep(3);
+      
+      // Auto-trigger verification for seamless order wizard entry
+      void executeAvailabilityCheck(urlParam, inrParam, nameParam, sourceProductIdParam);
     }
   }, [searchParams]);
 
-  // Handle URL Verification
-  const handleVerifyUrl = () => {
-    const trimmed = productUrl.trim();
+  // Execute full backend availability + postal code check
+  const executeAvailabilityCheck = async (
+    targetUrl: string,
+    existingInr?: string,
+    existingName?: string,
+    existingSid?: string,
+    variantSize?: string,
+    variantColor?: string
+  ) => {
+    const trimmed = targetUrl.trim();
     if (!trimmed || (!trimmed.startsWith("http://") && !trimmed.startsWith("https://"))) {
       pushToast("Please enter a valid product link URL starting with https://", "error");
       return;
     }
 
     setVerifying(true);
-    setTimeout(() => {
-      const platform = detectPlatformFromUrl(trimmed);
-      setDetectedPlatform(platform || "Indian E-Commerce Store");
-      setIsVerified(true);
+    setCheckError(null);
+
+    try {
+      const res = await fetch("/api/products/check-availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: trimmed,
+          postalCode: "854331",
+          variant: { size: variantSize || size, color: variantColor || color },
+          quantity
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.canOrder && data.inStock && data.deliveryAvailable) {
+        setIsVerified(true);
+        setCanOrder(true);
+        setStockStatus(data.stockStatusText || "✓ In Stock");
+        setDeliveryStatus(data.deliveryStatusText || "✓ Available to 854331");
+        setDetectedPlatform(data.product?.source || detectPlatformFromUrl(trimmed));
+        if (data.product?.name && !productName) setProductName(data.product.name);
+        if (data.product?.priceINR && !inrPrice) setInrPrice(String(data.product.priceINR));
+        if (data.product?.image) setProductImage(data.product.image);
+        if (data.product?.sourceProductId) setSourceProductId(data.product.sourceProductId);
+
+        setStep(3);
+        pushToast("✓ Product verified, in stock, and available for delivery to 854331!", "success");
+      } else {
+        setIsVerified(false);
+        setCanOrder(false);
+        setStockStatus(data.stockStatusText || "❌ Out of Stock");
+        setDeliveryStatus(data.deliveryStatusText || "❌ Unavailable to 854331");
+        setCheckError(data.message || "Product failed sourcing availability verification.");
+        pushToast(data.message || "This product cannot currently be ordered.", "error");
+      }
+    } catch (err: any) {
+      setIsVerified(false);
+      setCanOrder(false);
+      setCheckError("Unable to reach verification service. Please try again.");
+      pushToast("Verification request failed. Please check connection.", "error");
+    } finally {
       setVerifying(false);
-      setStep(3);
-      pushToast("Product link verified successfully! Please enter order details.", "success");
-    }, 600);
+    }
+  };
+
+  // Handle URL Verification Trigger
+  const handleVerifyUrl = () => {
+    void executeAvailabilityCheck(productUrl);
   };
 
   // Recalculate price whenever INR or Quantity changes
@@ -322,6 +377,35 @@ function RequestProductFlow() {
             </p>
           </div>
 
+          {/* Availability Check Failure Alert */}
+          {checkError && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 space-y-3">
+              <div className="flex items-start gap-2.5">
+                <span className="text-red-600 font-black text-sm">❌</span>
+                <div>
+                  <h4 className="text-xs font-black text-red-950 uppercase tracking-wide">
+                    Product Availability Check Failed
+                  </h4>
+                  <p className="text-xs text-red-800 mt-0.5">{checkError}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                  <span>{isVerified ? "✓" : "❌"}</span>
+                  <span className="font-semibold text-neutral-700">Link Valid</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                  <span>{stockStatus.includes("✓") ? "✓" : "❌"}</span>
+                  <span className="font-semibold text-neutral-700">{stockStatus}</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-red-200">
+                  <span>{deliveryStatus.includes("✓") ? "✓" : "❌"}</span>
+                  <span className="font-semibold text-neutral-700">{deliveryStatus}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Supported Store Badges */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100">
             <span className="text-[11px] font-bold text-neutral-400">Stores:</span>
@@ -342,7 +426,17 @@ function RequestProductFlow() {
         <form onSubmit={handleProceedToPayment} className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
             <div>
-              <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider">✓ Link Verified</span>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                  ✓ Product Verified
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                  ✓ In Stock
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                  ✓ Delivery to 854331
+                </span>
+              </div>
               <h2 className="font-display text-xl font-black text-neutral-950">
                 Order Request Details ({detectedPlatform})
               </h2>
@@ -350,7 +444,7 @@ function RequestProductFlow() {
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="text-xs font-bold text-neutral-400 hover:text-neutral-900 underline"
+              className="text-xs font-bold text-neutral-400 hover:text-neutral-900 underline cursor-pointer"
             >
               Change URL
             </button>

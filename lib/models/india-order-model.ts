@@ -76,6 +76,11 @@ export interface IIndiaOrder {
   paymentTransactionId?: string;
   orderStatus: (typeof ORDER_STATUSES)[number];
   invoiceUrl?: string;
+  stockStatus?: string;
+  deliveryStatus?: string;
+  postalCodeChecked?: string;
+  canOrder?: boolean;
+  availabilityCheckedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -131,7 +136,13 @@ const IndiaOrderSchema = new Schema<IIndiaOrder>(
     paymentStatus: { type: String, enum: PAYMENT_STATUSES, default: "Pending", index: true },
     paymentTransactionId: { type: String, default: "" },
     orderStatus: { type: String, enum: ORDER_STATUSES, default: "Confirmed", index: true },
-    invoiceUrl: { type: String, default: "" }
+    invoiceUrl: { type: String, default: "" },
+    // Sourcing Availability & PIN 854331 Snapshot
+    stockStatus: { type: String, default: "In Stock" },
+    deliveryStatus: { type: String, default: "Available to 854331" },
+    postalCodeChecked: { type: String, default: "854331" },
+    canOrder: { type: Boolean, default: true },
+    availabilityCheckedAt: { type: Date, default: Date.now }
   },
   { timestamps: true }
 );

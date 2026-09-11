@@ -11,6 +11,7 @@ import {
   getSourceIdFromUrl,
   getMarketplaceDisplayName
 } from "@/lib/sourcing-platforms";
+import { checkProductAvailabilityAndDelivery } from "@/lib/marketplace/availability";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,29 @@ export async function POST(req: Request) {
       return NextResponse.json({
         error: "The product URL must be from a supported Indian marketplace (Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, Noise, etc.)."
       }, { status: 400 });
+    }
+
+    // ── FRESH SERVER-SIDE STOCK & PIN 854331 DELIVERY CHECK ─────────────────
+    // The backend must perform a final availability check at the exact moment of order placement.
+    const availabilityCheck = await checkProductAvailabilityAndDelivery({
+      url: productUrl,
+      postalCode: "854331",
+      variant: { size, color, name: productVariant },
+      quantity
+    });
+
+    if (!availabilityCheck.canOrder) {
+      return NextResponse.json(
+        {
+          error: availabilityCheck.message,
+          reason: availabilityCheck.reason,
+          stockStatus: availabilityCheck.stockStatusText,
+          deliveryStatus: availabilityCheck.deliveryStatusText,
+          postalCode: "854331",
+          canOrder: false
+        },
+        { status: 400 }
+      );
     }
 
     // Auto-detect source ID from URL (server-side, never trust client-sent value alone)
@@ -204,6 +228,12 @@ export async function POST(req: Request) {
       paymentTransactionId: paymentTransactionId || (paymentMethod === "FULL_PAYMENT" ? `TXN-${randomBytes(4).toString("hex").toUpperCase()}` : ""),
       orderStatus,
       invoiceUrl,
+      // ── Sourcing Availability & PIN 854331 Snapshot ──
+      stockStatus: availabilityCheck.stockStatusText,
+      deliveryStatus: availabilityCheck.deliveryStatusText,
+      postalCodeChecked: "854331",
+      canOrder: true,
+      availabilityCheckedAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date()
     };

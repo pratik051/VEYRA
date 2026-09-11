@@ -143,121 +143,127 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
       {/* Result states */}
       {state.phase === "result" && (
         <div className="animate-fade-in space-y-3">
-          {/* Result A — manual_required / available */}
-          {(state.data.status === "manual_required" ||
-            state.data.status === "available") && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold">
-                  ✓
+          {/* Result A — Available & Orderable */}
+          {state.data.canProceed && state.data.inStock && state.data.deliveryAvailable ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 space-y-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shadow-xs">
+                    ✓
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-emerald-950">
+                      Product Verified &amp; Orderable
+                    </h3>
+                    <p className="text-xs text-emerald-800 mt-0.5 font-medium">
+                      {state.data.product?.name || "Verified Indian Marketplace Product"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-900">
-                    Product Can Be Processed
-                  </h3>
-                  {state.data.platformDisplayName && (
-                    <span className="inline-block mt-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
-                      Detected: {state.data.platformDisplayName}
-                    </span>
-                  )}
-                  <p className="mt-2 text-xs text-emerald-800 leading-relaxed">
-                    {state.data.message}
-                  </p>
+
+                {state.data.product?.priceINR ? (
+                  <span className="rounded-xl bg-white px-3 py-1.5 text-xs font-black text-emerald-900 border border-emerald-200 shadow-2xs">
+                    ₹{state.data.product.priceINR.toLocaleString()} INR
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Status Badges Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="font-semibold text-neutral-800">Product Verified</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="font-semibold text-neutral-800">In Stock</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl bg-white/90 px-3 py-2 border border-emerald-200/80">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="font-semibold text-neutral-800">Delivery to 854331</span>
                 </div>
               </div>
-              <div className="flex gap-2 pt-1">
+
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <button
                   onClick={() => handleContinueOrder(state.data, state.url)}
-                  className="rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-emerald-800 transition"
+                  className="rounded-xl bg-red-600 px-5 py-2.5 text-xs font-black text-white hover:bg-red-700 shadow-sm transition cursor-pointer"
                 >
-                  Continue Order →
+                  ⚡ Order Now (Doorstep Nepal Delivery) →
                 </button>
                 <a
                   href={state.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="rounded-xl border border-emerald-300 bg-white px-5 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition"
+                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition"
                 >
-                  View Product ↗
+                  View Source ↗
                 </a>
                 <button
                   onClick={handleReset}
-                  className="ml-auto text-xs text-neutral-400 hover:text-neutral-600"
+                  className="ml-auto text-xs font-semibold text-neutral-500 hover:text-neutral-900 cursor-pointer"
                 >
-                  Check another
+                  Check another link
                 </button>
               </div>
             </div>
-          )}
-
-          {/* Result B — unavailable */}
-          {state.data.status === "unavailable" && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-5 space-y-3 animate-fade-in">
+          ) : (
+            /* Result B — Unavailable / Out of Stock / Undeliverable */
+            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-5 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-xs">
                   ✕
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-red-900">
-                    Currently Not Available
+                  <h3 className="text-sm font-black text-red-950">
+                    Product Cannot Be Ordered
                   </h3>
-                  <p className="mt-1.5 text-xs text-red-800 leading-relaxed">
-                    This product cannot currently be processed through our
-                    available sourcing route.
+                  <p className="mt-1 text-xs text-red-800 leading-relaxed font-medium">
+                    {state.data.message || "This product failed sourcing availability checks."}
                   </p>
                 </div>
               </div>
-              {state.data.canRequestManual && (
-                <button
-                  onClick={() => handleContinueOrder(state.data, state.url)}
-                  className="rounded-xl border border-red-300 bg-white px-5 py-2.5 text-xs font-bold text-red-700 hover:bg-red-50 transition"
-                >
-                  Request Manual Verification
-                </button>
-              )}
-              <button
-                onClick={handleReset}
-                className="ml-2 text-xs text-neutral-400 hover:text-neutral-600"
-              >
-                Try another link
-              </button>
-            </div>
-          )}
 
-          {/* Result C — unsupported / invalid / blocked */}
-          {(state.data.status === "unsupported_platform" ||
-            state.data.status === "invalid_url" ||
-            state.data.status === "blocked") && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-3 animate-fade-in">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white text-xs font-bold">
-                  !
+              {/* Status Badges Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                  <span className={state.data.verified ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
+                    {state.data.verified ? "✓" : "✕"}
+                  </span>
+                  <span className="font-semibold text-neutral-800">
+                    {state.data.verified ? "Product Found" : "Invalid Product"}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-amber-900">
-                    {state.data.status === "unsupported_platform"
-                      ? "Platform Not Supported"
-                      : "Invalid Product Link"}
-                  </h3>
-                  <p className="mt-1.5 text-xs text-amber-800 leading-relaxed">
-                    {state.data.message}
-                  </p>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                  <span className={state.data.inStock ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
+                    {state.data.inStock ? "✓" : "❌"}
+                  </span>
+                  <span className="font-semibold text-neutral-800">
+                    {state.data.inStock ? "In Stock" : "Out of Stock"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                  <span className={state.data.deliveryAvailable ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
+                    {state.data.deliveryAvailable ? "✓" : "❌"}
+                  </span>
+                  <span className="font-semibold text-neutral-800">
+                    {state.data.deliveryAvailable ? "Delivery Available" : "Unavailable to 854331"}
+                  </span>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {state.data.canRequestManual && (
-                  <button
-                    onClick={() => handleContinueOrder(state.data, state.url)}
-                    className="rounded-xl border border-amber-300 bg-white px-4 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 transition"
-                  >
-                    Send Verification Request
-                  </button>
-                )}
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  disabled
+                  className="rounded-xl bg-neutral-300 px-5 py-2.5 text-xs font-bold text-neutral-500 cursor-not-allowed"
+                >
+                  Order Now (Disabled)
+                </button>
                 <button
                   onClick={handleReset}
-                  className="rounded-xl bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition"
+                  className="rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-neutral-800 transition cursor-pointer"
                 >
-                  Try Another Link
+                  Check Another Link
                 </button>
               </div>
             </div>
