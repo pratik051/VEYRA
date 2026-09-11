@@ -3,7 +3,6 @@
 import { FormEvent, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useWishlist } from "@/components/providers/wishlist-provider";
 import { products, nepalProvinces } from "@/lib/data";
 import { ProductCard } from "@/components/ui/product-card";
@@ -45,7 +44,36 @@ export type CustomerOrder = {
   createdAt: string;
 };
 
-type NavTab = "dashboard" | "orders" | "requests" | "wishlist" | "settings";
+export type CustomerTicketMessage = {
+  messageId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: "user" | "admin";
+  message: string;
+  createdAt: string;
+};
+
+export type CustomerTicket = {
+  _id: string;
+  ticketId: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhone?: string;
+  subject: string;
+  category: string;
+  description: string;
+  orderId?: string;
+  productId?: string;
+  marketplace?: string;
+  status: "Open" | "In Progress" | "Waiting for User" | "Resolved" | "Closed";
+  priority: "Low" | "Medium" | "High" | "Urgent";
+  createdAt: string;
+  updatedAt: string;
+  messages: CustomerTicketMessage[];
+};
+
+type NavTab = "orders" | "tickets" | "requests" | "wishlist" | "settings";
 
 type AccountUser = {
   id: string;
@@ -61,24 +89,23 @@ type AccountUser = {
   landmark?: string;
 };
 
-// BankDash Icon Components
-function DashboardIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-    </svg>
-  );
-}
-
+// Navigation Icons
 function OrdersIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
       <path d="M3 6h18" />
       <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  );
+}
+
+function TicketsIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M12 7v4" />
+      <path d="M12 15h.01" />
     </svg>
   );
 }
@@ -112,29 +139,31 @@ function SettingsIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-function BellIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-    </svg>
-  );
-}
+const PROBLEM_CATEGORIES = [
+  "Order Problem",
+  "Payment Problem",
+  "Product Problem",
+  "Delivery Problem",
+  "Account Problem",
+  "Website/Technical Problem",
+  "Refund/Return Problem",
+  "Other"
+];
 
 function AccountContent() {
   const searchParams = useSearchParams();
   const rawTab = searchParams.get("tab")?.toLowerCase();
 
   const [activeTab, setActiveTab] = useState<NavTab>(
-    rawTab === "orders"
-      ? "orders"
+    rawTab === "tickets" || rawTab === "support"
+      ? "tickets"
       : rawTab === "requests" || rawTab === "product-requests"
       ? "requests"
       : rawTab === "wishlist"
       ? "wishlist"
       : rawTab === "settings" || rawTab === "profile"
       ? "settings"
-      : "dashboard"
+      : "orders"
   );
 
   const [user, setUser] = useState<AccountUser | null>(null);
@@ -145,9 +174,28 @@ function AccountContent() {
   const [requests, setRequests] = useState<ProductRequestItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Search & Filter within Dashboard / Orders
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+
+  // Support Tickets State
+  const [tickets, setTickets] = useState<CustomerTicket[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<CustomerTicket | null>(null);
+  const [showRaiseTicketModal, setShowRaiseTicketModal] = useState(false);
+  const [ticketSubmitting, setTicketSubmitting] = useState(false);
+  const [ticketFilter, setTicketFilter] = useState("all");
+  const [newTicketForm, setNewTicketForm] = useState({
+    subject: "",
+    category: "Order Problem",
+    description: "",
+    orderId: "",
+    productId: "",
+    marketplace: "",
+    priority: "Medium"
+  });
+  const [replyMessage, setReplyMessage] = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
 
   // Settings Subtab
   const [settingsTab, setSettingsTab] = useState<"profile" | "shipping" | "security">("profile");
@@ -180,10 +228,6 @@ function AccountContent() {
     label: "Home",
     isDefault: false
   });
-
-  // Quick Sourcing Input inside Dashboard (BankDash Quick Transfer Style)
-  const [quickSourcingUrl, setQuickSourcingUrl] = useState("");
-  const [quickInrPrice, setQuickInrPrice] = useState("");
 
   const { ids, clear: clearWishlist } = useWishlist();
   const { pushToast } = useToast();
@@ -259,6 +303,26 @@ function AccountContent() {
     }
   }, []);
 
+  const fetchTickets = useCallback(async () => {
+    setTicketsLoading(true);
+    try {
+      const res = await fetch("/api/user/tickets", {
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.tickets)) {
+          setTickets(data.tickets);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load tickets:", err);
+    } finally {
+      setTicketsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadMe();
   }, [loadMe]);
@@ -266,14 +330,75 @@ function AccountContent() {
   useEffect(() => {
     if (user) {
       fetchOrders();
-    }
-  }, [user, fetchOrders]);
-
-  useEffect(() => {
-    if (user) {
+      fetchTickets();
       loadAddresses();
     }
-  }, [user, loadAddresses]);
+  }, [user, fetchOrders, fetchTickets, loadAddresses]);
+
+  const handleCreateTicket = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newTicketForm.subject.trim() || !newTicketForm.description.trim()) {
+      pushToast("Please enter a subject and description.", "error");
+      return;
+    }
+    setTicketSubmitting(true);
+    try {
+      const res = await fetch("/api/user/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTicketForm)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`Support ticket ${data.ticket?.ticketId || ""} created successfully!`, "success");
+        setShowRaiseTicketModal(false);
+        setNewTicketForm({
+          subject: "",
+          category: "Order Problem",
+          description: "",
+          orderId: "",
+          productId: "",
+          marketplace: "",
+          priority: "Medium"
+        });
+        fetchTickets();
+      } else {
+        pushToast(data.error || "Failed to create support ticket.", "error");
+      }
+    } catch {
+      pushToast("Network error submitting ticket.", "error");
+    } finally {
+      setTicketSubmitting(false);
+    }
+  };
+
+  const handleSendReply = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedTicket || !replyMessage.trim()) return;
+    setReplySubmitting(true);
+    try {
+      const res = await fetch(`/api/user/tickets/${selectedTicket.ticketId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: replyMessage.trim() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Reply sent to support team.", "success");
+        setReplyMessage("");
+        if (data.ticket) {
+          setSelectedTicket(data.ticket);
+        }
+        fetchTickets();
+      } else {
+        pushToast(data.error || "Failed to send reply.", "error");
+      }
+    } catch {
+      pushToast("Network error sending reply.", "error");
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
 
   const handleSetDefaultAddress = async (id: string) => {
     try {
@@ -371,27 +496,6 @@ function AccountContent() {
     }
   };
 
-  // Derived Metrics (BankDash style KPI Cards)
-  const totalSpentNPR = useMemo(() => {
-    return orders
-      .filter((o) => o.orderStatus !== "Cancelled")
-      .reduce((sum, o) => sum + (o.total || 0), 0);
-  }, [orders]);
-
-  const activeInTransitCount = useMemo(() => {
-    return orders.filter(
-      (o) =>
-        o.orderStatus === "Confirmed" ||
-        o.orderStatus === "Processing" ||
-        o.orderStatus === "Shipped" ||
-        o.orderStatus === "In Transit"
-    ).length;
-  }, [orders]);
-
-  const deliveredCount = useMemo(() => {
-    return orders.filter((o) => o.orderStatus === "Delivered").length;
-  }, [orders]);
-
   const filteredOrders = useMemo(() => {
     let list = orders;
     if (orderStatusFilter !== "all") {
@@ -411,6 +515,28 @@ function AccountContent() {
     return list;
   }, [orders, orderStatusFilter, searchQuery]);
 
+  const filteredTickets = useMemo(() => {
+    let list = tickets;
+    if (ticketFilter !== "all") {
+      list = list.filter((t) => t.status.toLowerCase() === ticketFilter.toLowerCase());
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.ticketId.toLowerCase().includes(q) ||
+          t.subject.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q) ||
+          (t.orderId && t.orderId.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [tickets, ticketFilter, searchQuery]);
+
+  const openTicketsCount = useMemo(() => {
+    return tickets.filter((t) => t.status === "Open" || t.status === "In Progress" || t.status === "Waiting for User").length;
+  }, [tickets]);
+
   const wishedProducts = useMemo(() => {
     return products.filter((p) => ids.includes(p.id));
   }, [ids]);
@@ -419,7 +545,7 @@ function AccountContent() {
     return (
       <div className="min-h-[600px] flex flex-col items-center justify-center gap-3 bg-[#F5F7FA]">
         <div className="h-8 w-8 animate-spin rounded-full border-3 border-blue-600 border-t-transparent" />
-        <span className="text-xs font-semibold text-slate-500">Loading BankDash Customer Workspace...</span>
+        <span className="text-xs font-semibold text-slate-500">Loading Account...</span>
       </div>
     );
   }
@@ -434,7 +560,7 @@ function AccountContent() {
           <div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Customer Portal Access</h2>
             <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Sign in to manage your India sourcing orders, access live delivery tracking, view billing invoices, and update delivery addresses.
+              Sign in to manage your India sourcing orders, access live delivery tracking, view billing invoices, and raise support tickets.
             </p>
           </div>
           <div className="space-y-3 pt-2">
@@ -442,7 +568,7 @@ function AccountContent() {
               href="/login?redirect=/account"
               className="w-full flex items-center justify-center py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition"
             >
-              Sign In to Your Workspace ➔
+              Sign In to Your Account ➔
             </Link>
             <Link
               href="/signup?redirect=/account"
@@ -458,8 +584,7 @@ function AccountContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] flex text-slate-800">
-      {/* ─── 1. BANKDASH SLEEK LEFT SIDEBAR ─── */}
-      {/* Mobile Backdrop */}
+      {/* ─── 1. USER ACCOUNT LEFT SIDEBAR ─── */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
@@ -487,11 +612,11 @@ function AccountContent() {
             </button>
           </div>
 
-          {/* Navigation Links (BankDash Style) */}
+          {/* Navigation Links */}
           <nav className="space-y-1.5">
             {[
-              { id: "dashboard" as NavTab, label: "Dashboard", icon: <DashboardIcon /> },
               { id: "orders" as NavTab, label: "My Orders", icon: <OrdersIcon />, count: orders.length },
+              { id: "tickets" as NavTab, label: "Support Tickets", icon: <TicketsIcon />, count: openTicketsCount },
               { id: "requests" as NavTab, label: "Sourcing Quotes", icon: <RequestsIcon />, count: requests.length },
               { id: "wishlist" as NavTab, label: "Saved Wishlist", icon: <WishlistIcon />, count: ids.length },
               { id: "settings" as NavTab, label: "Settings & Profile", icon: <SettingsIcon /> }
@@ -570,9 +695,9 @@ function AccountContent() {
         </div>
       </aside>
 
-      {/* ─── 2. MAIN DASHBOARD CONTENT AREA ─── */}
+      {/* ─── 2. MAIN CONTENT AREA ─── */}
       <main className="flex-1 min-w-0 flex flex-col">
-        {/* Top Header Bar (BankDash Style) */}
+        {/* Top Header Bar */}
         <header className="bg-white border-b border-slate-200/80 px-4 sm:px-8 py-4 flex items-center justify-between gap-4 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
@@ -584,8 +709,8 @@ function AccountContent() {
             </button>
             <div>
               <h1 className="text-lg sm:text-xl font-black text-slate-900 capitalize tracking-tight">
-                {activeTab === "dashboard" && "Overview"}
                 {activeTab === "orders" && "My Orders & Shipments"}
+                {activeTab === "tickets" && "Customer Support & Problems"}
                 {activeTab === "requests" && "Live Sourcing Quotes"}
                 {activeTab === "wishlist" && "Saved Wishlist"}
                 {activeTab === "settings" && "Account Settings"}
@@ -596,7 +721,6 @@ function AccountContent() {
             </div>
           </div>
 
-          {/* Search, Back to Home, Notifications, Profile Action */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
@@ -612,7 +736,7 @@ function AccountContent() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search orders, products..."
+                placeholder="Search orders, tickets..."
                 className="w-44 lg:w-56 rounded-full bg-[#F5F7FA] border border-transparent focus:border-blue-500 focus:bg-white pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none transition"
               />
               <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
@@ -627,265 +751,28 @@ function AccountContent() {
               <SettingsIcon className="w-4 h-4" />
             </button>
 
-            <Link
-              href="/request-product"
-              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 text-xs font-bold shadow-md shadow-blue-600/20 transition hidden sm:inline-flex items-center gap-1.5"
-            >
-              <span>+ New Order</span>
-            </Link>
+            {activeTab === "tickets" ? (
+              <button
+                type="button"
+                onClick={() => setShowRaiseTicketModal(true)}
+                className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 text-xs font-bold shadow-md shadow-blue-600/20 transition inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>+ Raise Ticket</span>
+              </button>
+            ) : (
+              <Link
+                href="/request-product"
+                className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 text-xs font-bold shadow-md shadow-blue-600/20 transition hidden sm:inline-flex items-center gap-1.5"
+              >
+                <span>+ New Order</span>
+              </Link>
+            )}
           </div>
         </header>
 
-        {/* Dashboard Body */}
+        {/* Account Body */}
         <div className="p-4 sm:p-8 space-y-8 flex-1">
-          {/* ─── TAB 1: USER-FRIENDLY OVERVIEW (Direct Orders & Sourcing Tracker) ─── */}
-          {activeTab === "dashboard" && (
-            <div className="space-y-8">
-              {/* Row 1: 4 Friendly Summary Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl flex-shrink-0">
-                    📦
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Orders</p>
-                    <h3 className="text-base sm:text-2xl font-black text-slate-900">{orders.length}</h3>
-                    <p className="text-[10px] text-slate-400">Total Placed</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl flex-shrink-0">
-                    🚚
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">In Transit</p>
-                    <h3 className="text-base sm:text-2xl font-black text-amber-600">{activeInTransitCount}</h3>
-                    <p className="text-[10px] text-slate-400">On The Way</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl flex-shrink-0">
-                    ✅
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Delivered</p>
-                    <h3 className="text-base sm:text-2xl font-black text-emerald-600">{deliveredCount}</h3>
-                    <p className="text-[10px] text-slate-400">Received Safely</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl flex-shrink-0">
-                    🤍
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saved Wishlist</p>
-                    <h3 className="text-base sm:text-2xl font-black text-slate-900">{ids.length}</h3>
-                    <p className="text-[10px] text-slate-400">Favorite Items</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Recent Orders & Quick Order Action */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left 8 Cols: What You Ordered (Recent Live Orders) */}
-                <div className="lg:col-span-8 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-base sm:text-lg font-black text-slate-900">Your Recent Orders</h2>
-                      <p className="text-xs text-slate-500">Live status of your India ➔ Nepal packages</p>
-                    </div>
-                    {orders.length > 0 && (
-                      <button
-                        onClick={() => setActiveTab("orders")}
-                        className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                      >
-                        View All Orders ({orders.length}) ➔
-                      </button>
-                    )}
-                  </div>
-
-                  {orders.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-dashed border-slate-300 space-y-3">
-                      <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center text-3xl mx-auto">
-                        🛍️
-                      </div>
-                      <h3 className="text-base font-bold text-slate-900">You haven&apos;t placed any orders yet</h3>
-                      <p className="text-xs text-slate-500 max-w-md mx-auto">
-                        Found something you love on Amazon India, Flipkart, Myntra, boAt, or Croma? Order directly through LINKOVA with transparent NPR pricing.
-                      </p>
-                      <Link
-                        href="/request-product"
-                        className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold shadow-md shadow-blue-600/20 transition"
-                      >
-                        <span>🇮🇳 Order Indian Product Now</span>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {orders.slice(0, 4).map((ord) => (
-                        <div
-                          key={ord.orderId}
-                          className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition space-y-3"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                            <div className="flex items-center gap-2.5">
-                              <span className="font-mono font-black text-xs sm:text-sm text-slate-900">
-                                {ord.orderId}
-                              </span>
-                              {ord.marketplace && (
-                                <span className="inline-flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-700">
-                                  <MarketplaceLogo marketplace={ord.marketplace} className="h-3 w-auto" />
-                                  <span>{ord.marketplace}</span>
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                                  ord.orderStatus === "Delivered"
-                                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                    : ord.orderStatus === "Cancelled"
-                                    ? "bg-rose-50 text-rose-800 border-rose-200"
-                                    : "bg-blue-50 text-blue-800 border-blue-200"
-                                }`}
-                              >
-                                {ord.orderStatus}
-                              </span>
-                              <span className="text-[10px] text-slate-400">
-                                {new Date(ord.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3.5 min-w-0">
-                              {ord.productImage ? (
-                                <img
-                                  src={ord.productImage}
-                                  alt={ord.productName}
-                                  className="h-12 w-12 rounded-xl object-cover border border-slate-100 flex-shrink-0"
-                                />
-                              ) : (
-                                <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl flex-shrink-0">
-                                  📦
-                                </div>
-                              )}
-                              <div className="min-w-0">
-                                <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate">
-                                  {ord.productName}
-                                </h4>
-                                <p className="text-[11px] text-slate-500">
-                                  Qty: <strong>{ord.quantity}</strong> • Landed Total: <strong className="text-slate-900">{formatNpr(ord.total)}</strong>
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => setSelectedOrder(ord)}
-                                className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer"
-                              >
-                                Details
-                              </button>
-                              <Link
-                                href={`/track-order?orderId=${ord.orderId}`}
-                                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition"
-                              >
-                                Track ➔
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Right 4 Cols: Quick Cross-Border Sourcing & Delivery Steps */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* Quick Order by URL */}
-                  <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                    <div>
-                      <h3 className="text-sm font-black text-slate-900">Order by Indian Link</h3>
-                      <p className="text-[11px] text-slate-400">
-                        Paste any link from Amazon, Flipkart, Myntra, or boAt.
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                          Product URL
-                        </label>
-                        <input
-                          type="url"
-                          value={quickSourcingUrl}
-                          onChange={(e) => setQuickSourcingUrl(e.target.value)}
-                          placeholder="https://www.amazon.in/dp/..."
-                          className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                          Price in India (INR ₹)
-                        </label>
-                        <input
-                          type="number"
-                          value={quickInrPrice}
-                          onChange={(e) => setQuickInrPrice(e.target.value)}
-                          placeholder="e.g. 2499"
-                          className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                        />
-                      </div>
-
-                      <Link
-                        href={`/request-product?url=${encodeURIComponent(quickSourcingUrl)}&inr=${quickInrPrice}`}
-                        className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 text-center transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
-                      >
-                        <span>⚡ Calculate Landed NPR Quote</span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Delivery Pipeline Progress */}
-                  <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                    <h3 className="text-sm font-black text-slate-900">Delivery Status Breakdown</h3>
-                    <div className="space-y-3 pt-1">
-                      {[
-                        { label: "Orders Placed & Verified", count: orders.length, color: "bg-blue-600" },
-                        { label: "Cross-Border Transit / Customs", count: activeInTransitCount, color: "bg-amber-500" },
-                        { label: "Delivered to Doorstep in Nepal", count: deliveredCount, color: "bg-emerald-500" }
-                      ].map((step, idx) => {
-                        const pct = orders.length > 0 ? Math.round((step.count / orders.length) * 100) : 0;
-                        return (
-                          <div key={idx} className="space-y-1">
-                            <div className="flex justify-between text-xs font-semibold">
-                              <span className="text-slate-600">{step.label}</span>
-                              <span className="text-slate-900 font-bold">{step.count}</span>
-                            </div>
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full ${step.color} rounded-full transition-all duration-500`}
-                                style={{ width: `${pct > 0 ? pct : 4}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── TAB 2: MY ORDERS (BankDash Table / Cards) ─── */}
+          {/* ─── TAB 1: MY ORDERS ─── */}
           {activeTab === "orders" && (
             <div className="space-y-6">
               {/* Filter Tabs & Search */}
@@ -912,14 +799,26 @@ function AccountContent() {
                   ))}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => fetchOrders()}
-                  disabled={ordersLoading}
-                  className="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition self-start sm:self-auto cursor-pointer"
-                >
-                  ↻ Refresh Orders
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fetchOrders()}
+                    disabled={ordersLoading}
+                    className="rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                  >
+                    ↻ Refresh Orders
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("tickets");
+                      setShowRaiseTicketModal(true);
+                    }}
+                    className="rounded-xl bg-slate-900 text-white px-3.5 py-1.5 text-xs font-bold hover:bg-slate-800 transition cursor-pointer"
+                  >
+                    ⚠️ Report an Issue
+                  </button>
+                </div>
               </div>
 
               {/* Orders Grid */}
@@ -1025,6 +924,23 @@ function AccountContent() {
                       <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-100">
                         <button
                           type="button"
+                          onClick={() => {
+                            setNewTicketForm((prev) => ({
+                              ...prev,
+                              category: "Order Problem",
+                              orderId: ord.orderId,
+                              productId: ord.productName,
+                              marketplace: ord.marketplace || "",
+                              subject: `Issue regarding Order ${ord.orderId}`
+                            }));
+                            setShowRaiseTicketModal(true);
+                          }}
+                          className="rounded-xl border border-amber-200 bg-amber-50/50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100/60 transition cursor-pointer"
+                        >
+                          ⚠️ Report Problem
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setSelectedOrder(ord)}
                           className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                         >
@@ -1047,6 +963,151 @@ function AccountContent() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─── TAB 2: SUPPORT TICKETS / USER PROBLEMS ─── */}
+          {activeTab === "tickets" && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Support &amp; Problem Tickets ({tickets.length})</h3>
+                  <p className="text-xs text-slate-500">Report delivery issues, payment inquiries, or product questions directly to our team.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fetchTickets()}
+                    disabled={ticketsLoading}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                  >
+                    ↻ Refresh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowRaiseTicketModal(true)}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 shadow-md transition cursor-pointer"
+                  >
+                    + Raise New Ticket
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Filter Strip */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {[
+                  { id: "all", label: "All Tickets" },
+                  { id: "open", label: "Open" },
+                  { id: "in progress", label: "In Progress" },
+                  { id: "waiting for user", label: "Waiting for You" },
+                  { id: "resolved", label: "Resolved" },
+                  { id: "closed", label: "Closed" }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setTicketFilter(st.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition cursor-pointer ${
+                      ticketFilter === st.id
+                        ? "bg-slate-900 text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {ticketsLoading && tickets.length === 0 ? (
+                <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80">
+                  <div className="h-7 w-7 animate-spin rounded-full border-3 border-blue-600 border-t-transparent mx-auto mb-2" />
+                  <p className="text-xs text-slate-500 font-bold">Loading your support tickets...</p>
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300 space-y-3">
+                  <p className="text-3xl">🎫</p>
+                  <h4 className="text-base font-bold text-slate-900">No support tickets found</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Need help with an order, payment, or delivery? Submit a ticket and our support team will assist you promptly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowRaiseTicketModal(true)}
+                    className="inline-block rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md"
+                  >
+                    + Raise a Support Ticket
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredTickets.map((t) => {
+                    const statusColor =
+                      t.status === "Open"
+                        ? "bg-blue-50 text-blue-800 border-blue-200"
+                        : t.status === "In Progress"
+                        ? "bg-amber-50 text-amber-800 border-amber-200"
+                        : t.status === "Waiting for User"
+                        ? "bg-purple-50 text-purple-800 border-purple-200"
+                        : t.status === "Resolved"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-slate-100 text-slate-700 border-slate-200";
+
+                    const adminRepliesCount = (t.messages || []).filter((m) => m.senderRole === "admin").length;
+
+                    return (
+                      <div
+                        key={t.ticketId}
+                        className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition space-y-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-black text-sm text-slate-900">{t.ticketId}</span>
+                            <span className="rounded-lg bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700">
+                              {t.category}
+                            </span>
+                            {t.orderId && (
+                              <span className="rounded-lg bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 text-[10px] font-mono font-bold">
+                                Order #{t.orderId}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className={`rounded-full px-3 py-0.5 text-[10px] font-bold border ${statusColor}`}>
+                              {t.status}
+                            </span>
+                            <span className="text-[11px] text-slate-400">
+                              {new Date(t.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-black text-sm text-slate-900">{t.subject}</h4>
+                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{t.description}</p>
+                        </div>
+
+                        {/* Footer Status & Actions */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                          <div className="text-slate-500 text-[11px] flex items-center gap-3">
+                            <span>Messages: <strong>{(t.messages || []).length}</strong></span>
+                            {adminRepliesCount > 0 && (
+                              <span className="text-emerald-600 font-bold">✓ {adminRepliesCount} Admin Response{adminRepliesCount > 1 ? "s" : ""}</span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTicket(t)}
+                            className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition cursor-pointer"
+                          >
+                            Open Conversation Thread ➔
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1080,7 +1141,6 @@ function AccountContent() {
                 <div className="space-y-4">
                   {requests.map((r) => (
                     <div key={r.requestId} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
-                      {/* Request item details */}
                       <p className="font-bold text-slate-900">{r.productName}</p>
                     </div>
                   ))}
@@ -1129,10 +1189,9 @@ function AccountContent() {
             </div>
           )}
 
-          {/* ─── TAB 5: BANKDASH SETTINGS & PROFILE ─── */}
+          {/* ─── TAB 5: SETTINGS & PROFILE ─── */}
           {activeTab === "settings" && (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-              {/* Settings Sub-Tabs (BankDash Style) */}
               <div className="flex items-center gap-6 border-b border-slate-100 pb-4">
                 {[
                   { id: "profile" as const, label: "Edit Profile" },
@@ -1212,7 +1271,6 @@ function AccountContent() {
                     )}
                   </div>
 
-                  {/* Add New Address Form */}
                   {showAddAddressForm && (
                     <form onSubmit={handleAddAddress} className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6 space-y-4 animate-in fade-in">
                       <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
@@ -1360,7 +1418,6 @@ function AccountContent() {
                     </form>
                   )}
 
-                  {/* Saved Addresses List */}
                   {loadingAddresses ? (
                     <div className="text-xs text-slate-400 py-4">Loading saved addresses...</div>
                   ) : savedAddresses.length === 0 ? (
@@ -1456,7 +1513,272 @@ function AccountContent() {
         </div>
       </main>
 
-      {/* ─── 3. ORDER DETAILS DRAWER / MODAL ─── */}
+      {/* ─── 3. RAISE A TICKET MODAL ─── */}
+      {showRaiseTicketModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150 border border-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-blue-600 tracking-wider">Customer Care</span>
+                <h3 className="text-lg font-black text-slate-900">Raise a Support Ticket</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRaiseTicketModal(false)}
+                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTicket} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Problem Category *</label>
+                <select
+                  required
+                  value={newTicketForm.category}
+                  onChange={(e) => setNewTicketForm({ ...newTicketForm, category: e.target.value })}
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                >
+                  {PROBLEM_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Subject / Issue Summary *</label>
+                <input
+                  required
+                  value={newTicketForm.subject}
+                  onChange={(e) => setNewTicketForm({ ...newTicketForm, subject: e.target.value })}
+                  placeholder="e.g. Delivery delay for my order / Payment confirmation inquiry"
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Related Order ID (Optional)</label>
+                {orders.length > 0 ? (
+                  <select
+                    value={newTicketForm.orderId}
+                    onChange={(e) => {
+                      const selOrd = orders.find((o) => o.orderId === e.target.value);
+                      setNewTicketForm({
+                        ...newTicketForm,
+                        orderId: e.target.value,
+                        productId: selOrd ? selOrd.productName : newTicketForm.productId,
+                        marketplace: selOrd ? selOrd.marketplace || "" : newTicketForm.marketplace
+                      });
+                    }}
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                  >
+                    <option value="">None / Not specific to an order</option>
+                    {orders.map((o) => (
+                      <option key={o.orderId} value={o.orderId}>
+                        {o.orderId} — {o.productName.slice(0, 40)} ({o.orderStatus})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={newTicketForm.orderId}
+                    onChange={(e) => setNewTicketForm({ ...newTicketForm, orderId: e.target.value })}
+                    placeholder="e.g. LNK-XXXXXX (if applicable)"
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Detailed Description *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={newTicketForm.description}
+                  onChange={(e) => setNewTicketForm({ ...newTicketForm, description: e.target.value })}
+                  placeholder="Describe the issue in detail so our support specialists can assist you rapidly..."
+                  className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Priority</label>
+                  <select
+                    value={newTicketForm.priority}
+                    onChange={(e) => setNewTicketForm({ ...newTicketForm, priority: e.target.value })}
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 font-medium focus:border-blue-600 focus:bg-white focus:outline-none"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Contact Email</label>
+                  <input
+                    disabled
+                    value={user.email}
+                    className="w-full rounded-xl bg-slate-100 border border-slate-200 p-2.5 font-medium text-slate-500 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRaiseTicketModal(false)}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={ticketSubmitting}
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50 shadow-md shadow-blue-600/20"
+                >
+                  {ticketSubmitting ? "Submitting Ticket..." : "Submit Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 4. TICKET DETAILS / CONVERSATION THREAD MODAL ─── */}
+      {selectedTicket && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150 border border-slate-100 flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-black text-slate-900 text-base">{selectedTicket.ticketId}</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700">
+                    {selectedTicket.status}
+                  </span>
+                  <span className="rounded-full bg-blue-50 text-blue-700 px-2.5 py-0.5 text-[10px] font-bold">
+                    {selectedTicket.category}
+                  </span>
+                </div>
+                <h3 className="text-sm font-black text-slate-800 mt-1">{selectedTicket.subject}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedTicket(null)}
+                className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Ticket Metadata Banner */}
+            <div className="rounded-2xl bg-slate-50 p-4 text-xs space-y-2 border border-slate-100">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">Created</span>
+                  <span className="text-slate-800 font-semibold">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">Priority</span>
+                  <span className="text-slate-800 font-semibold">{selectedTicket.priority}</span>
+                </div>
+                {selectedTicket.orderId && (
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Related Order</span>
+                    <span className="text-blue-600 font-mono font-bold">{selectedTicket.orderId}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">Last Updated</span>
+                  <span className="text-slate-800 font-semibold">{new Date(selectedTicket.updatedAt).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/60">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Initial Problem Description</span>
+                <p className="text-slate-700 whitespace-pre-wrap">{selectedTicket.description}</p>
+              </div>
+            </div>
+
+            {/* Conversation History */}
+            <div className="space-y-3 flex-1 overflow-y-auto max-h-72 p-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Conversation History ({(selectedTicket.messages || []).length})
+              </span>
+
+              {(selectedTicket.messages || []).length === 0 ? (
+                <div className="text-center py-6 text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  No replies yet. Our support agents have received your ticket and are reviewing it.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedTicket.messages.map((m) => {
+                    const isAdmin = m.senderRole === "admin";
+                    return (
+                      <div
+                        key={m.messageId}
+                        className={`flex flex-col ${isAdmin ? "items-start" : "items-end"}`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-1 px-1">
+                          <span className="font-bold text-slate-700">{m.senderName}</span>
+                          {isAdmin && (
+                            <span className="bg-blue-600 text-white font-bold text-[9px] px-1.5 py-0.2 rounded-md">
+                              SUPPORT AGENT
+                            </span>
+                          )}
+                          <span>• {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <div
+                          className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] whitespace-pre-wrap leading-relaxed ${
+                            isAdmin
+                              ? "bg-slate-100 text-slate-900 border border-slate-200"
+                              : "bg-blue-600 text-white shadow-xs"
+                          }`}
+                        >
+                          {m.message}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Customer Reply Composer */}
+            {selectedTicket.status !== "Closed" ? (
+              <form onSubmit={handleSendReply} className="pt-2 border-t border-slate-100 space-y-2">
+                <textarea
+                  rows={2}
+                  required
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  placeholder="Type your reply to the support team..."
+                  className="w-full rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none transition"
+                />
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">Replying will update the ticket status for our support agents.</span>
+                  <button
+                    type="submit"
+                    disabled={replySubmitting || !replyMessage.trim()}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2 transition disabled:opacity-50 cursor-pointer shadow-md shadow-blue-600/20"
+                  >
+                    {replySubmitting ? "Sending..." : "Send Reply ➔"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="rounded-2xl bg-slate-100 p-3 text-center text-xs text-slate-500 font-bold">
+                This support ticket has been closed. If you have a new issue, please raise a new ticket.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── 5. ORDER DETAILS DRAWER / MODAL ─── */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150 border border-slate-100">
@@ -1537,6 +1859,25 @@ function AccountContent() {
 
             {/* Actions */}
             <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setNewTicketForm((prev) => ({
+                    ...prev,
+                    category: "Order Problem",
+                    orderId: selectedOrder.orderId,
+                    productId: selectedOrder.productName,
+                    marketplace: selectedOrder.marketplace || "",
+                    subject: `Issue regarding Order ${selectedOrder.orderId}`
+                  }));
+                  setSelectedOrder(null);
+                  setActiveTab("tickets");
+                  setShowRaiseTicketModal(true);
+                }}
+                className="flex-1 text-center py-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 font-bold text-xs hover:bg-amber-100 transition cursor-pointer"
+              >
+                ⚠️ Report Problem
+              </button>
               <a
                 href={selectedOrder.invoiceUrl || `/api/india-order/invoice/${selectedOrder.orderId}`}
                 target="_blank"

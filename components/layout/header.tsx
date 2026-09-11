@@ -200,8 +200,8 @@ export function Header() {
 
             {/* User Account Icon */}
             <Link
-              href="/dashboard"
-              aria-label="Account Dashboard"
+              href="/account"
+              aria-label="My Account"
               className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
             >
               <UserIcon />
@@ -360,7 +360,7 @@ export function Header() {
                 <span>🇮🇳 Paste Any Indian Link</span>
               </Link>
               <Link
-                href="/dashboard"
+                href="/account"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white border border-neutral-200 text-neutral-800 text-xs font-bold hover:bg-neutral-100 transition"
               >

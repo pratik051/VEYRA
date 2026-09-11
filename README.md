@@ -6,25 +6,23 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-Auth-orange?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 
-**LINKOVA** (`linkova.com.np`) is an enterprise full-stack Next.js web application built for seamless cross-border shopping from India to Nepal. LINKOVA eliminates payment barriers, international shipping restrictions, and complex customs clearance by allowing customers in Nepal to browse, order, and track products directly from top Indian e-commerce marketplaces with transparent, all-inclusive pricing in Nepali Rupees (NPR) and reliable doorstep delivery across all 7 provinces of Nepal.
+**LINKOVA** (`linkova.com.np`) is an enterprise full-stack Next.js web application built for cross-border shopping from India to Nepal. LINKOVA eliminates international payment barriers, shipping restrictions, and complex customs clearance by allowing customers in Nepal to browse, order, and track products directly from top Indian e-commerce marketplaces with transparent, all-inclusive pricing in Nepali Rupees (NPR) and reliable doorstep delivery across all 7 provinces of Nepal.
 
 ---
 
 ## 📑 Table of Contents
 
 - [Core Platform Overview](#-core-platform-overview)
+- [Architecture & Role Separation](#-architecture--role-separation)
+- [Customer Account & Support Tickets](#-customer-account--support-tickets)
+- [Admin Management Portal](#-admin-management-portal)
 - [Supported Indian Marketplaces](#-supported-indian-marketplaces)
 - [Key Features](#-key-features)
 - [Technology Stack](#-technology-stack)
-- [Architecture & Route Isolation](#-architecture--route-isolation)
-- [Customer Dashboard & Order Tracking](#-customer-dashboard--order-tracking)
-- [Authentication System (Figma Redesign)](#-authentication-system-figma-redesign)
-- [Nepal Payment Gateways](#-nepal-payment-gateways)
 - [Environment Variables](#-environment-variables)
 - [Local Development Setup](#-local-development-setup)
 - [Production Build & Verification](#-production-build--verification)
 - [Project Directory Structure](#-project-directory-structure)
-- [Admin Management Portal](#-admin-management-portal)
 - [License & Ownership](#-license--ownership)
 
 ---
@@ -33,61 +31,87 @@
 
 1. **Cross-Border Marketplace Concierge:** Enables customers in Nepal to purchase authentic products from India's largest e-commerce platforms with automated landed NPR calculation.
 2. **Transparent Landed NPR Pricing Formula:**
-   $$\text{Total NPR} = (\text{INR Price} \times 1.60) + \text{Customs Clearance} + \text{Cross-Border Freight} + \text{Local Delivery (NPR)}$$
-3. **Dedicated Customer Portal:** Real-time shipment tracking, printable PDF invoices, order history, and saved address profiles.
-4. **Official Vector Brand Identity:** Modern 3D royal-to-electric cyan 'L' monogram with airplane orbital flight trajectory, package box, and India-to-Nepal route badge (`🇮🇳 ➔ 🇳🇵`).
+   $$\text{Total NPR} = (\text{INR Price} \times 1.65) + \text{Service Fee (20\%)} + \text{Local Nepal Delivery (NPR 200)}$$
+3. **Dedicated Customer Account Area (`/account`):** Real-time order tracking, printable PDF invoices, order history, default saved addresses, and interactive Support Tickets.
+4. **Official Vector Brand Identity:** Modern 3D royal-to-electric cyan 'L' monogram with airplane orbital flight trajectory and India-to-Nepal route badge (`🇮🇳 ➔ 🇳🇵`).
+
+---
+
+## 🔒 Architecture & Role Separation
+
+LINKOVA enforces strict architectural and server-side separation between **Admin** and **User**:
+
+1. **Strict Admin Dashboard (`/admin`):**
+   - Only authenticated users with `role: "admin"` can access `/admin` or any `/api/admin/*` endpoint.
+   - Server-side authorization in both layout and route handlers rejects non-admin users (`403 Forbidden`).
+   - Normal users never see admin controls, stats, or navigation.
+
+2. **Customer Area (`/account`):**
+   - Normal users manage their profile, orders, addresses, and support tickets in `/account`.
+   - `/dashboard` permanently redirects to `/account`.
+   - Never exposes administrative controls to customers.
+
+---
+
+## 🎫 Customer Account & Support Tickets
+
+Users can report issues and get help with a ticket workflow:
+
+- **Raise a Ticket:** Select from problem categories (*Order Problem, Payment Problem, Product Problem, Delivery Problem, Account Problem, Website/Technical Problem, Refund/Return Problem, Other*), specify subject, detailed description, and optionally link to an existing Order ID.
+- **Security Isolation:** The customer's User ID is automatically inferred from the authenticated session. Users can only view and reply to their own tickets.
+- **Conversation Thread:** Full message history between the customer and support agents with real-time status updates (*Open, In Progress, Waiting for User, Resolved, Closed*).
+- **Privacy Protection:** Internal staff notes written by administrators are stripped server-side and never returned to customers.
+
+---
+
+## 🛡️ Admin Management Portal
+
+The LINKOVA Admin Console (`/admin`) provides control over sourcing operations:
+
+- **Real-Time DB Metrics:** Live counts for Total Sourcing Volume, India Orders, Store Orders, Pending Payment Reviews, and User Problems.
+- **User Problems / Support Center:**
+  - Status filters (*All, Open, In Progress, Waiting for User, Resolved, Closed*) and category filters.
+  - Search by Ticket ID, Customer Name, Email, Order ID, or Subject.
+  - Comprehensive ticket detail slide-over with customer profile, problem description, live linked Order snapshot, and complete message thread.
+  - **Dual Reply System:** Toggle between *Reply to Customer* (visible in user account) and *Internal Note* (visible only to admins).
+  - Live status and priority updates.
+- **Order Management & Invoices:** Real-time milestone updates and PDF invoice generation.
+- **Marketplace Verification & Sync:** Automated validation of Indian marketplace product URLs and availability check for PIN code `854331`.
 
 ---
 
 ## 🛍️ Supported Indian Marketplaces
 
-LINKOVA features dedicated platform catalog channels with official brand assets:
-
-| Marketplace | Channel Route | Official Focus Categories |
-| :--- | :--- | :--- |
-| **Amazon India** | `/shop/amazon` | Electronics, Smart Home, Kindle, Everyday Tech |
-| **Flipkart** | `/shop/flipkart` | Smartphones, Smart TVs, Wearables, Laptops |
-| **Myntra** | `/shop/myntra` | Premium Fashion, Footwear, Designer Wear |
-| **Meesho** | `/shop/meesho` | Value Apparel, Home Decor, Kitchenware |
-| **Nykaa** | `/shop/nykaa` | Beauty, Skincare, Luxury Cosmetics, Fragrances |
-| **AJIO** | `/shop/ajio` | International Brands, Streetwear, Ethnic Fashion |
-| **Tata CLiQ** | `/shop/tatacliq` | Luxury Watches, Premium Electronics, Audio |
-| **Croma** | `/shop/croma` | Home Appliances, Audio Gear, Computing |
-| **boAt Lifestyle** | `/shop/boat` | TWS Earbuds, Smartwatches, Soundbars |
-| **Noise** | `/shop/noise` | Smartwatches, Wireless Audio, Accessories |
+| Marketplace | Focus Categories |
+| :--- | :--- |
+| **Amazon India** | Electronics, Smart Home, Kindle, Everyday Tech |
+| **Flipkart** | Smartphones, Smart TVs, Wearables, Laptops |
+| **Myntra** | Premium Fashion, Footwear, Designer Wear |
+| **Meesho** | Value Apparel, Home Decor, Kitchenware |
+| **Nykaa** | Beauty, Skincare, Cosmetics, Fragrances |
+| **AJIO** | International Brands, Streetwear, Ethnic Fashion |
+| **Tata CLiQ** | Luxury Watches, Premium Electronics, Audio |
+| **Croma** | Home Appliances, Audio Gear, Computing |
+| **boAt Lifestyle** | TWS Earbuds, Smartwatches, Soundbars |
+| **Noise** | Smartwatches, Wireless Audio, Accessories |
 
 ---
 
 ## 🚀 Key Features
 
-### 🇮🇳 1. India-to-Nepal Direct Marketplace Storefront
-- **Platform Separation:** Navigating to `/shop/amazon`, `/shop/flipkart`, or `/shop/myntra` isolates products strictly to that provider.
-- **Dynamic Badges & Signals:** Automatic indicators for `FLASH SALE`, `BEST SELLER`, `% OFF`, `TRENDING`, and `NEW`.
-- **Live Deal Filters:** Filter by discount thresholds (20%+, 50%+), category, price range in NPR, and customer ratings.
+### 🇮🇳 1. India-to-Nepal Direct Marketplace Sourcing
+- Paste any supported Indian e-commerce URL (`amazon.in`, `flipkart.com`, `myntra.com`, etc.) at `/request-product` to generate instant landed quotes in Nepali Rupees.
+- Automated verification for stock and delivery availability to PIN `854331`.
 
-### 📦 2. Custom Product Link Ordering
-- **URL Parser & Estimator:** Paste any supported Indian e-commerce URL (`amazon.in`, `flipkart.com`, `myntra.com`, etc.) at `/request-product` to generate instant landed quotes in Nepali Rupees.
-- **Custom Sourcing Pipeline:** Customers specify sizes, color variants, target INR price, and urgency notes.
+### 📦 2. 1-Click Saved Delivery Address
+- Default address is automatically loaded during checkout.
+- Customers can easily switch, add, or set default delivery addresses.
 
-### 📊 3. User-Friendly Customer Dashboard (`/dashboard`)
-- **Route Isolation:** The dashboard operates as its own dedicated full-page layout without storefront header/footer overlap.
-- **Order-First Overview:**
-  - 4 KPI Counters: Total Orders (`📦`), In Transit (`🚚`), Delivered (`✅`), and Wishlist (`🤍`).
-  - **Live Orders Stream:** Displays thumbnail image, product title, marketplace badge, quantity, landed NPR price, and status chips.
-  - **1-Click Actions:** Instant access to **"Order Details"**, **"🖨️ PDF Invoice"**, and **"🚚 Track Shipment"**.
-  - **Quick Sourcing Bar:** Direct link order submission tool embedded into the overview.
-  - **"← Back to Home" Navigation:** Quick client-side return to the storefront.
-
-### 🔐 4. Figma Split-Screen Authentication
-- **Dual Google Sign-In:** One-click Google OAuth via Firebase popup with automated redirect fallback.
-- **Email & Password Authentication:** PBKDF2 cryptographic hashing with salt, session tokens, and password reset flows.
-- **Split-Screen Design:** Left hero section displaying value propositions and social proof; right card handling credentials.
-
-### 💳 5. Multi-Channel Nepal Payments
-- **eSewa EPAY:** Form-based digital wallet checkout with SHA256 signature verification.
+### 💳 3. Multi-Channel Nepal Payments
+- **eSewa EPAY:** Form-based digital wallet checkout.
 - **Khalti e-Banking:** Direct payment initiation and callback validation.
 - **Bank Transfer / QR Verification:** Upload transaction reference codes and receipt screenshots.
-- **Cash on Delivery (COD):** Available for Kathmandu Valley deliveries.
+- **Cash on Delivery (COD):** Available across Nepal.
 
 ---
 
@@ -97,34 +121,11 @@ LINKOVA features dedicated platform catalog channels with official brand assets:
 | :--- | :--- |
 | **Framework** | Next.js 14.2 (App Router, Server Actions, Route Handlers) |
 | **Language** | TypeScript 5 (Strict Mode) |
-| **Styling** | Tailwind CSS 3.4 + Custom Electric Blue / Dark Brand Tokens |
-| **Database** | MongoDB with Mongoose ODM (Dynamic Connection Pooling) |
+| **Styling** | Tailwind CSS 3.4 + Custom Tokens |
+| **Database** | MongoDB with Mongoose ODM |
 | **Authentication** | Google OAuth2 + Firebase Client SDK + HTTP-Only Session Cookies |
-| **Icons & Brand** | Official SVG Vector Brand Engine & Marketplace Logos |
+| **Icons & Brand** | SVG Vector Brand Engine & Marketplace Logos |
 | **Typography** | Inter & Space Grotesk via `next/font/google` |
-
----
-
-## 📐 Architecture & Route Isolation
-
-LINKOVA utilizes a dedicated route isolation architecture via `StorefrontShell`:
-
-```
-RootLayout (app/layout.tsx)
-  │
-  └── StorefrontShell
-        │
-        ├── [Storefront Pages] (/, /shop, /product/*, /request-product)
-        │     ├── <TopBanner />
-        │     ├── <Header /> (Brand Logo, Search, Navigation Pill, Cart/Wishlist)
-        │     ├── <main>{children}</main>
-        │     ├── <Footer />
-        │     └── <MobileNav />
-        │
-        └── [Isolated Dedicated Pages] (/dashboard, /admin/*, /login, /signup)
-              └── <main className="min-h-screen">{children}</main>
-                  (No storefront header/footer bleed; full custom page layout)
-```
 
 ---
 
@@ -139,29 +140,29 @@ MONGO_URI=${MONGODB_URI}
 
 # App Configuration & Admin Credentials
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-ADMIN_EMAIL=<your_admin_email>
-ADMIN_PASSWORD=<your_secure_admin_password>
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=YOUR_SECURE_ADMIN_PASSWORD
 
 # Nepal Payment Gateways
-ESEWA_MERCHANT_CODE=<your_esewa_merchant_code>
-ESEWA_SECRET_KEY=<your_esewa_secret_key>
+ESEWA_MERCHANT_CODE=YOUR_ESEWA_MERCHANT_CODE
+ESEWA_SECRET_KEY=YOUR_ESEWA_SECRET_KEY
 ESEWA_BASE_URL=https://rc-epay.esewa.com.np/api/epay/main/v2/form
-KHALTI_SECRET_KEY=<your_khalti_secret_key>
-NEXT_PUBLIC_KHALTI_PUBLIC_KEY=<your_khalti_public_key>
+KHALTI_SECRET_KEY=YOUR_KHALTI_SECRET_KEY
+NEXT_PUBLIC_KHALTI_PUBLIC_KEY=YOUR_KHALTI_PUBLIC_KEY
 KHALTI_CHECKOUT_URL=https://pay.khalti.com
 
 # Google OAuth
-GOOGLE_CLIENT_ID=<your_google_client_id>.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 
-# Firebase Authentication (Optional Client Popup)
-NEXT_PUBLIC_FIREBASE_API_KEY=<your_firebase_api_key>
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your_project>.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=<your_project_id>
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=<your_project>.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your_sender_id>
-NEXT_PUBLIC_FIREBASE_APP_ID=<your_app_id>
+# Firebase Authentication
+NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=YOUR_PROJECT.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
+NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID
 ```
 
 ---
@@ -170,14 +171,13 @@ NEXT_PUBLIC_FIREBASE_APP_ID=<your_app_id>
 
 ### 1. Prerequisites
 - **Node.js**: v18.17+ or v20+
-- **npm** or **pnpm**
-- **MongoDB**: Local MongoDB instance or free MongoDB Atlas cluster
+- **MongoDB**: Local MongoDB instance or MongoDB Atlas cluster
 
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/pratik051/VEYRA.git
+cd VEYRA
 
 # Install dependencies
 npm install
@@ -197,6 +197,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 # TypeScript compilation check
 npx tsc --noEmit
 
+# Run support ticket and security test suite
+node tests/run-support-tickets-test.js
+
 # Production build
 npm run build
 
@@ -212,48 +215,39 @@ npm start
 veyra/
 ├── app/
 │   ├── (storefront)/                 # Home, Shop, Marketplace Channels, Product Pages
-│   ├── dashboard/                    # Dedicated Customer Account Dashboard Route
-│   ├── account/                      # Customer Portal Controller & Order Manager
-│   ├── admin/                        # Secure Admin Sourcing Operations Console
-│   │   ├── login/                    # Staff Authentication Portal
-│   │   └── page.tsx                  # Live Order Management & Sourcing Volume
-│   ├── login/                        # Figma Split-Screen Customer Login
-│   ├── signup/                       # Figma Split-Screen Customer Registration
-│   ├── request-product/              # Cross-Border URL Quote Calculator
+│   ├── account/                      # Customer Portal, Orders & Support Tickets
+│   ├── admin/                        # Secure Admin Console (Server-Side Authorized)
+│   │   ├── layout.tsx                # Admin Role Authorization Guard
+│   │   └── page.tsx                  # Orders, Marketplace, & User Problems
+│   ├── dashboard/                    # Permanent Redirect to /account
+│   ├── login/                        # Customer Login
+│   ├── signup/                       # Customer Registration
+│   ├── request-product/              # Sourcing URL Quote Calculator
 │   ├── track-order/                  # Public Live Shipment Tracker
 │   ├── api/                          # REST Route Handlers
-│   │   ├── auth/                     # Google OAuth, Firebase, Local Login & Register
-│   │   ├── checkout/                 # Order Placement API
-│   │   ├── india-order/              # India Sourcing Order APIs & PDF Invoices
-│   │   └── payments/                 # eSewa, Khalti, QR Verification
+│   │   ├── admin/                    # Admin Orders, Payments, Marketplace & Tickets
+│   │   │   ├── tickets/              # Admin Ticket List, Detail, Reply & Status
+│   │   │   ├── india-orders/         # India Sourcing Orders
+│   │   │   └── marketplace/          # Provider Sync & Product Verification
+│   │   ├── user/                     # User Profile, Orders, Addresses & Support Tickets
+│   │   │   └── tickets/              # User Ticket Creation, Detail & Reply
+│   │   ├── auth/                     # Google OAuth, Firebase, Session Tokens
+│   │   └── india-order/              # India Sourcing Order Placement & PDF Invoices
 │   ├── layout.tsx                    # Root Layout with Font Optimization
 │   └── globals.css                   # Tailwind Design System & Animations
 ├── components/
+│   ├── admin/                        # Admin Dashboard & User Problems Panel
 │   ├── layout/                       # Header, StorefrontShell, MobileNav, Footer
 │   ├── providers/                    # Cart, Wishlist, Toast Context Providers
 │   └── ui/                           # LinkovaBrandLogo, MarketplaceLogo, ProductCard
 ├── lib/
-│   ├── auth/                         # Sessions, Cryptography, OAuth Token Verifiers
-│   ├── db/                           # Cached MongoDB Connection Manager
-│   ├── marketplace/                  # Marketplace Providers, Sync Engine & Types
-│   ├── models/                       # Mongoose Schemas (User, Order, Product)
-│   ├── pricing/                      # INR to Landed NPR Pricing Engine
+│   ├── auth/                         # Sessions, RBAC Authorization & Security
+│   ├── db/                           # MongoDB Connection Manager
+│   ├── models/                       # SupportTicket, IndiaOrder, Order, User Schemas
 │   └── utils.ts                      # Formatters, Currency Calculations & Helpers
-└── README.md                         # Project Documentation
+├── tests/                            # Automated Unit & Security Test Suites
+└── README.md                         # Public Project Documentation
 ```
-
----
-
-## 🛡️ Admin Management Portal
-
-The LINKOVA Operations Console is accessible at `/admin`:
-- **Staff Login:** Configured via `ADMIN_EMAIL` in `.env.local`
-- **Staff Password:** Configured via `ADMIN_PASSWORD` in `.env.local`
-- **Capabilities:**
-  - Dynamic Real-Time Sourcing Volume and Orders breakdown.
-  - Update shipment milestones (`Processing`, `Sourced in India`, `In Transit / Border Customs`, `Out for Delivery`, `Delivered`).
-  - Review submitted payment receipts & QR transaction references.
-  - Manage product catalog items and provider synchronization.
 
 ---
 
