@@ -105,7 +105,7 @@ export function Footer() {
               <li><Link href="/track-order" className="hover:text-veyra-gold transition-colors duration-200">Track Order Status</Link></li>
               <li><Link href="/faq" className="hover:text-veyra-gold transition-colors duration-200">Frequently Asked Questions</Link></li>
               <li><Link href="/contact" className="hover:text-veyra-gold transition-colors duration-200">Contact Customer Care</Link></li>
-              <li><Link href="/account" className="hover:text-veyra-gold transition-colors duration-200">Customer Account</Link></li>
+              <li><Link href="/dashboard" className="hover:text-veyra-gold transition-colors duration-200">Customer Dashboard</Link></li>
               <li><Link href="/admin" className="text-veyra-text/20 hover:text-veyra-text/50 transition-colors duration-200">Admin Dashboard</Link></li>
             </ul>
           </div>

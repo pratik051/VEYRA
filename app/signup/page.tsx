@@ -13,7 +13,7 @@ function SignupContent() {
   const router = useRouter();
   const { pushToast } = useToast();
 
-  const redirectUrl = searchParams.get("redirect") || "/account";
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

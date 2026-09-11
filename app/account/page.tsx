@@ -121,19 +121,6 @@ function BellIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-function ChipIcon() {
-  return (
-    <svg width="34" height="28" viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="34" height="28" rx="4" fill="#E2E8F0" />
-      <rect x="2" y="2" width="30" height="24" rx="2" fill="#F8FAFC" />
-      <line x1="10" y1="2" x2="10" y2="26" stroke="#CBD5E1" strokeWidth="1.5" />
-      <line x1="24" y1="2" x2="24" y2="26" stroke="#CBD5E1" strokeWidth="1.5" />
-      <line x1="2" y1="14" x2="32" y2="14" stroke="#CBD5E1" strokeWidth="1.5" />
-      <circle cx="17" cy="14" r="4" fill="#E2E8F0" />
-    </svg>
-  );
-}
-
 function AccountContent() {
   const searchParams = useSearchParams();
   const rawTab = searchParams.get("tab")?.toLowerCase();
@@ -443,6 +430,14 @@ function AccountContent() {
             </div>
           </div>
 
+          <Link
+            href="/"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition border border-slate-200/80"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
+          </Link>
+
           <div className="flex items-center gap-2">
             {user.role === "admin" && (
               <Link
@@ -470,7 +465,7 @@ function AccountContent() {
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-600"
+              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-600 cursor-pointer"
             >
               ☰
             </button>
@@ -488,15 +483,24 @@ function AccountContent() {
             </div>
           </div>
 
-          {/* Search, Notifications, Profile Action */}
-          <div className="flex items-center gap-3">
-            <div className="relative hidden sm:block">
+          {/* Search, Back to Home, Notifications, Profile Action */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition border border-slate-200"
+            >
+              <span>←</span>
+              <span className="hidden xs:inline">Back to Home</span>
+              <span className="xs:hidden">Home</span>
+            </Link>
+
+            <div className="relative hidden lg:block">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search orders, products..."
-                className="w-48 lg:w-64 rounded-full bg-[#F5F7FA] border border-transparent focus:border-blue-500 focus:bg-white pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none transition"
+                className="w-44 lg:w-56 rounded-full bg-[#F5F7FA] border border-transparent focus:border-blue-500 focus:bg-white pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none transition"
               />
               <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
             </div>
@@ -512,7 +516,7 @@ function AccountContent() {
 
             <Link
               href="/request-product"
-              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-bold shadow-md shadow-blue-600/20 transition hidden sm:inline-flex items-center gap-1.5"
+              className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 text-xs font-bold shadow-md shadow-blue-600/20 transition hidden sm:inline-flex items-center gap-1.5"
             >
               <span>+ New Order</span>
             </Link>
@@ -521,30 +525,19 @@ function AccountContent() {
 
         {/* Dashboard Body */}
         <div className="p-4 sm:p-8 space-y-8 flex-1">
-          {/* ─── TAB 1: OVERVIEW (BankDash Dual Card & KPI Layout) ─── */}
+          {/* ─── TAB 1: USER-FRIENDLY OVERVIEW (Direct Orders & Sourcing Tracker) ─── */}
           {activeTab === "dashboard" && (
             <div className="space-y-8">
-              {/* Row 1: 4 KPI Metrics Cards */}
+              {/* Row 1: 4 Friendly Summary Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl flex-shrink-0">
-                    💰
-                  </div>
-                  <div className="truncate">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Sourced</p>
-                    <h3 className="text-base sm:text-xl font-black text-slate-900 truncate">
-                      {formatNpr(totalSpentNPR)}
-                    </h3>
-                  </div>
-                </div>
-
                 <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl flex-shrink-0">
                     📦
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Orders</p>
-                    <h3 className="text-base sm:text-xl font-black text-slate-900">{orders.length}</h3>
+                    <h3 className="text-base sm:text-2xl font-black text-slate-900">{orders.length}</h3>
+                    <p className="text-[10px] text-slate-400">Total Placed</p>
                   </div>
                 </div>
 
@@ -554,7 +547,19 @@ function AccountContent() {
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">In Transit</p>
-                    <h3 className="text-base sm:text-xl font-black text-slate-900">{activeInTransitCount}</h3>
+                    <h3 className="text-base sm:text-2xl font-black text-amber-600">{activeInTransitCount}</h3>
+                    <p className="text-[10px] text-slate-400">On The Way</p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl flex-shrink-0">
+                    ✅
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Delivered</p>
+                    <h3 className="text-base sm:text-2xl font-black text-emerald-600">{deliveredCount}</h3>
+                    <p className="text-[10px] text-slate-400">Received Safely</p>
                   </div>
                 </div>
 
@@ -563,219 +568,204 @@ function AccountContent() {
                     🤍
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Wishlist Items</p>
-                    <h3 className="text-base sm:text-xl font-black text-slate-900">{ids.length}</h3>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saved Wishlist</p>
+                    <h3 className="text-base sm:text-2xl font-black text-slate-900">{ids.length}</h3>
+                    <p className="text-[10px] text-slate-400">Favorite Items</p>
                   </div>
                 </div>
               </div>
 
-              {/* Row 2: BankDash Cards UI (Primary Dark Card + Secondary White Card + Recent Orders) */}
+              {/* Row 2: Recent Orders & Quick Order Action */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left 7 Columns: BankDash Sourcing Cards */}
-                <div className="lg:col-span-7 space-y-4">
+                {/* Left 8 Cols: What You Ordered (Recent Live Orders) */}
+                <div className="lg:col-span-8 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-base font-black text-slate-900">My Sourcing Passport</h2>
-                    <Link
-                      href="/request-product"
-                      className="text-xs font-bold text-blue-600 hover:underline"
-                    >
-                      + Order from India
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Primary Dark Sourcing Card */}
-                    <div className="rounded-3xl bg-gradient-to-br from-[#1A1D1F] via-[#2A3036] to-[#111315] text-white p-6 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[200px] border border-slate-800">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Sourced Volume</span>
-                          <h4 className="text-xl font-black text-white">{formatNpr(totalSpentNPR)}</h4>
-                        </div>
-                        <ChipIcon />
-                      </div>
-
-                      <div className="space-y-3 pt-4">
-                        <div className="flex items-center justify-between text-xs text-slate-300">
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase">CARD HOLDER</span>
-                            <span className="font-bold text-white uppercase">{user.fullName}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase">VALID THRU</span>
-                            <span className="font-bold text-white font-mono">12/28</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs font-mono text-slate-300 tracking-wider">
-                          <span>4829 •••• •••• {user.id ? user.id.slice(-4) : "9012"}</span>
-                          <div className="flex -space-x-2">
-                            <span className="h-5 w-5 rounded-full bg-red-500/80 block" />
-                            <span className="h-5 w-5 rounded-full bg-amber-400/80 block" />
-                          </div>
-                        </div>
-                      </div>
+                    <div>
+                      <h2 className="text-base sm:text-lg font-black text-slate-900">Your Recent Orders</h2>
+                      <p className="text-xs text-slate-500">Live status of your India ➔ Nepal packages</p>
                     </div>
-
-                    {/* Secondary Light Sourcing Card */}
-                    <div className="rounded-3xl bg-white text-slate-900 p-6 shadow-xs border border-slate-200/90 flex flex-col justify-between min-h-[200px]">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] text-slate-400 uppercase font-semibold">Active Orders & Sourcing</span>
-                          <h4 className="text-xl font-black text-slate-900">{orders.length} Orders</h4>
-                        </div>
-                        <div className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
-                          NP
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between text-xs py-1 border-b border-slate-100">
-                          <span className="text-slate-500">In Transit</span>
-                          <span className="font-bold text-amber-600">{activeInTransitCount}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs py-1 border-b border-slate-100">
-                          <span className="text-slate-500">Delivered</span>
-                          <span className="font-bold text-emerald-600">{deliveredCount}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs pt-1">
-                          <span className="text-slate-500">Nepal Delivery</span>
-                          <span className="font-bold text-slate-900">7 Provinces</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right 5 Columns: Recent Orders (BankDash Recent Transactions style) */}
-                <div className="lg:col-span-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-base font-black text-slate-900">Recent Sourcing Stream</h2>
-                    <button
-                      onClick={() => setActiveTab("orders")}
-                      className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                    >
-                      View All
-                    </button>
-                  </div>
-
-                  <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
-                    {orders.length === 0 ? (
-                      <div className="py-8 text-center text-slate-400 text-xs">
-                        No orders yet. Place your first India sourcing request.
-                      </div>
-                    ) : (
-                      orders.slice(0, 3).map((ord) => (
-                        <div
-                          key={ord.orderId}
-                          onClick={() => setSelectedOrder(ord)}
-                          className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
-                              {ord.marketplace ? (
-                                <MarketplaceLogo marketplace={ord.marketplace} className="h-4 w-auto" />
-                              ) : (
-                                <span>🛍️</span>
-                              )}
-                            </div>
-                            <div className="truncate max-w-[150px] sm:max-w-[180px]">
-                              <p className="text-xs font-bold text-slate-900 truncate">{ord.productName}</p>
-                              <p className="text-[10px] text-slate-400 font-mono">{ord.orderId}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs font-black text-slate-900">{formatNpr(ord.total)}</p>
-                            <span
-                              className={`text-[9px] font-bold px-2 py-0.2 rounded-full ${
-                                ord.orderStatus === "Delivered"
-                                  ? "bg-emerald-100 text-emerald-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                            >
-                              {ord.orderStatus}
-                            </span>
-                          </div>
-                        </div>
-                      ))
+                    {orders.length > 0 && (
+                      <button
+                        onClick={() => setActiveTab("orders")}
+                        className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
+                      >
+                        View All Orders ({orders.length}) ➔
+                      </button>
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Row 3: Sourcing Activity & Quick Sourcing Bar (BankDash Quick Transfer Style) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left 7 Columns: Weekly Sourcing Activity Breakdown */}
-                <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-black text-slate-900">Sourcing Activity Pipeline</h3>
-                    <span className="text-[11px] font-bold text-slate-400">Live Status</span>
-                  </div>
+                  {orders.length === 0 ? (
+                    <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-dashed border-slate-300 space-y-3">
+                      <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center text-3xl mx-auto">
+                        🛍️
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900">You haven&apos;t placed any orders yet</h3>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Found something you love on Amazon India, Flipkart, Myntra, boAt, or Croma? Order directly through LINKOVA with transparent NPR pricing.
+                      </p>
+                      <Link
+                        href="/request-product"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold shadow-md shadow-blue-600/20 transition"
+                      >
+                        <span>🇮🇳 Order Indian Product Now</span>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {orders.slice(0, 4).map((ord) => (
+                        <div
+                          key={ord.orderId}
+                          className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition space-y-3"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="font-mono font-black text-xs sm:text-sm text-slate-900">
+                                {ord.orderId}
+                              </span>
+                              {ord.marketplace && (
+                                <span className="inline-flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-700">
+                                  <MarketplaceLogo marketplace={ord.marketplace} className="h-3 w-auto" />
+                                  <span>{ord.marketplace}</span>
+                                </span>
+                              )}
+                            </div>
 
-                  <div className="space-y-3 pt-2">
-                    {[
-                      { label: "Order Placed & Verified", count: orders.length, color: "bg-blue-600" },
-                      { label: "In Transit / Customs Cleared", count: activeInTransitCount, color: "bg-amber-500" },
-                      { label: "Delivered to Doorstep", count: deliveredCount, color: "bg-emerald-500" }
-                    ].map((step, idx) => {
-                      const pct = orders.length > 0 ? Math.round((step.count / orders.length) * 100) : 0;
-                      return (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold">
-                            <span className="text-slate-600">{step.label}</span>
-                            <span className="text-slate-900 font-bold">{step.count} ({pct}%)</span>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                  ord.orderStatus === "Delivered"
+                                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                    : ord.orderStatus === "Cancelled"
+                                    ? "bg-rose-50 text-rose-800 border-rose-200"
+                                    : "bg-blue-50 text-blue-800 border-blue-200"
+                                }`}
+                              >
+                                {ord.orderStatus}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {new Date(ord.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
                           </div>
-                          <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${step.color} rounded-full transition-all duration-500`}
-                              style={{ width: `${pct > 0 ? pct : 5}%` }}
-                            />
+
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3.5 min-w-0">
+                              {ord.productImage ? (
+                                <img
+                                  src={ord.productImage}
+                                  alt={ord.productName}
+                                  className="h-12 w-12 rounded-xl object-cover border border-slate-100 flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl flex-shrink-0">
+                                  📦
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate">
+                                  {ord.productName}
+                                </h4>
+                                <p className="text-[11px] text-slate-500">
+                                  Qty: <strong>{ord.quantity}</strong> • Landed Total: <strong className="text-slate-900">{formatNpr(ord.total)}</strong>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedOrder(ord)}
+                                className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer"
+                              >
+                                Details
+                              </button>
+                              <Link
+                                href={`/track-order?orderId=${ord.orderId}`}
+                                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition"
+                              >
+                                Track ➔
+                              </Link>
+                            </div>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Right 5 Columns: Quick Sourcing Bar (BankDash Quick Transfer Style) */}
-                <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900">Quick Sourcing Order</h3>
-                    <p className="text-[11px] text-slate-400">Paste any Indian product URL to start an instant order.</p>
+                {/* Right 4 Cols: Quick Cross-Border Sourcing & Delivery Steps */}
+                <div className="lg:col-span-4 space-y-6">
+                  {/* Quick Order by URL */}
+                  <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                    <div>
+                      <h3 className="text-sm font-black text-slate-900">Order by Indian Link</h3>
+                      <p className="text-[11px] text-slate-400">
+                        Paste any link from Amazon, Flipkart, Myntra, or boAt.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                          Product URL
+                        </label>
+                        <input
+                          type="url"
+                          value={quickSourcingUrl}
+                          onChange={(e) => setQuickSourcingUrl(e.target.value)}
+                          placeholder="https://www.amazon.in/dp/..."
+                          className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                          Price in India (INR ₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={quickInrPrice}
+                          onChange={(e) => setQuickInrPrice(e.target.value)}
+                          placeholder="e.g. 2499"
+                          className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
+                        />
+                      </div>
+
+                      <Link
+                        href={`/request-product?url=${encodeURIComponent(quickSourcingUrl)}&inr=${quickInrPrice}`}
+                        className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 text-center transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
+                      >
+                        <span>⚡ Calculate Landed NPR Quote</span>
+                      </Link>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                        Indian Product URL (Amazon, Flipkart, Myntra)
-                      </label>
-                      <input
-                        type="url"
-                        value={quickSourcingUrl}
-                        onChange={(e) => setQuickSourcingUrl(e.target.value)}
-                        placeholder="https://www.amazon.in/dp/..."
-                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
+                  {/* Delivery Pipeline Progress */}
+                  <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                    <h3 className="text-sm font-black text-slate-900">Delivery Status Breakdown</h3>
+                    <div className="space-y-3 pt-1">
+                      {[
+                        { label: "Orders Placed & Verified", count: orders.length, color: "bg-blue-600" },
+                        { label: "Cross-Border Transit / Customs", count: activeInTransitCount, color: "bg-amber-500" },
+                        { label: "Delivered to Doorstep in Nepal", count: deliveredCount, color: "bg-emerald-500" }
+                      ].map((step, idx) => {
+                        const pct = orders.length > 0 ? Math.round((step.count / orders.length) * 100) : 0;
+                        return (
+                          <div key={idx} className="space-y-1">
+                            <div className="flex justify-between text-xs font-semibold">
+                              <span className="text-slate-600">{step.label}</span>
+                              <span className="text-slate-900 font-bold">{step.count}</span>
+                            </div>
+                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${step.color} rounded-full transition-all duration-500`}
+                                style={{ width: `${pct > 0 ? pct : 4}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                        Approx Indian Price (INR ₹)
-                      </label>
-                      <input
-                        type="number"
-                        value={quickInrPrice}
-                        onChange={(e) => setQuickInrPrice(e.target.value)}
-                        placeholder="e.g. 2999"
-                        className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:bg-white focus:outline-none transition"
-                      />
-                    </div>
-
-                    <Link
-                      href={`/request-product?url=${encodeURIComponent(quickSourcingUrl)}&inr=${quickInrPrice}`}
-                      className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 text-center transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
-                    >
-                      <span>⚡ Calculate NPR &amp; Sourcing Quote</span>
-                    </Link>
                   </div>
                 </div>
               </div>

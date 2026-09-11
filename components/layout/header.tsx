@@ -131,21 +131,21 @@ export function Header() {
               <SearchIcon />
             </button>
 
-            {/* Wishlist Icon */}
+            {/* Wishlist Link */}
             <Link
-              href="/account?tab=wishlist"
+              href="/dashboard?tab=wishlist"
               aria-label="Wishlist"
-              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-red-500 transition hover:scale-105"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
             >
               <HeartIcon />
               {totalWishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-sm ring-2 ring-white animate-pulse">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-slate-950 shadow-sm ring-2 ring-white">
                   {totalWishlistCount}
                 </span>
               )}
             </Link>
 
-            {/* Cart Icon */}
+            {/* Cart Link */}
             <Link
               href="/cart"
               aria-label="Cart"
@@ -161,8 +161,8 @@ export function Header() {
 
             {/* User Account Icon */}
             <Link
-              href="/account"
-              aria-label="Account"
+              href="/dashboard"
+              aria-label="Account Dashboard"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/80 hover:bg-neutral-200 text-neutral-700 hover:text-neutral-950 transition hover:scale-105"
             >
               <UserIcon />

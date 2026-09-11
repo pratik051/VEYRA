@@ -13,7 +13,7 @@ function LoginContent() {
   const router = useRouter();
   const { pushToast } = useToast();
 
-  const redirectUrl = searchParams.get("redirect") || "/account";
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

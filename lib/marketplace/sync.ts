@@ -1,6 +1,6 @@
 import { connectDB } from "../db/mongodb";
 import { MarketplaceProductModel } from "../models/marketplace-product-model";
-import { MarketplaceProduct, SyncResult } from "./types";
+import { MarketplaceProduct, SyncResult, MarketplaceProvider } from "./types";
 import { getAllProviders, getEnabledProviders } from "./index";
 
 /**
@@ -51,7 +51,7 @@ export async function syncMarketplaceProducts(specificProviderId?: string): Prom
   await connectDB();
 
   const providers = specificProviderId
-    ? getAllProviders().filter((p) => p.id === specificProviderId)
+    ? getAllProviders().filter((p: MarketplaceProvider) => p.id === specificProviderId)
     : getEnabledProviders();
 
   const results: SyncResult[] = [];

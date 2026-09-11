@@ -7,8 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { CartProvider } from "@/components/providers/cart-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
-import { MobileNav } from "@/components/layout/mobile-nav";
-import { BackToTop } from "@/components/ui/back-to-top";
+import { StorefrontShell } from "@/components/layout/storefront-shell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,12 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WishlistProvider>
           <ToastProvider>
             <CartProvider>
-              <TopBanner />
-              <Header />
-              <main className="flex-1 pb-16 md:pb-0">{children}</main>
-              <Footer />
-              <MobileNav />
-              <BackToTop />
+              <StorefrontShell>{children}</StorefrontShell>
             </CartProvider>
           </ToastProvider>
         </WishlistProvider>
