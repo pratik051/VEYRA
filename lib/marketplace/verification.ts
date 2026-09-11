@@ -5,14 +5,20 @@ import {
   getSourceIdFromUrl
 } from "../sourcing-platforms";
 import { MarketplaceProduct } from "./types";
+import { findAndVerifyAiCandidate } from "./ai-product-matcher";
 
 export interface VerificationResult {
   verified: boolean;
   originalSourceUrl: string;
   verifiedSourceUrl: string;
   canonicalSourceUrl: string;
+  verificationMethod: "original_url" | "ai_candidate" | "api" | "feed" | "manual";
+  matchConfidence: number;
+  imageVerified: boolean;
+  priceVerified: boolean;
   imageValidationStatus: "valid" | "invalid";
   priceValidationStatus: "valid" | "invalid";
+  published: boolean;
   error?: string;
 }
 
@@ -165,26 +171,7 @@ export async function verifyMarketplaceUrl(
       };
     }
 
-    // 2. Structural URL validation
-    const platform = getPlatformByDomain(parsed.hostname);
-    if (platform && !isValidProductUrl(trimmed, platform)) {
-      // If original URL fails structural check, check if canonical URL is valid
-      if (canonicalUrl && isValidProductUrl(canonicalUrl, platform)) {
-        return {
-          valid: true,
-          verifiedUrl: canonicalUrl,
-          canonicalUrl
-        };
-      }
-      return {
-        valid: false,
-        verifiedUrl: "",
-        canonicalUrl,
-        error: `URL structure did not match ${platform.displayName} product specifications.`
-      };
-    }
-
-    // 3. Check for obvious error patterns in the URL itself
+    // 2. Reject known error redirects in URL structure
     const lowercaseUrl = trimmed.toLowerCase();
     if (
       lowercaseUrl.includes("cs_404_link") ||
@@ -192,19 +179,22 @@ export async function verifyMarketplaceUrl(
       lowercaseUrl.includes("error_404") ||
       lowercaseUrl.includes("ref=cs_404")
     ) {
-      // Attempt canonical fallback
-      if (canonicalUrl && canonicalUrl !== trimmed) {
-        return {
-          valid: true,
-          verifiedUrl: canonicalUrl,
-          canonicalUrl
-        };
-      }
       return {
         valid: false,
         verifiedUrl: "",
         canonicalUrl,
         error: "URL points to a known 404 / error redirect."
+      };
+    }
+
+    // 3. Structural URL validation
+    const platform = getPlatformByDomain(parsed.hostname);
+    if (platform && !isValidProductUrl(trimmed, platform)) {
+      return {
+        valid: false,
+        verifiedUrl: "",
+        canonicalUrl,
+        error: `URL structure did not match ${platform.displayName} product specifications.`
       };
     }
 
@@ -224,11 +214,17 @@ export async function verifyMarketplaceUrl(
 }
 
 /**
- * Complete Product Record Verification Engine.
- * Verifies URL, authentic images, and valid price before publication.
+ * Complete Product Record Verification Engine with AI Candidate Fallback.
+ * Pipeline:
+ * 1. Validate Price (INR > 0)
+ * 2. Validate Real Images (CDN check)
+ * 3. Verify Original URL
+ * 4. IF Original URL fails: AI Candidate Matching Service generates candidates → Backend verifies each candidate
+ * 5. Publish ONLY if backend verification passes and confidence >= 75
  */
 export async function verifyProductRecord(product: MarketplaceProduct): Promise<VerificationResult> {
   const originalSourceUrl = product.originalSourceUrl || product.sourceUrl || "";
+  const canonicalFallback = buildCanonicalProductUrl(product.source, product.sourceProductId, originalSourceUrl);
 
   // 1. Validate Price
   const isPriceValid = typeof product.priceINR === "number" && !isNaN(product.priceINR) && product.priceINR > 0;
@@ -237,9 +233,14 @@ export async function verifyProductRecord(product: MarketplaceProduct): Promise<
       verified: false,
       originalSourceUrl,
       verifiedSourceUrl: "",
-      canonicalSourceUrl: buildCanonicalProductUrl(product.source, product.sourceProductId, originalSourceUrl),
+      canonicalSourceUrl: canonicalFallback,
+      verificationMethod: "original_url",
+      matchConfidence: 0,
+      imageVerified: false,
+      priceVerified: false,
       imageValidationStatus: "invalid",
       priceValidationStatus: "invalid",
+      published: false,
       error: `Invalid price INR: ${product.priceINR}. Must be a positive number.`
     };
   }
@@ -262,38 +263,79 @@ export async function verifyProductRecord(product: MarketplaceProduct): Promise<
       verified: false,
       originalSourceUrl,
       verifiedSourceUrl: "",
-      canonicalSourceUrl: buildCanonicalProductUrl(product.source, product.sourceProductId, originalSourceUrl),
+      canonicalSourceUrl: canonicalFallback,
+      verificationMethod: "original_url",
+      matchConfidence: 0,
+      imageVerified: false,
+      priceVerified: true,
       imageValidationStatus: "invalid",
       priceValidationStatus: "valid",
-      error: "No valid product images found matching quality criteria."
+      published: false,
+      error: "No genuine marketplace product images found matching quality criteria."
     };
   }
 
-  // 3. Verify Product URL
+  // 3. Try Original URL Verification First
   const urlCheck = await verifyMarketplaceUrl(
     product.sourceUrl || originalSourceUrl,
     product.source,
     product.sourceProductId
   );
 
-  if (!urlCheck.valid) {
+  if (urlCheck.valid) {
     return {
-      verified: false,
+      verified: true,
       originalSourceUrl,
-      verifiedSourceUrl: "",
+      verifiedSourceUrl: urlCheck.verifiedUrl,
       canonicalSourceUrl: urlCheck.canonicalUrl,
+      verificationMethod: "original_url",
+      matchConfidence: 100,
+      imageVerified: true,
+      priceVerified: true,
       imageValidationStatus: "valid",
       priceValidationStatus: "valid",
-      error: urlCheck.error || "Product URL verification failed."
+      published: true
     };
   }
 
+  // 4. AI Fallback Candidate Search & Backend Verification
+  // If original URL failed (e.g. 404, bad link, broken redirect), invoke AI product matcher
+  try {
+    const candidate = await findAndVerifyAiCandidate(product);
+
+    if (candidate && candidate.confidence >= 75) {
+      return {
+        verified: true,
+        originalSourceUrl,
+        verifiedSourceUrl: candidate.url,
+        canonicalSourceUrl: candidate.canonicalUrl,
+        verificationMethod: "ai_candidate",
+        matchConfidence: candidate.confidence,
+        imageVerified: true,
+        priceVerified: true,
+        imageValidationStatus: "valid",
+        priceValidationStatus: "valid",
+        published: true
+      };
+    }
+  } catch (aiErr: any) {
+    console.error("[verifyProductRecord] AI candidate matching error:", aiErr);
+  }
+
+  // 5. If neither Original URL nor AI candidate could be safely verified:
   return {
-    verified: true,
+    verified: false,
     originalSourceUrl,
-    verifiedSourceUrl: urlCheck.verifiedUrl,
-    canonicalSourceUrl: urlCheck.canonicalUrl,
+    verifiedSourceUrl: "",
+    canonicalSourceUrl: urlCheck.canonicalUrl || canonicalFallback,
+    verificationMethod: "original_url",
+    matchConfidence: 0,
+    imageVerified: true,
+    priceVerified: true,
     imageValidationStatus: "valid",
-    priceValidationStatus: "valid"
+    priceValidationStatus: "valid",
+    published: false,
+    error: urlCheck.error || "Original URL and AI candidates failed backend verification."
   };
 }
+

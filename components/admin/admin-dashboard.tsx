@@ -92,6 +92,31 @@ type MarketplaceProviderStatus = {
   lastSyncedAt: string | null;
 };
 
+type MarketplaceProductItem = {
+  _id: string;
+  source: string;
+  sourceProductId: string;
+  sourceUrl: string;
+  originalSourceUrl?: string;
+  verifiedSourceUrl?: string;
+  canonicalSourceUrl?: string;
+  title: string;
+  brand: string;
+  category: string;
+  priceINR: number;
+  rating: number;
+  images: string[];
+  isActive?: boolean;
+  published?: boolean;
+  verificationStatus?: "pending" | "verified" | "failed";
+  verificationMethod?: "original_url" | "ai_candidate" | "api" | "feed" | "manual";
+  matchConfidence?: number;
+  verificationCheckedAt?: string;
+  verificationError?: string;
+  imageVerified?: boolean;
+  priceVerified?: boolean;
+};
+
 function InfoRow({
   label,
   value,
@@ -136,7 +161,10 @@ export function AdminDashboard() {
   const [indiaOrdersList, setIndiaOrdersList] = useState<AdminIndiaOrder[]>([]);
   const [paymentsList, setPaymentsList] = useState<AdminPayment[]>([]);
   const [marketplaceProviders, setMarketplaceProviders] = useState<MarketplaceProviderStatus[]>([]);
+  const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProductItem[]>([]);
   const [syncingProvider, setSyncingProvider] = useState<string | null>(null);
+  const [reverifyingId, setReverifyingId] = useState<string | null>(null);
+  const [auditingAll, setAuditingAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
 
@@ -170,12 +198,13 @@ export function AdminDashboard() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [productRes, orderRes, indiaOrderRes, paymentRes, mktRes] = await Promise.all([
+      const [productRes, orderRes, indiaOrderRes, paymentRes, mktRes, mktProductsRes] = await Promise.all([
         fetch("/api/admin/products"),
         fetch("/api/admin/orders"),
         fetch("/api/admin/india-orders"),
         fetch("/api/admin/payments"),
-        fetch("/api/admin/marketplace/status")
+        fetch("/api/admin/marketplace/status"),
+        fetch("/api/admin/marketplace/products")
       ]);
       if (productRes.ok) {
         const p = await productRes.json();
@@ -196,6 +225,10 @@ export function AdminDashboard() {
       if (mktRes.ok) {
         const m = await mktRes.json();
         if (m.providers) setMarketplaceProviders(m.providers);
+      }
+      if (mktProductsRes.ok) {
+        const mp = await mktProductsRes.json();
+        if (mp.products) setMarketplaceProducts(mp.products);
       }
     } catch (e) {
       console.error(e);
@@ -265,6 +298,69 @@ export function AdminDashboard() {
       }
     } catch {
       pushToast("Failed to toggle provider.", "error");
+    }
+  };
+
+  const reverifyMarketplaceProduct = async (id: string) => {
+    setReverifyingId(id);
+    try {
+      const res = await fetch(`/api/admin/marketplace/products/${id}`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        pushToast(data.message || "Product verified successfully!", "success");
+      } else {
+        pushToast(data.error || "Verification failed for this product.", "error");
+      }
+      await loadAll();
+    } catch {
+      pushToast("Network error during reverification.", "error");
+    } finally {
+      setReverifyingId(null);
+    }
+  };
+
+  const toggleProductPublish = async (id: string, currentPublished?: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/marketplace/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ published: !currentPublished, isActive: !currentPublished })
+      });
+      const data = await res.json();
+      if (data.success) {
+        pushToast(
+          `Product is now ${!currentPublished ? "Published" : "Unpublished"}.`,
+          "success"
+        );
+        await loadAll();
+      } else {
+        pushToast(data.error || "Failed to update publication status.", "error");
+      }
+    } catch {
+      pushToast("Network error updating product.", "error");
+    }
+  };
+
+  const auditAllProducts = async () => {
+    setAuditingAll(true);
+    try {
+      const res = await fetch("/api/marketplace/verify");
+      const data = await res.json();
+      if (data.success) {
+        const verified = data.summary?.verifiedAndPublished || 0;
+        const failed = data.summary?.failedAndUnpublished || 0;
+        pushToast(
+          `Verification Complete: ${verified} verified & published, ${failed} failed/unpublished.`,
+          "success"
+        );
+        await loadAll();
+      } else {
+        pushToast(data.error || "Verification audit encountered errors.", "error");
+      }
+    } catch {
+      pushToast("Network error during verification audit.", "error");
+    } finally {
+      setAuditingAll(false);
     }
   };
 
@@ -828,6 +924,216 @@ export function AdminDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* ── Marketplace Products & AI Verification Audit Panel ── */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600">
+                  🛡️ AI Product Matching &amp; Backend Verification Engine
+                </span>
+                <h3 className="text-lg font-black text-slate-900">
+                  Marketplace Products &amp; Verification Status ({marketplaceProducts.length})
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Only verified products with active URLs, genuine CDN images, and match confidence &ge; 75% are published to customers.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={auditAllProducts}
+                  disabled={auditingAll}
+                  className="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white hover:bg-slate-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
+                >
+                  {auditingAll ? (
+                    <>
+                      <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+                      <span>Auditing &amp; Verifying with AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🔍 Run AI Verification Audit on All</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Metrics Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Imported</span>
+                <span className="text-lg font-black text-slate-900">{marketplaceProducts.length}</span>
+              </div>
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+                <span className="text-[10px] font-bold uppercase text-emerald-600 block">Verified &amp; Published</span>
+                <span className="text-lg font-black text-emerald-800">
+                  {marketplaceProducts.filter((p) => p.verificationStatus === "verified" && p.published !== false).length}
+                </span>
+              </div>
+              <div className="rounded-xl bg-blue-50 border border-blue-200 p-3">
+                <span className="text-[10px] font-bold uppercase text-blue-600 block">AI Candidate Matched</span>
+                <span className="text-lg font-black text-blue-800">
+                  {marketplaceProducts.filter((p) => p.verificationMethod === "ai_candidate").length}
+                </span>
+              </div>
+              <div className="rounded-xl bg-red-50 border border-red-200 p-3">
+                <span className="text-[10px] font-bold uppercase text-red-600 block">Failed / Unpublished</span>
+                <span className="text-lg font-black text-red-800">
+                  {marketplaceProducts.filter((p) => p.verificationStatus === "failed" || p.published === false).length}
+                </span>
+              </div>
+            </div>
+
+            {/* Marketplace Products Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="pb-3">Product</th>
+                    <th className="pb-3">Marketplace &amp; Brand</th>
+                    <th className="pb-3">Price</th>
+                    <th className="pb-3">Verification</th>
+                    <th className="pb-3">Method &amp; Confidence</th>
+                    <th className="pb-3">Working Link</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {marketplaceProducts.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                        No marketplace products loaded yet. Click &quot;Sync All Providers Now&quot; above to import live products.
+                      </td>
+                    </tr>
+                  )}
+                  {marketplaceProducts.map((p) => {
+                    const isVerified = p.verificationStatus === "verified";
+                    const isAiCandidate = p.verificationMethod === "ai_candidate";
+                    const workingUrl = p.verifiedSourceUrl || p.canonicalSourceUrl || p.sourceUrl;
+
+                    return (
+                      <tr key={p._id || p.sourceProductId} className="hover:bg-slate-50/60">
+                        {/* Product info */}
+                        <td className="py-3.5 max-w-[220px]">
+                          <div className="flex items-center gap-3">
+                            {p.images?.[0] && (
+                              <img
+                                src={p.images[0]}
+                                alt={p.title}
+                                className="h-10 w-10 rounded-lg object-contain border border-slate-200 bg-white p-0.5 flex-shrink-0"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                              />
+                            )}
+                            <div className="min-w-0">
+                              <span className="font-bold text-slate-900 block truncate" title={p.title}>
+                                {p.title}
+                              </span>
+                              <span className="font-mono text-[10px] text-slate-400 block">
+                                ID: {p.sourceProductId}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Marketplace & Brand */}
+                        <td className="py-3.5">
+                          <span className="inline-block text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-800 px-2 py-0.5 rounded-full mb-1">
+                            🇮🇳 {p.source.replace("amazon-india", "Amazon IN").replace("tatacliq", "Tata CLiQ").replace("boat", "boAt").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </span>
+                          <span className="text-slate-600 block text-[11px] font-semibold">{p.brand}</span>
+                        </td>
+
+                        {/* Price */}
+                        <td className="py-3.5 font-bold text-slate-800">
+                          ₹{Number(p.priceINR).toLocaleString()} INR
+                        </td>
+
+                        {/* Verification Status */}
+                        <td className="py-3.5">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                              isVerified
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-red-50 text-red-800 border-red-200"
+                            }`}
+                          >
+                            {isVerified ? "✓ Verified" : "✗ Failed"}
+                          </span>
+                          {p.verificationError && (
+                            <span className="text-[10px] text-red-500 block truncate max-w-[160px] mt-0.5" title={p.verificationError}>
+                              {p.verificationError}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Method & Confidence */}
+                        <td className="py-3.5">
+                          <span className="font-bold text-slate-800 block text-[11px]">
+                            {isAiCandidate ? "🤖 AI Candidate" : "🔗 Direct URL"}
+                          </span>
+                          {typeof p.matchConfidence === "number" && p.matchConfidence > 0 ? (
+                            <span
+                              className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded mt-0.5 ${
+                                p.matchConfidence >= 90
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : p.matchConfidence >= 75
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {p.matchConfidence}% Match
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">100% Exact</span>
+                          )}
+                        </td>
+
+                        {/* Working Link */}
+                        <td className="py-3.5 max-w-[160px]">
+                          {workingUrl ? (
+                            <a
+                              href={workingUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[11px] text-blue-600 hover:underline font-mono truncate block"
+                              title={workingUrl}
+                            >
+                              🇮🇳 Open Product ↗
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 text-[10px]">—</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 text-right space-x-1.5 whitespace-nowrap">
+                          <button
+                            onClick={() => reverifyMarketplaceProduct(p._id)}
+                            disabled={reverifyingId === p._id}
+                            className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] transition disabled:opacity-50"
+                          >
+                            {reverifyingId === p._id ? "Verifying..." : "⚡ Reverify"}
+                          </button>
+                          <button
+                            onClick={() => toggleProductPublish(p._id, p.published !== false && p.isActive !== false)}
+                            className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition border ${
+                              p.published !== false && p.isActive !== false
+                                ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                            }`}
+                          >
+                            {p.published !== false && p.isActive !== false ? "Unpublish" : "Publish"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -148,7 +148,12 @@ export async function syncMarketplaceProducts(specificProviderId?: string): Prom
           specs: p.specs || {},
           // Only published if verified = true
           isActive: verification.verified,
+          published: verification.verified,
           verificationStatus: verification.verified ? "verified" : "failed",
+          verificationMethod: verification.verificationMethod,
+          matchConfidence: verification.matchConfidence,
+          imageVerified: verification.imageVerified,
+          priceVerified: verification.priceVerified,
           verificationCheckedAt: new Date(),
           verificationError: verification.error || "",
           imageValidationStatus: verification.imageValidationStatus,

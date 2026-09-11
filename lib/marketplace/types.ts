@@ -42,10 +42,15 @@ export interface MarketplaceProduct {
   lastSyncedAt?: Date;
   isActive?: boolean;
   featured?: boolean;
-  // Verification states
+  // Verification states & AI Candidate matching metadata
   verificationStatus?: "pending" | "verified" | "failed";
+  verificationMethod?: "original_url" | "ai_candidate" | "api" | "feed" | "manual";
+  matchConfidence?: number; // 0 - 100 confidence score
   verificationCheckedAt?: Date;
   verificationError?: string;
+  published?: boolean;
+  imageVerified?: boolean;
+  priceVerified?: boolean;
   imageValidationStatus?: "valid" | "invalid" | "pending";
   priceValidationStatus?: "valid" | "invalid" | "pending";
 }

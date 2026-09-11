@@ -76,8 +76,17 @@ const MarketplaceProductSchema = new Schema(
       default: "pending",
       index: true
     },
+    verificationMethod: {
+      type: String,
+      enum: ["original_url", "ai_candidate", "api", "feed", "manual"],
+      default: "original_url"
+    },
+    matchConfidence: { type: Number, default: null },
     verificationCheckedAt: { type: Date, default: Date.now },
     verificationError: { type: String, default: "" },
+    published: { type: Boolean, default: true, index: true },
+    imageVerified: { type: Boolean, default: false },
+    priceVerified: { type: Boolean, default: false },
     imageValidationStatus: {
       type: String,
       enum: ["valid", "invalid", "pending"],
