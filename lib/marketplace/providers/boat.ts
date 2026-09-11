@@ -59,27 +59,92 @@ export const BoatProvider: MarketplaceProvider = {
         brand: "boAt",
         category: "Watches",
         subcategory: "Smartwatches",
-        priceINR: 1299,
-        originalPriceINR: 6990,
+        priceINR: 1499,
+        originalPriceINR: 7990,
         discountPercentage: 81,
-        rating: 4.5,
-        reviewCount: 3920,
+        rating: 4.4,
+        reviewCount: 4210,
         availability: "in_stock",
-        isFlashSale: true,
+        isBestSeller: true,
+        bestsellerRank: 1,
         isDeal: true,
-        dealBadge: "81% Mega Price Drop",
-        isTrending: true,
+        dealBadge: "81% OFF Mega Flash",
         trendingScore: 94,
-        badges: ["81% PRICE DROP", "MEGA DEAL"],
-        tags: ["boat", "smartwatch", "fitness", "bluetooth-calling", "gadget"],
+        badges: ["81% OFF MEGA FLASH", "#1 SMARTWATCH"],
+        tags: ["smartwatch", "boat", "calling-watch", "fitness-tracker", "wearable"],
         variants: [
-          { name: "Color", values: ["Active Black", "Cherry Blossom", "Deep Blue"] }
+          { name: "Color", values: ["Active Black", "Deep Blue", "Cherry Blossom"] }
         ],
         specs: {
-          "Screen Size": "1.83\" HD Display (2.5D Curved Glass)",
-          "Calling": "Advanced Bluetooth Calling with Inbuilt Speaker",
-          "Battery Life": "Up to 10 Days (3 Days with Calling)",
-          "Water Resistance": "IP68 Dust, Sweat & Splash Proof"
+          "Screen Size": "1.83\" 2.5D Curved HD Display (550 Nits)",
+          "Calling": "BT Calling with Inbuilt Speaker & Microphone",
+          "Water Resistance": "IP68 Dust and Water Resistant"
+        }
+      },
+      {
+        source: "boat",
+        sourceProductId: "BOAT-STN-650",
+        sourceUrl: "https://www.boat-lifestyle.com/products/stone-650",
+        title: "boAt Stone 650 10W Wireless Bluetooth Speaker with Subwoofer Bass",
+        slug: "boat-stone-650-wireless-speaker",
+        description: "Rugged diamond-grille outdoor portable wireless speaker with 10W stereo audio, deep bass radiators, and IPX5 water resistance.",
+        images: [
+          "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "boAt",
+        category: "Tech & Gadgets",
+        subcategory: "Bluetooth Speakers",
+        priceINR: 1799,
+        originalPriceINR: 4990,
+        discountPercentage: 64,
+        rating: 4.7,
+        reviewCount: 5120,
+        availability: "in_stock",
+        isDeal: true,
+        dealBadge: "64% OFF Speaker Deal",
+        trendingScore: 93,
+        badges: ["HEAVY BASS", "64% OFF"],
+        tags: ["speaker", "boat", "bluetooth", "waterproof", "audio"],
+        variants: [
+          { name: "Color", values: ["Charcoal Black", "Navy Blue", "Rogue Red"] }
+        ],
+        specs: {
+          "Sound Output": "10W RMS Dynamic Sound",
+          "Battery": "Up to 7 Hours Continuous Playback",
+          "Protection": "IPX5 Splash & Water Resistant"
+        }
+      },
+      {
+        source: "boat",
+        sourceProductId: "BOAT-RCK-255PRO",
+        sourceUrl: "https://www.boat-lifestyle.com/products/rockerz-255-pro-plus",
+        title: "boAt Rockerz 255 Pro+ Wireless Bluetooth Neckband with 60H Battery",
+        slug: "boat-rockerz-255-pro-plus-neckband",
+        description: "Signature 10mm drivers, ASAP Charge (10 mins = 10 hours), IPX7 water/sweat resistance, and dual pairing Bluetooth 5.2.",
+        images: [
+          "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "boAt",
+        category: "Tech & Gadgets",
+        subcategory: "Wireless Neckband",
+        priceINR: 1299,
+        originalPriceINR: 3990,
+        discountPercentage: 67,
+        rating: 4.6,
+        reviewCount: 9200,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        trendingScore: 96,
+        badges: ["60H BATTERY", "67% OFF"],
+        tags: ["neckband", "boat", "bluetooth-earphones", "sports"],
+        variants: [
+          { name: "Color", values: ["Active Black", "Navy Blue", "Teal Green"] }
+        ],
+        specs: {
+          "Battery Life": "Up to 60 Hours Total Playback",
+          "Water Resistance": "IPX7 Sweat & Water Proof",
+          "Fast Charging": "ASAP Charge 10 min = 10 hours"
         }
       }
     ];

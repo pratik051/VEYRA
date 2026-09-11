@@ -58,21 +58,141 @@ export const NykaaProvider: MarketplaceProvider = {
         rating: 4.7,
         reviewCount: 5200,
         availability: "in_stock",
-        isFlashSale: true,
+        isDeal: true,
+        dealBadge: "Nykaa Hot Pink Deal",
+        trendingScore: 91,
+        badges: ["HOT DEAL", "25% OFF"],
+        tags: ["lipstick", "matte", "maybelline", "makeup", "beauty"],
+        variants: [
+          { name: "Shade", values: ["Seductress", "Pioneer", "Lover", "Ruler", "Amazonian"] }
+        ],
+        specs: {
+          "Finish": "Super Matte No-Transfer",
+          "Longevity": "16 Hours Long Wear",
+          "Quantity": "5 ml"
+        }
+      },
+      {
+        source: "nykaa",
+        sourceProductId: "7819202",
+        sourceUrl: "https://www.nykaa.com/p/7819202",
+        title: "Dot & Key Vitamin C + E Super Bright Sunscreen Aqua Gel SPF 50+ PA+++",
+        slug: "nykaa-dot-and-key-vitamin-c-sunscreen-spf50",
+        description: "Zero white-cast, ultra-light water sunscreen infused with Vitamin C and Sicilian Blood Orange to protect against UV and blue light.",
+        images: [
+          "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Dot & Key",
+        category: "Beauty & Lifestyle",
+        subcategory: "Sunscreens",
+        priceINR: 395,
+        originalPriceINR: 495,
+        discountPercentage: 20,
+        rating: 4.8,
+        reviewCount: 3890,
+        availability: "in_stock",
         isBestSeller: true,
         bestsellerRank: 2,
         isDeal: true,
-        dealBadge: "Nykaa Pink Friday Deal",
+        dealBadge: "20% OFF",
+        isTrending: true,
         trendingScore: 95,
-        badges: ["NYKAA DEAL", "#2 BEST SELLER"],
-        tags: ["lipstick", "cosmetics", "maybelline", "makeup", "beauty"],
-        variants: [
-          { name: "Shade", values: ["Seductress", "Pioneer", "Ruler", "Lover"] }
-        ],
+        badges: ["#2 BEST SELLER", "NO WHITE CAST"],
+        tags: ["sunscreen", "dot-key", "spf50", "skincare", "glow"],
         specs: {
-          "Finish": "Long-Lasting Matte",
-          "Duration": "Up to 16 Hours Transfer-Proof",
-          "Volume": "5 ml"
+          "SPF": "SPF 50+ PA++++ Broad Spectrum",
+          "Texture": "Water-Light Aqua Gel",
+          "Net Weight": "50g"
+        }
+      },
+      {
+        source: "nykaa",
+        sourceProductId: "7819203",
+        sourceUrl: "https://www.nykaa.com/p/7819203",
+        title: "L'Oreal Paris Extraordinary Oil Hair Serum with 6 Rare Floral Extracts",
+        slug: "nykaa-loreal-extraordinary-oil-hair-serum",
+        description: "Weightless multi-use hair serum that provides 4x more shine, controls frizz for 24h, and protects against heat damage.",
+        images: [
+          "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "L'Oreal Paris",
+        category: "Beauty & Lifestyle",
+        subcategory: "Haircare",
+        priceINR: 449,
+        originalPriceINR: 599,
+        discountPercentage: 25,
+        rating: 4.7,
+        reviewCount: 6140,
+        availability: "in_stock",
+        isDeal: true,
+        dealBadge: "25% OFF",
+        trendingScore: 88,
+        badges: ["SALON ESSENTIAL", "25% OFF"],
+        tags: ["hair-serum", "loreal", "frizz-control", "haircare"],
+        specs: {
+          "Hair Type": "Dry, Frizzy, All Hair Types",
+          "Ingredients": "Lotus, Tiare, Rose, Flax, Chamomile, Sunflower Flower Extracts",
+          "Volume": "100 ml"
+        }
+      },
+      {
+        source: "nykaa",
+        sourceProductId: "7819204",
+        sourceUrl: "https://www.nykaa.com/p/7819204",
+        title: "Laneige Lip Sleeping Mask EX in Berry (Antioxidant Complex)",
+        slug: "nykaa-laneige-lip-sleeping-mask-berry",
+        description: "Cult-favorite overnight lip mask with Berry Fruit Complex and Vitamin C that melts away dead skin cells for plump, supple lips.",
+        images: [
+          "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Laneige",
+        category: "Beauty & Lifestyle",
+        subcategory: "Lip Care",
+        priceINR: 600,
+        originalPriceINR: 600,
+        discountPercentage: 0,
+        rating: 4.9,
+        reviewCount: 8900,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isTrending: true,
+        trendingScore: 96,
+        badges: ["CULT FAVORITE", "TOP RATED 4.9★"],
+        tags: ["lip-mask", "laneige", "k-beauty", "lipcare"],
+        specs: {
+          "Flavor": "Sweet Berry",
+          "Origin": "South Korea",
+          "Size": "8g Travel / 20g Full Size"
+        }
+      },
+      {
+        source: "nykaa",
+        sourceProductId: "7819205",
+        sourceUrl: "https://www.nykaa.com/p/7819205",
+        title: "Cetaphil Gentle Skin Cleanser for Dry to Normal Sensitive Skin",
+        slug: "nykaa-cetaphil-gentle-skin-cleanser",
+        description: "Dermatologist recommended soap-free, non-foaming hydrating facial cleanser with Niacinamide, Panthenol, and Glycerin.",
+        images: [
+          "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Cetaphil",
+        category: "Beauty & Lifestyle",
+        subcategory: "Face Wash",
+        priceINR: 370,
+        originalPriceINR: 410,
+        discountPercentage: 10,
+        rating: 4.8,
+        reviewCount: 9400,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        trendingScore: 92,
+        badges: ["DERMAT RECOMMENDED", "DAILY ESSENTIAL"],
+        tags: ["cleanser", "cetaphil", "sensitive-skin", "skincare"],
+        specs: {
+          "Volume": "125 ml",
+          "Formula": "Hypoallergenic, Fragrance-Free, Paraben-Free"
         }
       }
     ];

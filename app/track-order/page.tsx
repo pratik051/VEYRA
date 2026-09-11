@@ -259,12 +259,12 @@ function TrackOrderContent() {
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <span className="text-neutral-600">Have questions regarding this shipment?</span>
             <a
-              href="https://wa.me/9779800000000?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry%20regarding%20my%20order"
+              href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry%20regarding%20my%20order"
               target="_blank"
               rel="noreferrer"
               className="font-bold text-emerald-700 hover:underline"
             >
-              💬 WhatsApp Support Desk →
+              💬 WhatsApp Support Desk (+977 9767797748) →
             </a>
           </div>
         </div>

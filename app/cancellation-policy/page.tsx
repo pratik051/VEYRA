@@ -16,7 +16,7 @@ export default function CancellationPolicyPage() {
         },
         {
           heading: "How to Cancel",
-          content: "You can request cancellation directly from your Account Dashboard under 'Orders' or by sending a quick message to our WhatsApp support (+977-9800000000)."
+          content: "You can request cancellation directly from your Account Dashboard under 'Orders' or by sending a quick message to our WhatsApp support (+977-9767797748)."
         }
       ]}
     />

@@ -88,9 +88,15 @@ export async function getMarketplaceProducts(options?: {
   }
 
   if (options?.source && options.source !== "All") {
-    // Also support source aliases (e.g. 'amazon' -> 'amazon-india')
-    if (options.source === "amazon") {
+    const s = options.source.toLowerCase().trim();
+    if (s === "amazon" || s === "amazon-india") {
       query.source = { $in: ["amazon", "amazon-india"] };
+    } else if (s === "boat" || s === "boat-lifestyle") {
+      query.source = { $in: ["boat", "boat-lifestyle"] };
+    } else if (s === "noise" || s === "noise-india") {
+      query.source = { $in: ["noise", "noise-india"] };
+    } else if (s === "tatacliq" || s === "tata-cliq") {
+      query.source = { $in: ["tatacliq", "tata-cliq"] };
     } else {
       query.source = options.source;
     }
@@ -158,10 +164,25 @@ export async function getMarketplaceProducts(options?: {
   const limit = options?.limit || 20;
   const skip = options?.skip || 0;
 
-  const [docs, total] = await Promise.all([
+  let [docs, total] = await Promise.all([
     MarketplaceProductModel.find(query).sort(sortCriteria).skip(skip).limit(limit).lean(),
     MarketplaceProductModel.countDocuments(query)
   ]);
+
+  // If no products found in DB yet, auto-sync from providers and re-query
+  if (docs.length === 0) {
+    try {
+      const { syncMarketplaceProducts } = await import("./sync");
+      const providerKey = options?.source && options.source !== "All" ? options.source : undefined;
+      await syncMarketplaceProducts(providerKey);
+      [docs, total] = await Promise.all([
+        MarketplaceProductModel.find(query).sort(sortCriteria).skip(skip).limit(limit).lean(),
+        MarketplaceProductModel.countDocuments(query)
+      ]);
+    } catch (syncErr) {
+      console.error("[getMarketplaceProducts] Auto-sync fallback error:", syncErr);
+    }
+  }
 
   // Map products to customer-facing format with server-side calculated NPR price
   const products: CustomerMarketplaceProduct[] = docs.map((doc: any) => {

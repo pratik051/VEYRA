@@ -1,9 +1,10 @@
 {
   "/account/page": "app/account/page.js",
+  "/request-product/page": "app/request-product/page.js",
   "/page": "app/page.js",
-  "/api/marketplace/products/route": "app/api/marketplace/products/route.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/login/page": "app/login/page.js",
-  "/shop/[platform]/page": "app/shop/[platform]/page.js",
+  "/api/marketplace/products/route": "app/api/marketplace/products/route.js",
+  "/api/marketplace/sync/route": "app/api/marketplace/sync/route.js",
+  "/api/verify-product-link/route": "app/api/verify-product-link/route.js",
   "/admin/page": "app/admin/page.js"
 }

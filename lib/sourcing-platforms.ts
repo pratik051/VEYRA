@@ -21,19 +21,6 @@ export interface SourcingPlatform {
 }
 
 /**
- * The private sourcing PIN is read from the environment server-side only.
- * It is NEVER included in any API response, log, or client-side variable.
- */
-export function getSourcePin(): string {
-  const pin = process.env.INDIA_SOURCE_PIN;
-  if (!pin) {
-    // In production this must be set. During development we fail loudly.
-    throw new Error("INDIA_SOURCE_PIN is not configured in environment variables.");
-  }
-  return pin;
-}
-
-/**
  * Strict SSRF allowlist of approved platform domains.
  * Requests to any domain not in this list are rejected before any
  * network call is made.
@@ -42,8 +29,15 @@ export const APPROVED_DOMAINS = new Set([
   "amazon.in",
   "www.amazon.in",
   "amzn.in",
+  "www.amzn.in",
+  "amzn.to",
+  "www.amzn.to",
+  "amazon.com",
+  "www.amazon.com",
   "flipkart.com",
   "www.flipkart.com",
+  "dl.flipkart.com",
+  "fkrt.it",
   "myntra.com",
   "www.myntra.com",
   "ajio.com",
@@ -52,8 +46,7 @@ export const APPROVED_DOMAINS = new Set([
   "www.meesho.com",
   "nykaa.com",
   "www.nykaa.com",
-  "bigbasket.com",
-  "www.bigbasket.com",
+  "nykaa.ly",
   "tatacliq.com",
   "www.tatacliq.com",
   "croma.com",
@@ -62,6 +55,8 @@ export const APPROVED_DOMAINS = new Set([
   "www.boat-lifestyle.com",
   "gonoise.com",
   "www.gonoise.com",
+  "bigbasket.com",
+  "www.bigbasket.com",
   "reliancedigital.in",
   "www.reliancedigital.in"
 ]);
@@ -70,32 +65,38 @@ export const APPROVED_DOMAINS = new Set([
 export const DOMAIN_TO_SOURCE_ID: Record<string, string> = {
   "amazon.in": "amazon-india",
   "amzn.in": "amazon-india",
+  "amzn.to": "amazon-india",
+  "amazon.com": "amazon-india",
   "flipkart.com": "flipkart",
+  "dl.flipkart.com": "flipkart",
+  "fkrt.it": "flipkart",
   "myntra.com": "myntra",
   "ajio.com": "ajio",
   "meesho.com": "meesho",
   "nykaa.com": "nykaa",
-  "bigbasket.com": "bigbasket",
+  "nykaa.ly": "nykaa",
   "tatacliq.com": "tatacliq",
   "croma.com": "croma",
   "boat-lifestyle.com": "boat",
   "gonoise.com": "noise",
+  "bigbasket.com": "bigbasket",
   "reliancedigital.in": "reliance-digital"
 };
 
 /** Human-readable marketplace display names */
 export const SOURCE_DISPLAY_NAMES: Record<string, string> = {
   "amazon-india": "Amazon India",
+  "amazon": "Amazon India",
   "flipkart": "Flipkart",
   "myntra": "Myntra",
   "ajio": "AJIO",
   "meesho": "Meesho",
   "nykaa": "Nykaa",
-  "bigbasket": "BigBasket",
   "tatacliq": "Tata CLiQ",
   "croma": "Croma",
-  "boat": "boAt",
-  "noise": "Noise",
+  "boat": "boAt Lifestyle",
+  "noise": "Noise India",
+  "bigbasket": "BigBasket",
   "reliance-digital": "Reliance Digital"
 };
 
@@ -132,18 +133,23 @@ export function getMarketplaceDisplayName(sourceId: string): string {
 }
 
 /**
- * Platform registry — modular design so new platforms can be added
- * from the admin dashboard without rewriting the verification logic.
+ * Complete platform registry with robust URL pattern matching.
  */
 export const SOURCING_PLATFORMS: SourcingPlatform[] = [
   {
     id: "amazon-india",
     name: "Amazon India",
     displayName: "Amazon India",
-    domains: ["amazon.in", "www.amazon.in"],
+    domains: ["amazon.in", "www.amazon.in", "amzn.in", "www.amzn.in", "amzn.to", "amazon.com", "www.amazon.com"],
     productUrlPatterns: [
-      /amazon\.in\/(dp|gp\/product|s\?k=|d\/)[A-Z0-9/?\-=&%+.]+/i,
-      /amazon\.in\/.*\/dp\/[A-Z0-9]{10}/i
+      /amazon\.in\/.*dp\/[A-Z0-9]{10}/i,
+      /amazon\.in\/(dp|d|gp\/product|product)\/[A-Z0-9]+/i,
+      /amazon\.in\/[a-zA-Z0-9-_%]+\/dp\/[A-Z0-9]+/i,
+      /amazon\.in\/(gp\/product|gp\/aw\/d)\/[A-Z0-9]+/i,
+      /amzn\.in\/[a-zA-Z0-9/?\-=&%+.]+/i,
+      /amzn\.to\/[a-zA-Z0-9/?\-=&%+.]+/i,
+      /amazon\.in\/.+/i,
+      /amzn\.in\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",
@@ -153,10 +159,14 @@ export const SOURCING_PLATFORMS: SourcingPlatform[] = [
     id: "flipkart",
     name: "Flipkart",
     displayName: "Flipkart",
-    domains: ["flipkart.com", "www.flipkart.com"],
+    domains: ["flipkart.com", "www.flipkart.com", "dl.flipkart.com", "fkrt.it"],
     productUrlPatterns: [
       /flipkart\.com\/[a-z0-9-]+\/p\//i,
-      /flipkart\.com\/.*pid=[A-Z0-9]+/i
+      /flipkart\.com\/.*pid=[A-Z0-9]+/i,
+      /flipkart\.com\/p\//i,
+      /dl\.flipkart\.com\//i,
+      /fkrt\.it\//i,
+      /flipkart\.com\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",
@@ -168,20 +178,11 @@ export const SOURCING_PLATFORMS: SourcingPlatform[] = [
     displayName: "Myntra",
     domains: ["myntra.com", "www.myntra.com"],
     productUrlPatterns: [
-      /myntra\.com\/[a-z0-9-]+\/[a-z0-9-]+\/[0-9]+\/buy/i,
-      /myntra\.com\/[a-z0-9-]+\/[a-z0-9-]+\/[0-9]+/i
-    ],
-    enabled: true,
-    verificationMethod: "manual",
-    manualVerificationAllowed: true
-  },
-  {
-    id: "ajio",
-    name: "AJIO",
-    displayName: "AJIO",
-    domains: ["ajio.com", "www.ajio.com"],
-    productUrlPatterns: [
-      /ajio\.com\/[a-z0-9-]+\/p\/[A-Z0-9]+/i
+      /myntra\.com\/[a-z0-9-]+\/[a-z0-9-]+\/[0-9]+/i,
+      /myntra\.com\/[a-z0-9-]+\/[0-9]+/i,
+      /myntra\.com\/[0-9]+/i,
+      /myntra\.com\/buy\//i,
+      /myntra\.com\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",
@@ -193,7 +194,10 @@ export const SOURCING_PLATFORMS: SourcingPlatform[] = [
     displayName: "Meesho",
     domains: ["meesho.com", "www.meesho.com"],
     productUrlPatterns: [
-      /meesho\.com\/[a-z0-9-]+\/p\/[0-9]+/i
+      /meesho\.com\/[a-z0-9-]+\/p\/[a-z0-9]+/i,
+      /meesho\.com\/s\/p\/[a-z0-9]+/i,
+      /meesho\.com\/p\/[a-z0-9]+/i,
+      /meesho\.com\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",
@@ -203,10 +207,83 @@ export const SOURCING_PLATFORMS: SourcingPlatform[] = [
     id: "nykaa",
     name: "Nykaa",
     displayName: "Nykaa",
-    domains: ["nykaa.com", "www.nykaa.com"],
+    domains: ["nykaa.com", "www.nykaa.com", "nykaa.ly"],
     productUrlPatterns: [
       /nykaa\.com\/[a-z0-9-]+\/p\/[0-9]+/i,
-      /nykaa\.com\/.*productId=[0-9]+/i
+      /nykaa\.com\/.*productId=[0-9]+/i,
+      /nykaa\.com\/.*root=product/i,
+      /nykaa\.com\/[a-z0-9-]+\/p\//i,
+      /nykaa\.ly\/.+/i,
+      /nykaa\.com\/.+/i
+    ],
+    enabled: true,
+    verificationMethod: "manual",
+    manualVerificationAllowed: true
+  },
+  {
+    id: "ajio",
+    name: "AJIO",
+    displayName: "AJIO",
+    domains: ["ajio.com", "www.ajio.com"],
+    productUrlPatterns: [
+      /ajio\.com\/[a-z0-9-]+\/p\/[A-Z0-9]+/i,
+      /ajio\.com\/.*\/p\/[A-Z0-9]+/i,
+      /ajio\.com\/.+/i
+    ],
+    enabled: true,
+    verificationMethod: "manual",
+    manualVerificationAllowed: true
+  },
+  {
+    id: "tatacliq",
+    name: "Tata CLiQ",
+    displayName: "Tata CLiQ",
+    domains: ["tatacliq.com", "www.tatacliq.com"],
+    productUrlPatterns: [
+      /tatacliq\.com\/[a-z0-9-]+\/p-[a-z0-9]+/i,
+      /tatacliq\.com\/.*\/p-[a-z0-9]+/i,
+      /tatacliq\.com\/p-[a-z0-9]+/i,
+      /tatacliq\.com\/.+/i
+    ],
+    enabled: true,
+    verificationMethod: "manual",
+    manualVerificationAllowed: true
+  },
+  {
+    id: "croma",
+    name: "Croma",
+    displayName: "Croma",
+    domains: ["croma.com", "www.croma.com"],
+    productUrlPatterns: [
+      /croma\.com\/[a-z0-9-]+\/p\/[0-9]+/i,
+      /croma\.com\/p\/[0-9]+/i,
+      /croma\.com\/.+/i
+    ],
+    enabled: true,
+    verificationMethod: "manual",
+    manualVerificationAllowed: true
+  },
+  {
+    id: "boat",
+    name: "boAt Lifestyle",
+    displayName: "boAt Lifestyle",
+    domains: ["boat-lifestyle.com", "www.boat-lifestyle.com"],
+    productUrlPatterns: [
+      /boat-lifestyle\.com\/products\/[a-z0-9-]+/i,
+      /boat-lifestyle\.com\/.+/i
+    ],
+    enabled: true,
+    verificationMethod: "manual",
+    manualVerificationAllowed: true
+  },
+  {
+    id: "noise",
+    name: "Noise India",
+    displayName: "Noise",
+    domains: ["gonoise.com", "www.gonoise.com"],
+    productUrlPatterns: [
+      /gonoise\.com\/products\/[a-z0-9-]+/i,
+      /gonoise\.com\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",
@@ -219,7 +296,8 @@ export const SOURCING_PLATFORMS: SourcingPlatform[] = [
     domains: ["bigbasket.com", "www.bigbasket.com"],
     productUrlPatterns: [
       /bigbasket\.com\/pd\/[0-9]+\//i,
-      /bigbasket\.com\/[a-z0-9-]+\/[0-9]+\//i
+      /bigbasket\.com\/[a-z0-9-]+\/[0-9]+\//i,
+      /bigbasket\.com\/.+/i
     ],
     enabled: true,
     verificationMethod: "manual",

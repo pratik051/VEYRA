@@ -58,27 +58,126 @@ export const MyntraProvider: MarketplaceProvider = {
         ],
         brand: "Fossil",
         category: "Watches",
-        subcategory: "Chronographs",
+        subcategory: "Chronograph",
         priceINR: 7495,
         originalPriceINR: 12495,
         discountPercentage: 40,
         rating: 4.8,
-        reviewCount: 940,
+        reviewCount: 2940,
         availability: "in_stock",
-        isNewArrival: false,
         isDeal: true,
-        dealBadge: "40% OFF Special",
+        dealBadge: "40% OFF End of Season",
+        trendingScore: 93,
+        badges: ["LUXURY WATCH", "40% OFF"],
+        tags: ["watch", "fossil", "chronograph", "leather-strap", "luxury"],
+        specs: {
+          "Case Size": "44 mm Stainless Steel",
+          "Water Resistance": "5 ATM (50 Meters)",
+          "Movement": "Quartz Chronograph Subdials"
+        }
+      },
+      {
+        source: "myntra",
+        sourceProductId: "33190182",
+        sourceUrl: "https://www.myntra.com/jeans/levis/levis-mens-511-slim-fit-stretch-denim-jeans/33190182/buy",
+        title: "Levi's Men's 511 Slim Fit Stretch Denim Jeans (Dark Indigo Rinse)",
+        slug: "myntra-levis-511-slim-fit-stretch-jeans",
+        description: "The modern slim with room to move. Added stretch for all-day comfort with zip fly and iconic red tab styling.",
+        images: [
+          "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Levi's",
+        category: "Fashion",
+        subcategory: "Jeans",
+        priceINR: 2399,
+        originalPriceINR: 3999,
+        discountPercentage: 40,
+        rating: 4.7,
+        reviewCount: 4890,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        isDeal: true,
+        dealBadge: "40% OFF",
         isTrending: true,
-        trendingScore: 88,
-        badges: ["40% OFF SPECIAL", "VERIFIED DEAL"],
-        tags: ["watch", "chronograph", "fossil", "leather", "luxury"],
+        trendingScore: 95,
+        badges: ["#1 DENIM", "40% OFF"],
+        tags: ["jeans", "levis", "slim-fit", "denim", "mens-fashion"],
         variants: [
-          { name: "Dial Color", values: ["Cream / Navy", "Black Sunray", "Silver"] }
+          { name: "Waist (Inches)", values: ["30", "32", "34", "36", "38"] },
+          { name: "Inseam", values: ["32", "34"] }
         ],
         specs: {
-          "Case Size": "44mm Stainless Steel",
-          "Movement": "Quartz Chronograph",
-          "Water Resistance": "5 ATM (50 Meters)"
+          "Fabric": "99% Cotton, 1% Elastane",
+          "Fit": "Slim Through Thigh & Leg",
+          "Rise": "Mid Rise"
+        }
+      },
+      {
+        source: "myntra",
+        sourceProductId: "44910293",
+        sourceUrl: "https://www.myntra.com/shoes/nike/nike-mens-air-max-sc-leather-running-sneakers/44910293/buy",
+        title: "Nike Air Max SC Leather Heritage Running & Streetwear Sneakers",
+        slug: "myntra-nike-air-max-sc-leather-sneakers",
+        description: "With its easy-going lines, heritage track look and visible Air cushioning, Nike Air Max SC is the ideal finish to any outfit.",
+        images: [
+          "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "Nike",
+        category: "Footwear",
+        subcategory: "Sneakers",
+        priceINR: 5295,
+        originalPriceINR: 5995,
+        discountPercentage: 12,
+        rating: 4.8,
+        reviewCount: 3600,
+        availability: "in_stock",
+        isBestSeller: true,
+        bestsellerRank: 1,
+        trendingScore: 96,
+        badges: ["ICONIC AIR MAX", "PREMIUM"],
+        tags: ["nike", "air-max", "sneakers", "streetwear", "shoes"],
+        variants: [
+          { name: "Size (UK)", values: ["7", "8", "9", "10", "11"] },
+          { name: "Color", values: ["White Black", "Triple Black", "White Gym Red"] }
+        ],
+        specs: {
+          "Upper": "Leather, textile and mesh combination",
+          "Cushioning": "Max Air unit delivers lightweight all-day comfort",
+          "Outsole": "Rubber with flex grooves for durable traction"
+        }
+      },
+      {
+        source: "myntra",
+        sourceProductId: "55190283",
+        sourceUrl: "https://www.myntra.com/hoodies/hm/hm-relaxed-fit-heavyweight-hoodie/55190283/buy",
+        title: "H&M Relaxed Fit Heavyweight French Terry Fleece Hoodie",
+        slug: "myntra-hm-relaxed-fit-heavyweight-hoodie",
+        description: "Soft sweat fabric hoodie in organic cotton blend with jersey-lined wrapover hood, kangaroo pocket and wide ribbing at cuffs.",
+        images: [
+          "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80"
+        ],
+        brand: "H&M",
+        category: "Fashion",
+        subcategory: "Hoodies",
+        priceINR: 1999,
+        originalPriceINR: 2499,
+        discountPercentage: 20,
+        rating: 4.6,
+        reviewCount: 2190,
+        availability: "in_stock",
+        isDeal: true,
+        dealBadge: "H&M Seasonal 20% OFF",
+        trendingScore: 89,
+        badges: ["TRENDING FIT", "20% OFF"],
+        tags: ["hoodie", "hm", "fleece", "winterwear", "cozy"],
+        variants: [
+          { name: "Size", values: ["XS", "S", "M", "L", "XL"] },
+          { name: "Color", values: ["Sage Green", "Charcoal Melange", "Beige Oat"] }
+        ],
+        specs: {
+          "Material": "80% Cotton, 20% Polyester",
+          "Interior": "Brushed Soft Fleece"
         }
       }
     ];

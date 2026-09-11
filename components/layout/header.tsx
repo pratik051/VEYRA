@@ -63,6 +63,7 @@ export function Header() {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "All Products", href: "/shop" },
+    { name: "About", href: "/about" },
   ];
 
   return (

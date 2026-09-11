@@ -71,13 +71,13 @@ export function Footer() {
             </p>
             <div className="pt-1">
               <a
-                href="https://wa.me/9779800000000?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry"
+                href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all duration-200"
               >
                 <span>💬</span>
-                <span>Chat on WhatsApp</span>
+                <span>Chat on WhatsApp (+977 9767797748)</span>
               </a>
             </div>
           </div>
@@ -100,6 +100,7 @@ export function Footer() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-veyra-text-dark mb-5">Help &amp; Services</h4>
             <ul className="space-y-3 text-xs text-veyra-muted">
+              <li><Link href="/about" className="hover:text-veyra-gold font-semibold transition-colors duration-200">About LINKOVA</Link></li>
               <li><Link href="/request-product" className="text-veyra-gold font-semibold hover:text-veyra-gold-light transition-colors duration-200">Request From India</Link></li>
               <li><Link href="/how-it-works" className="hover:text-veyra-gold transition-colors duration-200">How It Works</Link></li>
               <li><Link href="/track-order" className="hover:text-veyra-gold transition-colors duration-200">Track Order Status</Link></li>

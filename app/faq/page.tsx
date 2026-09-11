@@ -143,12 +143,12 @@ export default function FaqPage() {
             Contact Customer Support
           </Link>
           <a
-            href="https://wa.me/9779800000000"
+            href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20a%20question"
             target="_blank"
             rel="noreferrer"
             className="rounded-xl border border-emerald-500 bg-emerald-50 px-6 py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
           >
-            Chat on WhatsApp
+            Chat on WhatsApp (+977 9767797748)
           </a>
         </div>
       </div>

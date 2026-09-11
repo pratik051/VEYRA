@@ -400,7 +400,7 @@ export async function GET(
     <!-- Footer Note -->
     <div class="footer-note">
       Thank you for shopping with LINKOVA Nepal!<br>
-      This is a computer-generated commercial invoice. For tracking and delivery queries, please contact our support team at +977-9800000000 or email support@linkova.com.np.
+      This is a computer-generated commercial invoice. For tracking and delivery queries, please contact our support team at +977-9767797748 or email support@linkova.com.np.
     </div>
   </div>
 
