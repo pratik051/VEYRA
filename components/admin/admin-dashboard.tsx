@@ -246,6 +246,36 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
 
+  // Live Marketplace Link Verification Inspector & Debug Panel (Admin Only)
+  const [debugUrlInput, setDebugUrlInput] = useState("");
+  const [debugCheckLoading, setDebugCheckLoading] = useState(false);
+  const [debugCheckResult, setDebugCheckResult] = useState<any | null>(null);
+
+  const handleRunDebugCheck = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!debugUrlInput.trim()) return;
+    setDebugCheckLoading(true);
+    setDebugCheckResult(null);
+    try {
+      const res = await fetch("/api/products/check-availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: debugUrlInput.trim() })
+      });
+      const data = await res.json();
+      setDebugCheckResult(data);
+      if (data.orderable) {
+        pushToast("Product is verified and orderable!", "success");
+      } else {
+        pushToast(`Verification result: ${data.verificationStatus || "PARTIAL"}`, "info");
+      }
+    } catch (err: any) {
+      pushToast("Debug verification request failed.", "error");
+    } finally {
+      setDebugCheckLoading(false);
+    }
+  };
+
   // Full order detail panel (fetches fresh from API, not stale table row)
   const [selectedOrderDetail, setSelectedOrderDetail] = useState<AdminIndiaOrder | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -1564,6 +1594,142 @@ export function AdminDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Admin Verification Diagnostics & Debug Panel */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-900">🔬 Live Link Verification &amp; Diagnostics Debug Panel</span>
+                <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[10px] font-black text-purple-800 uppercase tracking-wide">
+                  Admin Only
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Inspect raw marketplace URLs, view normalization, extracted product IDs, stock/delivery signal evaluation, and failure diagnostics.
+              </p>
+            </div>
+
+            <form onSubmit={handleRunDebugCheck} className="flex gap-2">
+              <input
+                type="url"
+                value={debugUrlInput}
+                onChange={(e) => setDebugUrlInput(e.target.value)}
+                placeholder="e.g. https://www.myntra.com/tshirts/brand/12187850/buy?utm_source=banner..."
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+                required
+              />
+              <button
+                type="submit"
+                disabled={debugCheckLoading || !debugUrlInput.trim()}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer disabled:opacity-50"
+              >
+                {debugCheckLoading ? "Inspecting..." : "Inspect Link Diagnostics →"}
+              </button>
+            </form>
+
+            {debugCheckResult && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-4 text-xs">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-0.5 rounded-full font-black text-[11px] ${
+                      debugCheckResult.orderable
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        : "bg-amber-100 text-amber-800 border border-amber-300"
+                    }`}>
+                      {debugCheckResult.orderable ? "✓ ORDERABLE" : "⚠️ NOT ORDERABLE"}
+                    </span>
+                    <span className="font-bold text-slate-700">
+                      Status: {debugCheckResult.verificationStatus || "PARTIAL"}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    {debugCheckResult.checkedAt}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Marketplace</span>
+                    <p className="font-bold text-slate-800 capitalize">{debugCheckResult.marketplace || "Unknown"}</p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Source Product ID</span>
+                    <p className="font-mono font-bold text-slate-800">{debugCheckResult.sourceProductId || "—"}</p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Identity</span>
+                    <p className={`font-bold ${debugCheckResult.productIdentityVerified ? "text-emerald-700" : "text-amber-700"}`}>
+                      {debugCheckResult.productIdentityVerified ? "✓ Verified" : "⚠️ Unverified"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Stock Result</span>
+                    <p className={`font-bold ${
+                      debugCheckResult.stockStatus === "IN_STOCK"
+                        ? "text-emerald-700"
+                        : debugCheckResult.stockStatus === "OUT_OF_STOCK"
+                        ? "text-red-700"
+                        : "text-amber-700"
+                    }`}>
+                      {debugCheckResult.stockStatus} ({debugCheckResult.stockStatusText})
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Delivery Result</span>
+                    <p className={`font-bold ${
+                      debugCheckResult.deliveryStatus === "DELIVERY_AVAILABLE"
+                        ? "text-emerald-700"
+                        : debugCheckResult.deliveryStatus === "DELIVERY_UNAVAILABLE"
+                        ? "text-red-700"
+                        : "text-amber-700"
+                    }`}>
+                      {debugCheckResult.deliveryStatus} ({debugCheckResult.deliveryStatusText})
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-3 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Price Result</span>
+                    <p className={`font-bold ${debugCheckResult.priceStatus === "VERIFIED" ? "text-emerald-700" : "text-amber-700"}`}>
+                      {debugCheckResult.priceStatus || "VERIFIED"} {debugCheckResult.product?.priceINR ? `(₹${debugCheckResult.product.priceINR})` : ""}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 rounded-lg bg-white p-3 border border-slate-200">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Original Customer URL</span>
+                    <p className="font-mono text-[11px] text-slate-700 break-all">{debugCheckResult.originalSourceUrl || debugUrlInput}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Normalized Canonical URL</span>
+                    <p className="font-mono text-[11px] text-blue-700 break-all">{debugCheckResult.normalizedSourceUrl || debugCheckResult.canonicalUrl || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Title</span>
+                    <p className="font-medium text-slate-900">{debugCheckResult.product?.name || "—"}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Diagnostics / Failure Reason</span>
+                    <p className="font-semibold text-slate-800">{debugCheckResult.reason || "NONE"}</p>
+                  </div>
+                  {debugCheckResult._internalAudit?.signals && debugCheckResult._internalAudit.signals.length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Signals &amp; Parser Traces</span>
+                      <ul className="list-disc list-inside text-[11px] text-slate-600 space-y-0.5 pt-0.5 font-mono">
+                        {debugCheckResult._internalAudit.signals.map((sig: string, idx: number) => (
+                          <li key={idx}>{sig}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

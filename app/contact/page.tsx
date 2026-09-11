@@ -131,7 +131,7 @@ export default function ContactPage() {
                     rel="noreferrer"
                     className="font-bold text-emerald-700 hover:underline mt-0.5 inline-block"
                   >
-                    +977 9767797748 (Chat on WhatsApp)
+                    (Chat on WhatsApp)
                   </a>
                 </div>
               </div>

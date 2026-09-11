@@ -152,7 +152,7 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
       {/* Result states */}
       {state.phase === "result" && (
         <div className="animate-fade-in space-y-3">
-          {/* Result A — Available & Orderable */}
+          {/* STATE 1 — Verified & Orderable */}
           {state.data.orderable && state.data.inStock && state.data.deliveryAvailable ? (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 space-y-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -216,48 +216,32 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
                 </button>
               </div>
             </div>
-          ) : (
-            /* Result B — Unavailable / Out of Stock / Undeliverable */
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 space-y-4">
+          ) : state.data.stockStatus === "OUT_OF_STOCK" ? (
+            /* STATE 2 — Confirmed Out of Stock */
+            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-5 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-bold shadow-xs">
-                  ⚠️
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold shadow-xs">
+                  ✕
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-amber-950">
-                    Product Unavailable for Direct Ordering
+                  <h3 className="text-sm font-black text-red-950">
+                    Product Confirmed Out of Stock
                   </h3>
-                  <p className="mt-1 text-xs text-amber-800 leading-relaxed font-medium">
-                    {state.data.message || "This product is currently out of stock or unavailable for direct instant checkout."}
+                  <p className="mt-1 text-xs text-red-800 leading-relaxed font-medium">
+                    {state.data.message || "This product or selected variant is confirmed out of stock on the marketplace."}
                   </p>
                 </div>
               </div>
 
               {/* Status Badges Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className={state.data.verified ? "text-emerald-600 font-bold" : "text-red-600 font-bold"}>
-                    {state.data.verified ? "✓" : "✕"}
-                  </span>
-                  <span className="font-semibold text-neutral-800">
-                    {state.data.verified ? "Product Found" : "Unverified Link"}
-                  </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="font-semibold text-neutral-800">Product Verified</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className={state.data.inStock ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
-                    {state.data.inStock ? "✓" : "❌"}
-                  </span>
-                  <span className="font-semibold text-neutral-800">
-                    {state.data.stockStatusText || "Stock Unconfirmed"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
-                  <span className={state.data.deliveryAvailable ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
-                    {state.data.deliveryAvailable ? "✓" : "⚠️"}
-                  </span>
-                  <span className="font-semibold text-neutral-800">
-                    {state.data.deliveryStatusText || "Delivery Unconfirmed"}
-                  </span>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-red-200">
+                  <span className="text-red-600 font-bold">❌</span>
+                  <span className="font-semibold text-neutral-800">Out of Stock</span>
                 </div>
               </div>
 
@@ -272,6 +256,81 @@ export function LinkVerifier({ compact = false }: { compact?: boolean }) {
                 <button
                   onClick={handleReset}
                   className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition cursor-pointer"
+                >
+                  Check Another Link
+                </button>
+              </div>
+            </div>
+          ) : state.data.productFound ? (
+            /* STATE 3 — Product Found but Availability Cannot Be Confirmed */
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-bold shadow-xs">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-amber-950">
+                    Product Found — Availability Could Not Be Confirmed
+                  </h3>
+                  <p className="mt-1 text-xs text-amber-800 leading-relaxed font-medium">
+                    {state.data.message || "We found the product, but live stock or delivery confirmation is temporarily unconfirmed. You can request this item and our team will verify it for you."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Badges Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span className="font-semibold text-neutral-800">Product Found</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
+                  <span className="text-amber-600 font-bold">⚠️</span>
+                  <span className="font-semibold text-neutral-800">Stock Unconfirmed</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 border border-amber-200">
+                  <span className="text-amber-600 font-bold">⚠️</span>
+                  <span className="font-semibold text-neutral-800">Delivery Unconfirmed</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleRequestProduct(state.data, state.url)}
+                  className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-black shadow-sm transition cursor-pointer"
+                >
+                  📋 Request Product (Get Alternative Link) →
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition cursor-pointer"
+                >
+                  Check Another Link
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* STATE 4 — Invalid Product / URL */
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-600 text-white text-xs font-bold shadow-xs">
+                  ✕
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-neutral-950">
+                    ✕ Product Could Not Be Verified
+                  </h3>
+                  <p className="mt-1 text-xs text-neutral-600 leading-relaxed font-medium">
+                    {state.data.message || "We could not verify this product link. Please make sure the link is from a supported Indian marketplace and points directly to an active product page."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <button
+                  onClick={handleReset}
+                  className="rounded-xl bg-neutral-950 text-white px-5 py-2.5 text-xs font-bold hover:bg-neutral-800 transition cursor-pointer"
                 >
                   Check Another Link
                 </button>

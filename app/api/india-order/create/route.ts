@@ -90,21 +90,31 @@ export async function POST(req: Request) {
     });
 
     if (!availabilityCheck.orderable) {
+      let customErrorMsg = "This product is currently unavailable for direct ordering.";
+      if (availabilityCheck.stockStatus === "OUT_OF_STOCK") {
+        customErrorMsg = "This product or selected variant is confirmed out of stock on the marketplace.";
+      } else if (availabilityCheck.deliveryStatus === "DELIVERY_UNAVAILABLE") {
+        customErrorMsg = "Delivery is currently unavailable for this marketplace product.";
+      } else if (availabilityCheck.stockStatus === "UNKNOWN" || availabilityCheck.deliveryStatus === "UNKNOWN") {
+        customErrorMsg = "We couldn't confirm availability right now. You can request this product and our admin team can review it.";
+      }
+
       return NextResponse.json(
         {
-          error: "This product is currently unavailable for ordering. You can request an alternative product link from our admin team.",
+          error: customErrorMsg,
           reason: availabilityCheck.reason,
           stockStatus: availabilityCheck.stockStatusText,
           deliveryStatus: availabilityCheck.deliveryStatusText,
           canOrder: false,
-          orderable: false
+          orderable: false,
+          verificationStatus: availabilityCheck.verificationStatus
         },
         { status: 400 }
       );
     }
 
     // Auto-detect source ID from URL
-    const detectedSourceId = getSourceIdFromUrl(productUrl);
+    const detectedSourceId = availabilityCheck.marketplace || getSourceIdFromUrl(productUrl);
     const marketplace = detectedSourceId || clientMarketplace || "indian-marketplace";
     const marketplaceDisplayName = getMarketplaceDisplayName(marketplace);
 
@@ -201,11 +211,12 @@ export async function POST(req: Request) {
       shippingAddress,
       // Marketplace Snapshot
       marketplace,
-      sourceProductId: clientSourceProductId || "",
-      productUrl,
-      originalSourceUrl,
-      verifiedSourceUrl,
-      canonicalSourceUrl,
+      sourceProductId: availabilityCheck.sourceProductId || clientSourceProductId || "",
+      productUrl: availabilityCheck.normalizedSourceUrl || productUrl,
+      originalSourceUrl: availabilityCheck.originalSourceUrl || originalSourceUrl || productUrl,
+      normalizedSourceUrl: availabilityCheck.normalizedSourceUrl || productUrl,
+      verifiedSourceUrl: availabilityCheck.verifiedSourceUrl || verifiedSourceUrl || productUrl,
+      canonicalSourceUrl: availabilityCheck.canonicalUrl || canonicalSourceUrl || productUrl,
       productName,
       productImage,
       brand,

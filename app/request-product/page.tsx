@@ -193,11 +193,15 @@ function RequestProductFlow() {
         setStep(3);
         pushToast("✓ Product verified, in stock, and available for delivery!", "success");
       } else {
-        setIsVerified(false);
+        setIsVerified(Boolean(data.productFound || data.verified));
         setCanOrder(false);
-        setStockStatus(data.stockStatusText || "❌ Out of Stock");
-        setDeliveryStatus(data.deliveryStatusText || "❌ Delivery unavailable");
-        setCheckError(data.message || "Product failed sourcing availability verification.");
+        setStockStatus(data.stockStatusText || (data.stockStatus === "OUT_OF_STOCK" ? "❌ Out of Stock" : "⚠️ Stock Unconfirmed"));
+        setDeliveryStatus(data.deliveryStatusText || (data.deliveryStatus === "DELIVERY_UNAVAILABLE" ? "❌ Delivery unavailable" : "⚠️ Delivery Unconfirmed"));
+        setCheckError(data.message || "This product is unavailable for direct instant checkout.");
+        if (data.product?.name && !productName) setProductName(data.product.name);
+        if (data.product?.priceINR && !inrPrice) setInrPrice(String(data.product.priceINR));
+        if (data.product?.image) setProductImage(data.product.image);
+        if (data.product?.sourceProductId) setSourceProductId(data.product.sourceProductId);
         pushToast(data.message || "This product cannot currently be ordered directly. You can submit a product request.", "error");
       }
     } catch (err: any) {

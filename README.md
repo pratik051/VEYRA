@@ -57,17 +57,32 @@ LINKOVA enforces strict architectural and server-side separation between **Admin
 
 ## 🔍 Product Availability & Verification Engine
 
-LINKOVA guarantees that an Indian marketplace product is marked orderable **ONLY** when all required sourcing conditions are strictly met:
+LINKOVA features an enterprise multi-stage verification engine designed to eliminate false-negative rejections while ensuring strict orderability guarantees:
 
-1. **Comprehensive Server-Side Verification:**
-   - **Marketplace & URL Validation:** Confirms supported platform, live URL resolution, and extracts canonical Product/SKU/ASIN identifiers.
-   - **Identity Validation:** Matches product name, brand, image, and variant.
-   - **Stock Availability:** Must be confirmed as `IN_STOCK`. Unknown or unconfirmed stock is treated as not orderable directly.
-   - **Internal Delivery Verification:** Verifies delivery availability to LINKOVA's internal transit sourcing destination.
-   - **Order Placement Re-Check:** Re-verifies live stock, delivery, and pricing at the exact moment of order placement to prevent stale checkout.
-2. **Strict Privacy of Internal Sourcing Location:**
-   - The internal transit destination is configured securely on the backend.
-   - Customers and public APIs only receive generic delivery status indicators (e.g., `✓ Delivery available`, `❌ Delivery unavailable`).
+1. **Intelligent URL Normalization & Product ID Extraction:**
+   - **Tracking Stripping:** Automatically removes tracking/UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `shared`, etc.) without altering the customer's `originalSourceUrl`.
+   - **Marketplace Path Normalization:** Resolves marketplace-specific suffixes (e.g., Myntra `/buy` paths) into clean canonical product addresses.
+   - **Strong Product Identity Extraction:** Extracts authoritative marketplace identifiers (`sourceProductId`) such as Myntra numeric IDs (`12187850`), Amazon ASINs (`B0...`), and Flipkart PIDs.
+
+2. **Accurate Availability Distinction (Never Guess Availability):**
+   - **Explicit Confirmation Only:** A product is ONLY marked `❌ Out of Stock` when the marketplace explicitly confirms that the exact variant is out of stock.
+   - **Parser/API/Network Failures:** Timeouts, scraper limits, missing metadata, or blocked requests are categorized as `UNKNOWN` (`⚠️ Availability Could Not Be Confirmed`), **NEVER** `OUT_OF_STOCK`.
+   - **Delivery Status States:** Distinguishes between `DELIVERY_AVAILABLE`, `DELIVERY_UNAVAILABLE`, and `UNKNOWN`.
+
+3. **Authoritative UI Presentation (No Contradictory Badges):**
+   - **Verified & Orderable:** `✓ Product Verified` • `✓ In Stock` • `✓ Delivery Available` ➔ Instant Order Creation.
+   - **Confirmed Out of Stock:** `✓ Product Verified` • `❌ Out of Stock` ➔ Request Product Option.
+   - **Product Found (Unconfirmed Availability):** `✓ Product Found` • `⚠️ Availability Could Not Be Confirmed` ➔ Request Product Option.
+   - **Invalid Product / URL:** `✕ Product Could Not Be Verified` ➔ Check Another Link.
+
+4. **Strict Backend Orderability Criteria:**
+   - Orders can proceed ONLY when `productFound === true`, `productIdentityVerified === true`, `stockStatus === "IN_STOCK"`, `deliveryStatus === "DELIVERY_AVAILABLE"`, and `priceStatus === "VERIFIED"`.
+   - A fresh backend re-verification is executed at the exact moment of final order submission.
+
+5. **Private Transit Security & Structured Audit Logging:**
+   - The internal transit destination is configured securely on the server and is never exposed in customer responses, public APIs, or UI components.
+   - Structured server logs (`[VERIFICATION_AUDIT]`) record verification stages, failure reasons, and timestamps for diagnostics without logging any confidential credentials.
+   - Admins can use the **Live Link Verification & Diagnostics Debug Panel** in the Admin Dashboard to test and inspect raw marketplace links.
 
 ---
 

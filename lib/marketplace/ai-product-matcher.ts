@@ -47,43 +47,47 @@ export function extractProductIdFromUrlOrText(input: string, source?: string): s
   }
 
   // Flipkart PID / itm / pid (e.g. itm123456789 or MOBFW3PV8G...)
-  const flipkartMatch = str.match(/(?:pid=|\/p\/|\/itm)([a-zA-Z0-9_-]{12,30})/i);
+  const flipkartMatch = str.match(/(?:pid=|\/p\/|\/itm)([a-zA-Z0-9_-]{12,30})/i) || str.match(/[?&]pid=([a-zA-Z0-9_-]+)/i);
   if (flipkartMatch && (!source || source.includes("flipkart"))) {
     return flipkartMatch[1];
   }
 
-  // Myntra style ID (e.g., /12345678/buy or /12345678)
-  const myntraMatch = str.match(/(?:myntra\.com\/(?:[a-zA-Z0-9-]+\/)?)([0-9]{5,12})(?:\/buy|[/?&#]|$)/i);
-  if (myntraMatch && (!source || source.includes("myntra"))) {
-    return myntraMatch[1];
+  // Myntra style ID (e.g., .../12187850/buy, /12187850, or any numeric segment 5-12 digits)
+  if (!source || source.includes("myntra")) {
+    const myntraMatch = str.match(/myntra\.com\/(?:.+?\/)?([0-9]{5,12})(?:\/buy|[/?&#]|$)/i) ||
+      str.match(/\/([0-9]{5,12})(?:\/buy|[/?&#]|$)/i) ||
+      str.match(/([0-9]{6,10})/);
+    if (myntraMatch) {
+      return myntraMatch[1];
+    }
   }
 
   // Meesho Product ID (e.g., /p/1234abc or numeric)
-  const meeshoMatch = str.match(/(?:meesho\.com\/p\/)([a-zA-Z0-9_-]{4,20})/i);
+  const meeshoMatch = str.match(/(?:meesho\.com\/(?:s\/)?p\/)([a-zA-Z0-9_-]{4,20})/i);
   if (meeshoMatch && (!source || source.includes("meesho"))) {
     return meeshoMatch[1];
   }
 
   // Nykaa Product ID
-  const nykaaMatch = str.match(/(?:nykaa\.com\/[a-zA-Z0-9-]+\/p\/)([a-zA-Z0-9_-]{4,20})/i);
+  const nykaaMatch = str.match(/(?:nykaa\.com\/(?:.+?\/)?p\/)([a-zA-Z0-9_-]{4,20})/i) || str.match(/productId=([0-9]+)/i);
   if (nykaaMatch && (!source || source.includes("nykaa"))) {
     return nykaaMatch[1];
   }
 
   // Ajio Product ID
-  const ajioMatch = str.match(/(?:ajio\.com\/[a-zA-Z0-9-]+\/p\/)([0-9_]{6,20})/i);
+  const ajioMatch = str.match(/(?:ajio\.com\/(?:.+?\/)?p\/)([0-9a-zA-Z_-]{6,20})/i);
   if (ajioMatch && (!source || source.includes("ajio"))) {
     return ajioMatch[1];
   }
 
   // Tata CLiQ Product ID
-  const tataMatch = str.match(/(?:tatacliq\.com\/[a-zA-Z0-9-]+\/p-)([a-zA-Z0-9_-]{6,20})/i);
+  const tataMatch = str.match(/(?:tatacliq\.com\/(?:.+?\/)?p-)([a-zA-Z0-9_-]{6,20})/i);
   if (tataMatch && (!source || source.includes("tatacliq"))) {
     return tataMatch[1];
   }
 
   // Croma Product ID
-  const cromaMatch = str.match(/(?:croma\.com\/[a-zA-Z0-9-]+\/p\/)([0-9]{5,15})/i);
+  const cromaMatch = str.match(/(?:croma\.com\/(?:.+?\/)?p\/)([0-9]{5,15})/i);
   if (cromaMatch && (!source || source.includes("croma"))) {
     return cromaMatch[1];
   }
