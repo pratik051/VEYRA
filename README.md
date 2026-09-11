@@ -134,34 +134,34 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # MongoDB Connection
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/linkova?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
 MONGO_URI=${MONGODB_URI}
 
-# App URL & Admin Credentials
+# App Configuration & Admin Credentials
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-ADMIN_EMAIL=admin@linkova.com
-ADMIN_PASSWORD=Admin@12345
+ADMIN_EMAIL=<your_admin_email>
+ADMIN_PASSWORD=<your_secure_admin_password>
 
 # Nepal Payment Gateways
-ESEWA_MERCHANT_CODE=EPAYTEST
-ESEWA_SECRET_KEY=8gBm/:&EnhH.1/q(
+ESEWA_MERCHANT_CODE=<your_esewa_merchant_code>
+ESEWA_SECRET_KEY=<your_esewa_secret_key>
 ESEWA_BASE_URL=https://rc-epay.esewa.com.np/api/epay/main/v2/form
-KHALTI_SECRET_KEY=your_khalti_secret_key
-NEXT_PUBLIC_KHALTI_PUBLIC_KEY=your_khalti_public_key
+KHALTI_SECRET_KEY=<your_khalti_secret_key>
+NEXT_PUBLIC_KHALTI_PUBLIC_KEY=<your_khalti_public_key>
 KHALTI_CHECKOUT_URL=https://pay.khalti.com
 
 # Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CLIENT_ID=<your_google_client_id>.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your_google_client_secret>
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 
 # Firebase Authentication (Optional Client Popup)
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_API_KEY=<your_firebase_api_key>
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your_project>.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=<your_project_id>
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=<your_project>.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your_sender_id>
+NEXT_PUBLIC_FIREBASE_APP_ID=<your_app_id>
 ```
 
 ---
@@ -176,8 +176,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/pratik051/VEYRA.git
-cd VEYRA
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
 
 # Install dependencies
 npm install
@@ -247,8 +247,8 @@ veyra/
 ## 🛡️ Admin Management Portal
 
 The LINKOVA Operations Console is accessible at `/admin`:
-- **Default Staff Login:** `admin@linkova.com`
-- **Default Staff Password:** `Admin@12345` (Configurable via `ADMIN_PASSWORD` in `.env`)
+- **Staff Login:** Configured via `ADMIN_EMAIL` in `.env.local`
+- **Staff Password:** Configured via `ADMIN_PASSWORD` in `.env.local`
 - **Capabilities:**
   - Dynamic Real-Time Sourcing Volume and Orders breakdown.
   - Update shipment milestones (`Processing`, `Sourced in India`, `In Transit / Border Customs`, `Out for Delivery`, `Delivered`).
