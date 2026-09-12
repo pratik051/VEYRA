@@ -10,7 +10,7 @@ import { PaymentProvider } from "@/lib/payments/types";
 import { generateId } from "@/lib/utils";
 import { products as catalogProducts } from "@/lib/data";
 
-import { calculateOrderBreakdown } from "@/app/api/checkout/calculate/route";
+import { calculateOrderBreakdown } from "@/lib/utils/order-calculator";
 
 type CheckoutPayload = {
   fullName?: string;

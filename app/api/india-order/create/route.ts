@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { calculateOrderPrice } from "@/lib/pricing/india-order";
-import { calculateOrderBreakdown } from "@/app/api/checkout/calculate/route";
+import { calculateOrderBreakdown } from "@/lib/utils/order-calculator";
 import { IndiaOrderModel } from "@/lib/models/india-order-model";
 import { getSessionUserByToken } from "@/lib/auth/store";
 import { AUTH_COOKIE_NAME, LEGACY_AUTH_COOKIE_NAME } from "@/lib/auth/constants";
