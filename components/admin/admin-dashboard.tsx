@@ -2069,7 +2069,7 @@ export function AdminDashboard() {
 
               {/* PRICE BREAKDOWN */}
               <section className="border-t border-slate-100 pt-5">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Price Breakdown (Admin Internal)</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Price &amp; Payment Breakdown</h3>
                 <div className="rounded-2xl bg-slate-900 text-white p-4 space-y-2 text-xs">
                   <div className="flex justify-between text-slate-300">
                     <span>Indian Product Price (INR ₹)</span>
@@ -2088,8 +2088,18 @@ export function AdminDashboard() {
                     <span>Rs. {Number(selectedOrderDetail.deliveryChargeNPR || 200).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-slate-700 font-black text-sm">
-                    <span className="text-amber-400">Final Landed NPR</span>
+                    <span className="text-amber-400">Total Order Amount (NPR)</span>
                     <span className="text-red-400">Rs. {Number(selectedOrderDetail.finalAmountNPR).toLocaleString()}</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-800 space-y-1 text-[11px]">
+                    <div className="flex justify-between text-emerald-400 font-bold">
+                      <span>Online Advance Required (50%):</span>
+                      <span>Rs. {Number((selectedOrderDetail as any).onlineAdvanceAmountNPR || Math.round(selectedOrderDetail.finalAmountNPR * (selectedOrderDetail.paymentMethod === "COD" ? 0.5 : 1))).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-300 font-bold">
+                      <span>Remaining COD on Delivery:</span>
+                      <span>Rs. {Number((selectedOrderDetail as any).codRemainingAmountNPR || (selectedOrderDetail.paymentMethod === "COD" ? selectedOrderDetail.finalAmountNPR - Math.round(selectedOrderDetail.finalAmountNPR * 0.5) : 0)).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -2098,12 +2108,12 @@ export function AdminDashboard() {
               <section className="border-t border-slate-100 pt-5">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Payment Details</h3>
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <InfoRow label="Payment Method" value={selectedOrderDetail.paymentMethod === "FULL_PAYMENT" ? "Full Payment (Online)" : "Cash on Delivery (COD)"} />
+                  <InfoRow label="Payment Method" value={selectedOrderDetail.paymentMethod === "FULL_PAYMENT" ? "Full Online Payment (100%)" : "COD (50% Online Advance)"} />
                   <InfoRow label="Payment Status" value={
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(selectedOrderDetail.paymentStatus)}`}>{selectedOrderDetail.paymentStatus}</span>
                   } />
-                  <InfoRow label="Transaction ID" value={selectedOrderDetail.paymentTransactionId || "—"} mono />
-                  <InfoRow label="Paid Amount" value={selectedOrderDetail.paymentStatus === "PAID" ? formatNpr(selectedOrderDetail.finalAmountNPR) : "Pending"} />
+                  <InfoRow label="Transaction / Reference ID" value={selectedOrderDetail.paymentTransactionId || "—"} mono />
+                  <InfoRow label="Online Advance Status" value={(selectedOrderDetail as any).onlinePaymentStatus || selectedOrderDetail.paymentStatus} />
                 </div>
               </section>
 

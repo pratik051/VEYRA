@@ -53,9 +53,21 @@ export async function POST(req: Request) {
   const validItems = trustedItems.filter((item): item is { productId: string; quantity: number; unitPrice: number } => item !== null);
   const subtotal = validItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
   const actualDeliveryFee = subtotal >= 3000 ? 0 : deliveryFee;
-  const total = subtotal + actualDeliveryFee;
+  
+  // Use authoritative backend calculation for breakdown, referral, and 50% COD advance
+  const referralCode = String(body.referralCode || "").trim();
+  const paymentMethodChoice = body.paymentMethod || "Cash on Delivery";
+
+  const calc = calculateOrderBreakdown({
+    subtotal,
+    deliveryFee: actualDeliveryFee,
+    referralCode,
+    paymentMethod: paymentMethodChoice
+  });
+
   const orderId = generateId("ORD");
-  const paymentMethod = body.paymentMethod || "Cash on Delivery";
+  const isCod = paymentMethodChoice === "COD" || paymentMethodChoice === "Cash on Delivery";
+  const paymentMethod = isCod ? "COD" : paymentMethodChoice;
 
   // Construct complete immutable shipping address snapshot
   const shippingAddress = {
@@ -115,23 +127,32 @@ export async function POST(req: Request) {
     shippingAddress, // Immutable address snapshot preserved forever
     paymentMethod,
     paymentStatus: "Pending",
+    onlinePaymentStatus: "Pending",
+    codPaymentStatus: isCod ? "Pending" : "Not Applicable",
     orderStatus: "Order Placed",
     items: validItems,
-    subtotal,
-    deliveryFee: actualDeliveryFee,
-    total
+    subtotal: calc.subtotal,
+    deliveryFee: calc.deliveryFee,
+    discount: calc.discount,
+    referralCode: calc.referralApplied ? referralCode.toUpperCase() : "",
+    total: calc.finalAmount,
+    onlineAdvanceAmount: calc.onlineAmount,
+    codRemainingAmount: calc.codAmount
   });
-  const paymentInit = initiatePayment(paymentMethod, {
+
+  const paymentInit = initiatePayment(paymentMethodChoice, {
     orderId,
-    amount: total,
+    amount: calc.onlineAmount,
     productName: "LINKOVA Order",
     customerName: body.fullName,
     customerPhone: body.phone
   });
+
   await PaymentModel.create({
     orderId,
-    provider: paymentMethod,
-    amount: total,
+    provider: paymentMethodChoice,
+    paymentMethod: paymentMethodChoice,
+    amount: calc.onlineAmount,
     currency: "NPR",
     status: "Pending",
     providerReference: "",

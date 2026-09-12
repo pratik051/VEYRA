@@ -11,6 +11,7 @@ import { useToast } from "@/components/providers/toast-provider";
 import { ProductRequestItem } from "@/lib/types";
 import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
 import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+import { SupportChat } from "@/components/support/support-chat";
 
 export type CustomerOrder = {
   _id: string;
@@ -1091,8 +1092,8 @@ function AccountContent() {
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-black text-slate-900">Support &amp; Problem Tickets ({tickets.length})</h3>
-                  <p className="text-xs text-slate-500">Report delivery issues, payment inquiries, or product questions directly to our team.</p>
+                  <h3 className="text-base font-black text-slate-900">Customer Help &amp; Support Hub</h3>
+                  <p className="text-xs text-slate-500">Ask our AI Shopping Assistant or submit a ticket to our support team.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -1110,6 +1111,33 @@ function AccountContent() {
                   >
                     + Raise New Ticket
                   </button>
+                </div>
+              </div>
+
+              {/* Support Mode Toggle: Tickets vs Live AI Assistant */}
+              <div className="rounded-2xl bg-white border border-slate-200 p-2 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 px-2">
+                  <span className="text-xs font-bold text-slate-700">Choose Support Channel:</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTicket(null)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                        !selectedTicket ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      🎫 Tickets ({tickets.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Embedded AI Support Assistant */}
+                <div className="pt-2">
+                  <h4 className="text-xs font-extrabold text-slate-900 mb-3 px-2 flex items-center gap-2">
+                    <span>✨ AI Concierge &amp; Live Sourcing Support</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Always Online</span>
+                  </h4>
+                  <SupportChat embedded={true} />
                 </div>
               </div>
 

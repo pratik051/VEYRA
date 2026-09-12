@@ -779,10 +779,10 @@ function RequestProductFlow() {
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: Cash on Delivery */}
+              {/* Option 1: Cash on Delivery (50% Advance) */}
               <div
                 onClick={() => setPaymentMethod("COD")}
-                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-1.5 ${
+                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
                   paymentMethod === "COD"
                     ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
                     : "border-neutral-200 hover:border-neutral-300"
@@ -794,15 +794,17 @@ function RequestProductFlow() {
                     {paymentMethod === "COD" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                   </div>
                 </div>
-                <p className="text-[11px] text-neutral-500">
-                  Pay {formatNpr(finalNprAmount)} in cash directly to the courier upon delivery in Nepal.
-                </p>
+                <div className="text-[11px] text-neutral-600 space-y-1">
+                  <p className="font-bold text-amber-900">Requires 50% Online Advance</p>
+                  <p>• <strong>50% Pay Online Now:</strong> {formatNpr(Math.round(finalNprAmount * 0.5))}</p>
+                  <p>• <strong>50% Due on Delivery:</strong> {formatNpr(finalNprAmount - Math.round(finalNprAmount * 0.5))}</p>
+                </div>
               </div>
 
-              {/* Option 2: Full Online Payment */}
+              {/* Option 2: Full Online Payment (100%) */}
               <div
                 onClick={() => setPaymentMethod("FULL_PAYMENT")}
-                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-1.5 ${
+                className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
                   paymentMethod === "FULL_PAYMENT"
                     ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
                     : "border-neutral-200 hover:border-neutral-300"
@@ -814,9 +816,11 @@ function RequestProductFlow() {
                     {paymentMethod === "FULL_PAYMENT" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                   </div>
                 </div>
-                <p className="text-[11px] text-neutral-500">
-                  Pay {formatNpr(finalNprAmount)} now via eSewa, Khalti, or Mobile Banking for priority dispatch.
-                </p>
+                <div className="text-[11px] text-neutral-600 space-y-1">
+                  <p className="font-bold text-emerald-700">100% Full Payment Online</p>
+                  <p>• <strong>Pay Online Now:</strong> {formatNpr(finalNprAmount)}</p>
+                  <p>• <strong>Due on Delivery:</strong> NPR 0</p>
+                </div>
               </div>
             </div>
           </div>

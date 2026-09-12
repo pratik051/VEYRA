@@ -30,7 +30,6 @@ export function StorefrontShell({ children }: { children: React.ReactNode }) {
       <Footer />
       <MobileNav />
       <BackToTop />
-      <SupportChat />
     </>
   );
 }

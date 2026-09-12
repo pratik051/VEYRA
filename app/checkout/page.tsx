@@ -35,6 +35,30 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<"Khalti" | "eSewa" | "MyPay">("eSewa");
+  const [paymentMode, setPaymentMode] = useState<"COD" | "FULL_PAYMENT">("COD");
+  const [referralCodeInput, setReferralCodeInput] = useState("");
+  const [appliedReferral, setAppliedReferral] = useState<string>("");
+  const [referralResult, setReferralResult] = useState<{ applied: boolean; message: string; discount: number } | null>(null);
+  const [calculatingBreakdown, setCalculatingBreakdown] = useState(false);
+  const [qrError, setQrError] = useState(false);
+  const [qrKey, setQrKey] = useState(0);
+
+  const [breakdown, setBreakdown] = useState<{
+    subtotal: number;
+    deliveryFee: number;
+    discount: number;
+    finalAmount: number;
+    onlineAmount: number;
+    codAmount: number;
+  }>({
+    subtotal: 0,
+    deliveryFee: 0,
+    discount: 0,
+    finalAmount: 0,
+    onlineAmount: 0,
+    codAmount: 0
+  });
+
   const [paymentInfo, setPaymentInfo] = useState<{ provider?: string; status?: string; redirectUrl?: string } | null>(null);
   const [transactionCode, setTransactionCode] = useState("");
   const [screenshot, setScreenshot] = useState<File | null>(null);
@@ -129,6 +153,82 @@ export default function CheckoutPage() {
       isMounted = false;
     };
   }, [items.length, router]);
+  useEffect(() => {
+    if (!items.length) return;
+    let isSubscribed = true;
+
+    async function fetchBackendBreakdown() {
+      setCalculatingBreakdown(true);
+      try {
+        const delFee = subtotal >= 3000 ? 0 : 200;
+        const res = await fetch("/api/checkout/calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subtotal,
+            deliveryFee: delFee,
+            referralCode: appliedReferral,
+            paymentMethod: paymentMode
+          })
+        });
+
+        const data = await res.json();
+        if (isSubscribed && res.ok && data.success) {
+          setBreakdown({
+            subtotal: data.subtotal,
+            deliveryFee: data.deliveryFee,
+            discount: data.discount,
+            finalAmount: data.finalAmount,
+            onlineAmount: data.onlineAmount,
+            codAmount: data.codAmount
+          });
+        }
+      } catch (err) {
+        console.error("Backend breakdown calculation failed:", err);
+      } finally {
+        if (isSubscribed) setCalculatingBreakdown(false);
+      }
+    }
+
+    void fetchBackendBreakdown();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [items.length, subtotal, paymentMode, appliedReferral]);
+
+  const handleApplyReferral = async (e: FormEvent) => {
+    e.preventDefault();
+    const code = referralCodeInput.trim().toUpperCase();
+    if (!code) return;
+
+    try {
+      const delFee = subtotal >= 3000 ? 0 : 200;
+      const res = await fetch("/api/checkout/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subtotal,
+          deliveryFee: delFee,
+          referralCode: code,
+          paymentMethod: paymentMode
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.referralApplied) {
+          setAppliedReferral(code);
+          setReferralResult({ applied: true, message: data.referralMessage, discount: data.discount });
+          pushToast(data.referralMessage, "success");
+        } else {
+          setReferralResult({ applied: false, message: data.referralMessage, discount: 0 });
+          pushToast(data.referralMessage, "error");
+        }
+      }
+    } catch {
+      pushToast("Unable to validate referral code right now.", "error");
+    }
+  };
 
   const delivery = items.length ? (subtotal >= 3000 ? 0 : 200) : 0;
   const total = subtotal + delivery;
@@ -170,7 +270,8 @@ export default function CheckoutPage() {
       postalCode: activeAddress.postalCode || "",
       country: "Nepal",
       saveAsDefault: isCustomAddress ? saveAsDefault : false,
-      paymentMethod: selectedPayment,
+      paymentMethod: paymentMode === "COD" ? "COD" : selectedPayment,
+      referralCode: appliedReferral,
       items: items.map((item) => ({ productId: item.id, quantity: item.quantity, unitPrice: item.price }))
     };
 
@@ -547,49 +648,166 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Payment Method Selector */}
-          <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm space-y-4">
+          {/* Payment Method Selector & COD 50% Advance Logic */}
+          <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm space-y-6">
             <h2 className="text-base font-bold text-neutral-900 border-b border-neutral-100 pb-3">
               2. Payment Method
             </h2>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              {paymentMethods.map((p) => (
-                <label
-                  key={p.id}
-                  onClick={() => setSelectedPayment(p.id)}
-                  className={`flex cursor-pointer flex-col justify-between rounded-2xl border-2 p-4 transition ${
-                    selectedPayment === p.id
+            {/* Payment Mode Selection: COD (50% Advance) vs Full Online (100%) */}
+            <div className="space-y-3">
+              <label className="block text-xs font-extrabold uppercase text-neutral-800 tracking-wider">
+                Select Order Payment Option *
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Mode 1: COD with 50% Online Advance */}
+                <div
+                  onClick={() => setPaymentMode("COD")}
+                  className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
+                    paymentMode === "COD"
                       ? "border-black bg-neutral-50 shadow-sm"
-                      : "border-neutral-200 bg-white hover:border-neutral-300"
+                      : "border-neutral-200 hover:border-neutral-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-900">{p.name}</span>
+                    <span className="font-bold text-sm text-neutral-900">💵 Cash on Delivery (COD)</span>
                     <input
                       type="radio"
-                      name="paymentMethodRadio"
-                      checked={selectedPayment === p.id}
-                      onChange={() => setSelectedPayment(p.id)}
+                      name="paymentModeRadio"
+                      checked={paymentMode === "COD"}
+                      onChange={() => setPaymentMode("COD")}
                       className="accent-black"
                     />
                   </div>
-                  <p className="mt-2 text-[11px] text-neutral-500">{p.desc}</p>
-                </label>
-              ))}
-            </div>
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-3">
-              <p className="font-bold text-neutral-900">Pay with {selectedPayment}</p>
-              <div className="relative mx-auto h-64 w-64">
-                <Image
-                  src={`/payment-qr/${selectedPayment === "Khalti" ? "khalti" : selectedPayment === "eSewa" ? "esewa" : "mypay"}-qr.png`}
-                  alt={`${selectedPayment} QR code`}
-                  fill
-                  className="rounded-xl object-contain"
-                />
+                  <div className="text-[11px] text-neutral-600 space-y-1">
+                    <p className="font-semibold text-amber-900">Requires 50% Online Advance Now</p>
+                    <p>• <strong>50% Pay Online Now:</strong> {formatNpr(breakdown.onlineAmount)}</p>
+                    <p>• <strong>50% Due on Delivery:</strong> {formatNpr(breakdown.codAmount)}</p>
+                  </div>
+                </div>
+
+                {/* Mode 2: Full Online Payment (100%) */}
+                <div
+                  onClick={() => setPaymentMode("FULL_PAYMENT")}
+                  className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
+                    paymentMode === "FULL_PAYMENT"
+                      ? "border-black bg-neutral-50 shadow-sm"
+                      : "border-neutral-200 hover:border-neutral-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm text-neutral-900">💳 Full Online Payment</span>
+                    <input
+                      type="radio"
+                      name="paymentModeRadio"
+                      checked={paymentMode === "FULL_PAYMENT"}
+                      onChange={() => setPaymentMode("FULL_PAYMENT")}
+                      className="accent-black"
+                    />
+                  </div>
+                  <div className="text-[11px] text-neutral-600 space-y-1">
+                    <p className="font-semibold text-emerald-700">100% Full Payment Online</p>
+                    <p>• <strong>Pay Online Now:</strong> {formatNpr(breakdown.onlineAmount)}</p>
+                    <p>• <strong>Due on Delivery:</strong> NPR 0</p>
+                  </div>
+                </div>
               </div>
-              <p className="font-bold">Amount: {formatNpr(total)}</p>
-              <p className="text-neutral-500">Scan the QR code, complete payment, and keep your screenshot and transaction code for submission after the order is created.</p>
+            </div>
+
+            {/* Provider Selector (eSewa / Khalti / MyPay) */}
+            <div className="space-y-3 pt-2 border-t border-neutral-100">
+              <label className="block text-xs font-bold text-neutral-800">
+                Choose Online Wallet / Gateway for Payment
+              </label>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {paymentMethods.map((p) => (
+                  <label
+                    key={p.id}
+                    onClick={() => {
+                      setSelectedPayment(p.id);
+                      setQrError(false);
+                      setQrKey((k) => k + 1);
+                    }}
+                    className={`flex cursor-pointer flex-col justify-between rounded-2xl border-2 p-4 transition ${
+                      selectedPayment === p.id
+                        ? "border-black bg-neutral-50 shadow-sm"
+                        : "border-neutral-200 bg-white hover:border-neutral-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-neutral-900">{p.name}</span>
+                      <input
+                        type="radio"
+                        name="paymentMethodRadio"
+                        checked={selectedPayment === p.id}
+                        onChange={() => {
+                          setSelectedPayment(p.id);
+                          setQrError(false);
+                          setQrKey((k) => k + 1);
+                        }}
+                        className="accent-black"
+                      />
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-neutral-500">{p.desc}</p>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* QR Code Section with Error Handling & Retry */}
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-neutral-900">Scan to Pay via {selectedPayment}</p>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                  {paymentMode === "COD" ? "50% Online Advance Required" : "100% Full Payment Required"}
+                </span>
+              </div>
+
+              {!qrError ? (
+                <div className="relative mx-auto h-64 w-64 rounded-2xl bg-white p-2 border border-neutral-200 flex items-center justify-center">
+                  <Image
+                    key={qrKey}
+                    src={`/payment-qr/${selectedPayment === "Khalti" ? "khalti" : selectedPayment === "eSewa" ? "esewa" : "mypay"}-qr.png`}
+                    alt={`${selectedPayment} Payment QR`}
+                    fill
+                    className="rounded-xl object-contain p-1"
+                    onError={() => setQrError(true)}
+                  />
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center space-y-3 my-2">
+                  <p className="text-xs font-bold text-red-800">Unable to load payment QR.</p>
+                  <p className="text-[11px] text-red-600">Please try again or use the available online payment option.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQrError(false);
+                      setQrKey((k) => k + 1);
+                    }}
+                    className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-red-700 transition"
+                  >
+                    Retry Loading QR
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-1 rounded-xl bg-white p-3 border border-neutral-200">
+                <div className="flex justify-between font-extrabold text-neutral-900 text-sm">
+                  <span>Amount to Pay Online Now:</span>
+                  <span className="text-blue-700">{formatNpr(breakdown.onlineAmount)}</span>
+                </div>
+                <div className="flex justify-between text-neutral-500 text-[11px]">
+                  <span>Payment Method:</span>
+                  <span>{paymentMode === "COD" ? "COD (50% Advance)" : "Full Online Payment"} via {selectedPayment}</span>
+                </div>
+                {paymentMode === "COD" && (
+                  <div className="flex justify-between text-neutral-600 text-[11px] pt-1 border-t border-neutral-100">
+                    <span>Remaining COD on Delivery:</span>
+                    <span className="font-bold text-neutral-900">{formatNpr(breakdown.codAmount)}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -597,16 +815,18 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || calculatingBreakdown}
             className="w-full rounded-2xl bg-black py-4 text-sm font-bold text-white shadow-lg hover:bg-neutral-800 disabled:opacity-60 transition"
           >
-            {loading ? "Placing Your Order..." : `Place Order • ${formatNpr(total)}`}
+            {loading
+              ? "Placing Your Order..."
+              : `Place Order • Pay ${formatNpr(breakdown.onlineAmount)} Online Now`}
           </button>
         </form>
 
-        {/* Order Summary Aside */}
-        <aside className="lg:col-span-4">
-          <div className="sticky top-24 rounded-3xl border border-neutral-200 bg-white p-6 shadow-card space-y-4">
+        {/* Order Summary Aside with Referral Code Input & Payment Breakdown */}
+        <aside className="lg:col-span-4 space-y-6">
+          <div className="sticky top-24 rounded-3xl border border-neutral-200 bg-white p-6 shadow-card space-y-5">
             <h3 className="text-base font-bold text-neutral-900">Items Summary ({items.length})</h3>
 
             <div className="max-h-60 overflow-y-auto space-y-3 pr-1">
@@ -621,20 +841,68 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            {/* Referral Code Form */}
+            <div className="pt-2 border-t border-neutral-100 space-y-2">
+              <label className="block text-xs font-bold text-neutral-800">Have a referral code?</label>
+              <form onSubmit={handleApplyReferral} className="flex gap-2">
+                <input
+                  type="text"
+                  value={referralCodeInput}
+                  onChange={(e) => setReferralCodeInput(e.target.value)}
+                  placeholder="Enter referral code"
+                  className="min-w-0 flex-1 rounded-xl border border-neutral-300 px-3 py-2 text-xs font-medium focus:border-black focus:outline-none uppercase"
+                />
+                <button
+                  type="submit"
+                  className="rounded-xl bg-neutral-950 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition"
+                >
+                  Apply
+                </button>
+              </form>
+              {referralResult && (
+                <p className={`text-xs font-semibold ${referralResult.applied ? "text-emerald-600" : "text-red-600"}`}>
+                  {referralResult.message}
+                </p>
+              )}
+            </div>
+
+            {/* Price Breakdown */}
             <div className="border-t border-neutral-100 pt-3 space-y-2 text-xs text-neutral-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-neutral-900">{formatNpr(subtotal)}</span>
+                <span className="font-semibold text-neutral-900">{formatNpr(breakdown.subtotal)}</span>
               </div>
+
+              {breakdown.discount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span>Referral Discount</span>
+                  <span>-{formatNpr(breakdown.discount)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <span>Delivery Charge</span>
                 <span className="font-semibold text-neutral-900">
-                  {delivery === 0 ? <strong className="text-emerald-600">FREE</strong> : formatNpr(delivery)}
+                  {breakdown.deliveryFee === 0 ? <strong className="text-emerald-600">FREE</strong> : formatNpr(breakdown.deliveryFee)}
                 </span>
               </div>
-              <div className="flex justify-between border-t border-neutral-100 pt-2 text-base font-extrabold text-neutral-900">
-                <span>Total Amount</span>
-                <span>{formatNpr(total)}</span>
+
+              <div className="flex justify-between border-t border-neutral-100 pt-2 text-sm font-extrabold text-neutral-900">
+                <span>Final Amount</span>
+                <span>{formatNpr(breakdown.finalAmount)}</span>
+              </div>
+            </div>
+
+            {/* Clear Payment Summary Box */}
+            <div className="rounded-2xl bg-neutral-50 p-4 border border-neutral-200 text-xs space-y-2">
+              <p className="font-bold text-neutral-900">Payment Breakdown</p>
+              <div className="flex justify-between font-extrabold text-blue-800">
+                <span>50% Online Advance Now:</span>
+                <span>{formatNpr(breakdown.onlineAmount)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-neutral-700">
+                <span>{paymentMode === "COD" ? "50% Due on Delivery (COD):" : "Due on Delivery:"}</span>
+                <span>{formatNpr(breakdown.codAmount)}</span>
               </div>
             </div>
 
