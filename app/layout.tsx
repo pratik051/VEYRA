@@ -8,6 +8,7 @@ import { CartProvider } from "@/components/providers/cart-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { GeminiChatbot } from "@/components/ui/gemini-chatbot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastProvider>
             <CartProvider>
               <StorefrontShell>{children}</StorefrontShell>
+              <GeminiChatbot />
             </CartProvider>
           </ToastProvider>
         </WishlistProvider>

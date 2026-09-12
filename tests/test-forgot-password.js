@@ -15,11 +15,11 @@ function testOtpFormat() {
 
 // Test 2: App Password formatting
 function testAppPasswordSanitization() {
-  const rawPass = "prix eyix kdfw nznk";
+  const rawPass = "cuca sdmp oeln hmna";
   const sanitized = rawPass.replace(/\s+/g, "");
-  assert.strictEqual(sanitized, "prixeyixkdfwnznk", "Whitespace should be stripped");
+  assert.strictEqual(sanitized, "cucasdmpoelnhmna", "Whitespace should be stripped");
   assert.strictEqual(sanitized.length, 16, "Google App Password should be 16 characters");
-  console.log("  ✓ [PASS] Test 2: Google App Password sanitized to 16-character string");
+  console.log("  ✓ [PASS] Test 2: Google App Password sanitized to 16-character string: " + sanitized);
 }
 
 // Test 3: OTP Expiration Math

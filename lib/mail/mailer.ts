@@ -3,13 +3,12 @@ import nodemailer, { type Transporter } from "nodemailer";
 const SMTP_USER =
   process.env.SMTP_USER ||
   process.env.GMAIL_USER ||
-  process.env.ADMIN_EMAIL?.replace("gamil.com", "gmail.com") ||
-  "pratikshah2056@gmail.com";
+  "pratikshah2990@gmail.com";
 
 const SMTP_PASS = (
   process.env.SMTP_PASS ||
   process.env.GMAIL_APP_PASSWORD ||
-  "prix eyix kdfw nznk"
+  "cuca sdmp oeln hmna"
 ).replace(/\s+/g, "");
 
 let transporter: Transporter | null = null;
