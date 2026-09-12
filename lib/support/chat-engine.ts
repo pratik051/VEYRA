@@ -81,6 +81,32 @@ export async function processCustomerChat(
   await connectToDatabase();
 
   // ──────────────────────────────────────────────────────────────────────────
+  // 0. INTERNAL / ADMIN / SENSITIVE QUERY GUARD
+  // ──────────────────────────────────────────────────────────────────────────
+  const isInternalAdminQuery =
+    lower.includes("admin") ||
+    lower.includes("password") ||
+    lower.includes("secret") ||
+    lower.includes("database") ||
+    lower.includes("mongodb") ||
+    lower.includes("schema") ||
+    lower.includes("api key") ||
+    lower.includes("source code") ||
+    lower.includes("pin code") ||
+    lower.includes("staff") ||
+    lower.includes("backend") ||
+    lower.includes("margin") ||
+    lower.includes("profit");
+
+  if (isInternalAdminQuery) {
+    return {
+      answer:
+        "I am your LINKOVA Customer Shopping Assistant. I can only assist with customer shopping, product sourcing from India, landed price calculations, delivery in Nepal, and user account support. For internal or administrative inquiries, please contact LINKOVA management directly.",
+      suggestions: ["Show trending products", "Today's best deals", "How does India sourcing work?"]
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // 1. ORDER INQUIRY INTENTS ("Where is my order", "My orders", "Order status")
   // ──────────────────────────────────────────────────────────────────────────
   const isOrderQuery =
