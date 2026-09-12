@@ -139,7 +139,7 @@ function SignupContent() {
     }
 
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -147,12 +147,12 @@ function SignupContent() {
       });
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!response.ok) {
         throw new Error(data.error || "Failed to create account.");
       }
 
       pushToast("Account created successfully! Welcome to LINKOVA.", "success");
-      router.push(redirectUrl);
+      window.location.href = redirectUrl;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed.";
       setError(msg);

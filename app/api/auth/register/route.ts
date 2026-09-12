@@ -19,27 +19,28 @@ export async function POST(req: Request) {
     const phone = body.phone?.trim() || "";
     const password = body.password || "";
 
-    if (!fullName || !email || !phone || !password) {
-      return NextResponse.json({ error: "Full name, email, phone and password are required." }, { status: 400 });
+    if (!fullName || !email || !password) {
+      return NextResponse.json({ success: false, error: "Full name, email, and password are required." }, { status: 400 });
     }
-    if (password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
+    if (password.length < 6) {
+      return NextResponse.json({ success: false, error: "Password must be at least 6 characters." }, { status: 400 });
     }
 
     const existing = await getUserByEmail(email);
     if (existing) {
-      return NextResponse.json({ error: "Email is already registered. Please sign in instead." }, { status: 409 });
+      return NextResponse.json({ success: false, error: "Email is already registered. Please sign in instead." }, { status: 409 });
     }
 
     const passwordHash = await hashPassword(password);
     const user = await createUser({ fullName, email, phone, passwordHash });
     if (!user) {
-      return NextResponse.json({ error: "Unable to create account. Please try again." }, { status: 500 });
+      return NextResponse.json({ success: false, error: "Unable to create account. Please try again." }, { status: 500 });
     }
 
     const token = await createSessionForUser(String(user._id));
 
     const response = NextResponse.json({
+      success: true,
       message: "Account created successfully.",
       user: { id: String(user._id), fullName: user.fullName, email: user.email, phone: user.phone, role: user.role }
     });
