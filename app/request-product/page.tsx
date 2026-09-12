@@ -33,8 +33,8 @@ function RequestProductFlow() {
   const searchParams = useSearchParams();
   const { pushToast } = useToast();
 
-  // Wizard Steps: 1: Link -> 2: Verification -> 3: Details & INR -> 4: Payment -> 5: Confirmed
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // Wizard Steps: 1: Link -> 2: Verify -> 3: Order Form -> 4: Payment -> 5: Payment Verification -> 6: Order Confirmation
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   // Step 1 & 2: Link & Verification State
   const [productUrl, setProductUrl] = useState("");
@@ -75,20 +75,34 @@ function RequestProductFlow() {
   const [inrPrice, setInrPrice] = useState<string>("");
   const [sourceProductId, setSourceProductId] = useState("");  // from marketplace product
 
-  // Step 4: Server Calculation & Payment
+  // Step 4: Server Calculation, Payment Provider & Dynamic QR
   const [calculatingPrice, setCalculatingPrice] = useState(false);
   const [finalNprAmount, setFinalNprAmount] = useState<number | null>(null);
+  const [onlineAdvanceAmount, setOnlineAdvanceAmount] = useState<number>(0);
+  const [codRemainingAmount, setCodRemainingAmount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "FULL_PAYMENT">("COD");
-  const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<"eSewa" | "Khalti" | "MyPay">("eSewa");
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState<boolean>(false);
+  const [qrError, setQrError] = useState<boolean>(false);
+  const [qrKey, setQrKey] = useState<number>(0);
 
-  // Step 5: Confirmed Order Details
+  // Step 5: Payment Proof Upload State
+  const [transactionId, setTransactionId] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [submittingProof, setSubmittingProof] = useState(false);
+
+  // Step 6: Confirmed Order Details
   const [confirmedOrder, setConfirmedOrder] = useState<{
     orderId: string;
     invoiceNumber: string;
     invoiceUrl: string;
     finalAmountNPR: number;
+    onlineAdvanceAmountNPR?: number;
+    codRemainingAmountNPR?: number;
     paymentMethod: string;
     paymentStatus: string;
+    onlinePaymentStatus?: string;
   } | null>(null);
 
   // Pre-fill user & addresses on mount
@@ -122,6 +136,53 @@ function RequestProductFlow() {
     }
     loadAddresses();
   }, []);
+
+  // Fetch dynamic payment QR when on Step 4
+  useEffect(() => {
+    if (step !== 4 || !finalNprAmount) return;
+    let isSubscribed = true;
+
+    async function fetchQr() {
+      setQrLoading(true);
+      setQrError(false);
+      try {
+        const rawInr = Number(inrPrice) || 0;
+        const res = await fetch("/api/payments/create-qr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: selectedProvider,
+            paymentMode: paymentMethod,
+            subtotal: finalNprAmount,
+            deliveryFee: 0
+          })
+        });
+
+        const data = await res.json();
+        if (isSubscribed) {
+          if (res.ok && data.success && data.qrCode) {
+            setQrCodeUrl(data.qrCode);
+          } else {
+            setQrError(true);
+            setQrCodeUrl(null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch payment QR for India order:", err);
+        if (isSubscribed) {
+          setQrError(true);
+          setQrCodeUrl(null);
+        }
+      } finally {
+        if (isSubscribed) setQrLoading(false);
+      }
+    }
+
+    void fetchQr();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [step, finalNprAmount, paymentMethod, selectedProvider, inrPrice, qrKey]);
 
   // Pre-fill from URL params if passed from product page or LinkVerifier
   useEffect(() => {
@@ -210,45 +271,6 @@ function RequestProductFlow() {
     void executeAvailabilityCheck(productUrl);
   };
 
-  // Submit Product Sourcing Request to Admin
-  const handleRequestProductSubmit = async () => {
-    if (!productUrl.trim()) {
-      pushToast("Please enter a product URL first.", "error");
-      return;
-    }
-    setSubmittingProductRequest(true);
-    try {
-      const res = await fetch("/api/user/product-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          productUrl: productUrl.trim(),
-          productName: productName || "Requested Marketplace Item",
-          productImage,
-          requestedVariant: productVariant,
-          requestedSize: size,
-          requestedColor: color,
-          requestedQuantity: quantity,
-          currentKnownPrice: Number(inrPrice) || 0,
-          reason: checkError || "Product unavailable for direct ordering"
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setRequestSubmittedSuccess(data.request?.requestId || "Submitted");
-        pushToast(data.message || "Product request submitted to admin successfully!", "success");
-      } else {
-        pushToast(data.error || "Failed to submit request. Please sign in.", "error");
-      }
-    } catch {
-      pushToast("Network error submitting product request.", "error");
-    } finally {
-      setSubmittingProductRequest(false);
-    }
-  };
-
   // Recalculate price whenever INR or Quantity changes
   const handleProceedToPayment = async (e: FormEvent) => {
     e.preventDefault();
@@ -274,7 +296,11 @@ function RequestProductFlow() {
 
       const data = await res.json();
       if (res.ok && data.finalAmountNPR) {
-        setFinalNprAmount(data.finalAmountNPR);
+        const total = data.finalAmountNPR;
+        setFinalNprAmount(total);
+        const online = paymentMethod === "COD" ? Math.round(total * 0.5) : total;
+        setOnlineAdvanceAmount(online);
+        setCodRemainingAmount(total - online);
         setStep(4);
       } else {
         pushToast(data.error || "Unable to calculate price.", "error");
@@ -286,12 +312,29 @@ function RequestProductFlow() {
     }
   };
 
-  // Submit Order (COD or Full Payment)
-  const handleFinalOrderSubmit = async () => {
-    setSubmittingOrder(true);
+  // Step 4 -> Step 5 Transition ("I Have Paid")
+  const handlePaidClicked = () => {
+    if (!finalNprAmount) return;
+    setStep(5);
+  };
+
+  // Step 5 -> Step 6 (Submit Payment Proof & Create Order)
+  const handleProofSubmitAndCreateOrder = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!transactionId.trim()) {
+      pushToast("Please enter your Payment Reference / Transaction ID.", "error");
+      return;
+    }
+    if (!screenshotFile) {
+      pushToast("Please upload your payment screenshot.", "error");
+      return;
+    }
+
+    setSubmittingProof(true);
     const rawInr = Number(inrPrice);
 
     try {
+      // Create India Order in backend
       const res = await fetch("/api/india-order/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -315,27 +358,37 @@ function RequestProductFlow() {
           quantity,
           indianPriceINR: rawInr,
           paymentMethod,
+          paymentTransactionId: transactionId.trim(),
           sourceProductId: sourceProductId || ""
         })
       });
 
       const data = await res.json();
       if (res.ok && data.success && data.order) {
-        setConfirmedOrder(data.order);
-        setStep(5);
-        pushToast(
-          paymentMethod === "FULL_PAYMENT"
-            ? "Payment verified & order placed successfully!"
-            : "Cash on Delivery order confirmed!",
-          "success"
-        );
+        // Upload screenshot evidence to payment evidence endpoint
+        const form = new FormData();
+        form.append("orderId", data.order.orderId);
+        form.append("paymentMethod", selectedProvider);
+        form.append("transactionCode", transactionId.trim());
+        form.append("screenshot", screenshotFile);
+        
+        await fetch("/api/payments/submit", { method: "POST", body: form }).catch(() => null);
+
+        setConfirmedOrder({
+          ...data.order,
+          onlineAdvanceAmountNPR: paymentMethod === "COD" ? Math.round(data.order.finalAmountNPR * 0.5) : data.order.finalAmountNPR,
+          codRemainingAmountNPR: paymentMethod === "COD" ? data.order.finalAmountNPR - Math.round(data.order.finalAmountNPR * 0.5) : 0,
+          onlinePaymentStatus: "Pending Verification"
+        });
+        setStep(6);
+        pushToast("✓ Payment proof submitted! Order confirmed for verification.", "success");
       } else {
         pushToast(data.error || "Order placement failed.", "error");
       }
     } catch {
       pushToast("Server error placing order.", "error");
     } finally {
-      setSubmittingOrder(false);
+      setSubmittingProof(false);
     }
   };
 
@@ -353,18 +406,19 @@ function RequestProductFlow() {
           Paste product links from Amazon India, Flipkart, Myntra, or any marketplace. We calculate clear landed Nepal prices and deliver directly to your doorstep.
         </p>
 
-        {/* Step Progress Bar */}
-        <div className="flex items-center justify-center gap-2 pt-4">
+        {/* 6 Step Progress Bar */}
+        <div className="flex items-center justify-center gap-1.5 pt-4">
           {[
             { num: 1, label: "Link" },
             { num: 2, label: "Verify" },
             { num: 3, label: "Order Form" },
             { num: 4, label: "Payment" },
-            { num: 5, label: "Receipt" }
+            { num: 5, label: "Verification" },
+            { num: 6, label: "Confirmation" }
           ].map((s) => (
-            <div key={s.num} className="flex items-center gap-2">
+            <div key={s.num} className="flex items-center gap-1.5">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition-all ${
+                className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs font-black transition-all ${
                   step === s.num
                     ? "bg-neutral-950 text-white shadow-md scale-110"
                     : step > s.num
@@ -374,10 +428,10 @@ function RequestProductFlow() {
               >
                 {step > s.num ? "✓" : s.num}
               </div>
-              <span className={`text-[11px] font-bold hidden sm:inline ${step === s.num ? "text-neutral-950" : "text-neutral-400"}`}>
+              <span className={`text-[11px] font-bold hidden md:inline ${step === s.num ? "text-neutral-950" : "text-neutral-400"}`}>
                 {s.label}
               </span>
-              {s.num < 5 && <div className="h-0.5 w-4 sm:w-8 bg-neutral-200" />}
+              {s.num < 6 && <div className="h-0.5 w-2 sm:w-5 bg-neutral-200" />}
             </div>
           ))}
         </div>
@@ -735,11 +789,11 @@ function RequestProductFlow() {
         </form>
       )}
 
-      {/* ─── STEP 4: TOTAL PAYABLE AMOUNT & PAYMENT METHOD (NO HIDDEN FORMULA) ─── */}
+      {/* ─── STEP 4: PAYMENT METHOD SELECTION & REAL QR ─── */}
       {step === 4 && finalNprAmount && (
         <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
           <div className="border-b border-neutral-100 pb-4">
-            <span className="text-[10px] font-bold uppercase text-amber-700 tracking-wider">Step 4: Final Review &amp; Payment</span>
+            <span className="text-[10px] font-bold uppercase text-amber-700 tracking-wider">Step 4: Payment</span>
             <h2 className="font-display text-2xl font-black text-neutral-950">
               Confirm Your Order
             </h2>
@@ -760,7 +814,7 @@ function RequestProductFlow() {
               <span className="text-right truncate max-w-[240px]">{deliveryAddress}, {city}</span>
             </div>
 
-            {/* Total Payable Amount (Clean, no hidden formula) */}
+            {/* Total Payable Amount */}
             <div className="flex items-center justify-between pt-3 border-t-2 border-dashed border-neutral-300">
               <div>
                 <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider block">Total Amount Payable:</span>
@@ -781,7 +835,10 @@ function RequestProductFlow() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Option 1: Cash on Delivery (50% Advance) */}
               <div
-                onClick={() => setPaymentMethod("COD")}
+                onClick={() => {
+                  setPaymentMethod("COD");
+                  setQrKey((k) => k + 1);
+                }}
                 className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
                   paymentMethod === "COD"
                     ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
@@ -790,9 +847,16 @@ function RequestProductFlow() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-neutral-900">💵 Cash on Delivery (COD)</span>
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "COD" ? "border-neutral-950 bg-neutral-950" : "border-neutral-300"}`}>
-                    {paymentMethod === "COD" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                  </div>
+                  <input
+                    type="radio"
+                    name="paymentModeRadioReq"
+                    checked={paymentMethod === "COD"}
+                    onChange={() => {
+                      setPaymentMethod("COD");
+                      setQrKey((k) => k + 1);
+                    }}
+                    className="accent-black"
+                  />
                 </div>
                 <div className="text-[11px] text-neutral-600 space-y-1">
                   <p className="font-bold text-amber-900">Requires 50% Online Advance</p>
@@ -803,7 +867,10 @@ function RequestProductFlow() {
 
               {/* Option 2: Full Online Payment (100%) */}
               <div
-                onClick={() => setPaymentMethod("FULL_PAYMENT")}
+                onClick={() => {
+                  setPaymentMethod("FULL_PAYMENT");
+                  setQrKey((k) => k + 1);
+                }}
                 className={`cursor-pointer rounded-2xl border-2 p-5 transition-all space-y-2 ${
                   paymentMethod === "FULL_PAYMENT"
                     ? "border-neutral-950 bg-neutral-50/80 shadow-sm"
@@ -812,9 +879,16 @@ function RequestProductFlow() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-neutral-900">💳 Full Online Payment</span>
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "FULL_PAYMENT" ? "border-neutral-950 bg-neutral-950" : "border-neutral-300"}`}>
-                    {paymentMethod === "FULL_PAYMENT" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                  </div>
+                  <input
+                    type="radio"
+                    name="paymentModeRadioReq"
+                    checked={paymentMethod === "FULL_PAYMENT"}
+                    onChange={() => {
+                      setPaymentMethod("FULL_PAYMENT");
+                      setQrKey((k) => k + 1);
+                    }}
+                    className="accent-black"
+                  />
                 </div>
                 <div className="text-[11px] text-neutral-600 space-y-1">
                   <p className="font-bold text-emerald-700">100% Full Payment Online</p>
@@ -822,6 +896,83 @@ function RequestProductFlow() {
                   <p>• <strong>Due on Delivery:</strong> NPR 0</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Wallet Provider Selector */}
+          <div className="space-y-3 pt-2 border-t border-neutral-100">
+            <label className="block text-xs font-bold text-neutral-800">
+              Choose Payment Gateway
+            </label>
+            <div className="grid gap-3 grid-cols-3">
+              {(["eSewa", "Khalti", "MyPay"] as const).map((prov) => (
+                <button
+                  key={prov}
+                  type="button"
+                  onClick={() => {
+                    setSelectedProvider(prov);
+                    setQrKey((k) => k + 1);
+                  }}
+                  className={`rounded-2xl border-2 p-3 text-center transition ${
+                    selectedProvider === prov
+                      ? "border-black bg-neutral-50 shadow-xs font-black text-neutral-950"
+                      : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300"
+                  }`}
+                >
+                  <span className="text-xs">{prov}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Real QR Display Section */}
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5 text-xs space-y-4 text-center">
+            <div className="flex items-center justify-between text-left">
+              <div>
+                <p className="font-bold text-neutral-900 text-sm">Scan &amp; Pay via {selectedProvider}</p>
+                <p className="text-[11px] text-neutral-500">Scan this QR code using your mobile wallet app</p>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-800">
+                {paymentMethod === "COD" ? "50% Advance Payment" : "100% Full Payment"}
+              </span>
+            </div>
+
+            {qrLoading ? (
+              <div className="relative mx-auto h-64 w-64 rounded-2xl bg-white p-6 border border-neutral-200 flex flex-col items-center justify-center space-y-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-black" />
+                <p className="text-xs font-semibold text-neutral-600">Generating secure payment QR...</p>
+              </div>
+            ) : !qrError && qrCodeUrl ? (
+              <div className="relative mx-auto h-64 w-64 rounded-2xl bg-white p-2 border border-neutral-200 flex items-center justify-center shadow-xs">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  key={qrKey}
+                  src={qrCodeUrl}
+                  alt={`${selectedProvider} Payment QR`}
+                  className="rounded-xl object-contain h-full w-full p-1"
+                  onError={() => setQrError(true)}
+                />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center space-y-3 my-2">
+                <p className="text-xs font-bold text-red-800">Unable to generate payment QR.</p>
+                <p className="text-[11px] text-red-600">Please try again or select another payment gateway.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQrError(false);
+                    setQrKey((k) => k + 1);
+                  }}
+                  className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-red-700 transition"
+                >
+                  Retry Payment
+                </button>
+              </div>
+            )}
+
+            <div className="rounded-xl bg-white p-3 border border-neutral-200 font-extrabold text-neutral-900 text-sm flex justify-between items-center">
+              <span>Amount to Pay Online Now:</span>
+              <span className="text-blue-700 text-base">{formatNpr(paymentMethod === "COD" ? Math.round(finalNprAmount * 0.5) : finalNprAmount)}</span>
             </div>
           </div>
 
@@ -835,18 +986,102 @@ function RequestProductFlow() {
             </button>
             <button
               type="button"
-              onClick={handleFinalOrderSubmit}
-              disabled={submittingOrder}
-              className="px-8 py-3.5 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-red-600 disabled:opacity-40 transition shadow-md hover:scale-105"
+              onClick={handlePaidClicked}
+              className="px-8 py-3.5 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-neutral-800 transition shadow-md"
             >
-              {submittingOrder ? "Processing Order..." : `Confirm & Place Order (${formatNpr(finalNprAmount)}) →`}
+              I Have Paid →
             </button>
           </div>
         </div>
       )}
 
-      {/* ─── STEP 5: ORDER CONFIRMATION & PRINTABLE INVOICE ─── */}
-      {step === 5 && confirmedOrder && (
+      {/* ─── STEP 5: PAYMENT VERIFICATION (SUBMIT PROOF) ─── */}
+      {step === 5 && finalNprAmount && (
+        <form onSubmit={handleProofSubmitAndCreateOrder} className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-sm space-y-6">
+          <div className="border-b border-neutral-100 pb-4">
+            <span className="text-[10px] font-bold uppercase text-purple-700 tracking-wider">Step 5: Payment Verification</span>
+            <h2 className="font-display text-2xl font-black text-neutral-950">
+              Submit Payment Proof
+            </h2>
+            <p className="text-xs text-neutral-500 mt-1">
+              Please upload your payment screenshot and enter the transaction reference ID below to complete your order.
+            </p>
+          </div>
+
+          {/* Payment Summary Pill */}
+          <div className="rounded-2xl bg-neutral-50 p-4 border border-neutral-200 space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Selected Payment Method:</span>
+              <span className="font-bold text-neutral-900">{paymentMethod === "COD" ? "COD (50% Advance)" : "Full Online Payment"} via {selectedProvider}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Total Order Amount:</span>
+              <span className="font-bold text-neutral-900">{formatNpr(finalNprAmount)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-blue-800">
+              <span>Amount Paid Online:</span>
+              <span>{formatNpr(paymentMethod === "COD" ? Math.round(finalNprAmount * 0.5) : finalNprAmount)}</span>
+            </div>
+            {paymentMethod === "COD" && (
+              <div className="flex justify-between text-neutral-700 font-semibold pt-1 border-t border-neutral-200/60">
+                <span>Remaining Due on Delivery (COD):</span>
+                <span>{formatNpr(finalNprAmount - Math.round(finalNprAmount * 0.5))}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Proof Inputs */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase text-neutral-800 mb-1">
+                Transaction / Reference ID *
+              </label>
+              <input
+                type="text"
+                required
+                value={transactionId}
+                onChange={(e) => setTransactionId(e.target.value)}
+                placeholder="e.g. TXN-9840129481 or eSewa/Khalti Ref ID"
+                className="w-full rounded-xl border border-neutral-300 p-3 text-xs font-medium focus:border-black focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-neutral-800 mb-1">
+                Payment Screenshot / Proof *
+              </label>
+              <input
+                type="file"
+                required
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => setScreenshotFile(e.target.files?.[0] || null)}
+                className="w-full rounded-xl border border-neutral-300 p-2 text-xs font-medium focus:border-black focus:outline-none"
+              />
+              <p className="text-[10px] text-neutral-400 mt-1">Upload JPG, PNG, or WEBP payment receipt image.</p>
+            </div>
+          </div>
+
+          <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
+            <button
+              type="button"
+              onClick={() => setStep(4)}
+              className="px-5 py-2.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-600 hover:bg-neutral-50"
+            >
+              ← Back to Payment QR
+            </button>
+            <button
+              type="submit"
+              disabled={submittingProof}
+              className="px-8 py-3.5 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-emerald-600 disabled:opacity-40 transition shadow-md"
+            >
+              {submittingProof ? "Submitting Proof..." : "Submit Payment Proof →"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* ─── STEP 6: ORDER CONFIRMATION & RECEIPT ─── */}
+      {step === 6 && confirmedOrder && (
         <div className="rounded-3xl border border-emerald-200 bg-white p-6 sm:p-10 shadow-sm text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-2xl font-black">
             ✓
@@ -854,17 +1089,17 @@ function RequestProductFlow() {
 
           <div className="space-y-1.5">
             <h2 className="font-display text-2xl sm:text-3xl font-black text-neutral-950">
-              Order Confirmed Successfully!
+              Order Confirmation
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500">
-              Thank you for ordering with LINKOVA Nepal. Your request has been assigned to our India procurement desk.
+              Thank you for ordering with LINKOVA Nepal. Your payment proof has been submitted for admin verification.
             </p>
           </div>
 
           {/* Details Pill */}
           <div className="rounded-2xl bg-neutral-50 p-5 max-w-md mx-auto text-xs space-y-2 text-left border border-neutral-100">
             <div className="flex justify-between">
-              <span className="text-neutral-500">Order ID:</span>
+              <span className="text-neutral-500">Order Reference ID:</span>
               <span className="font-mono font-black text-neutral-900">{confirmedOrder.orderId}</span>
             </div>
             <div className="flex justify-between">
@@ -872,20 +1107,43 @@ function RequestProductFlow() {
               <span className="font-mono font-bold text-neutral-900">{confirmedOrder.invoiceNumber}</span>
             </div>
             <div className="flex justify-between">
+              <span className="text-neutral-500">Product Name:</span>
+              <span className="font-bold text-neutral-900 truncate max-w-[200px]">{productName || "Sourced Item"}</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-neutral-500">Payment Method:</span>
               <span className="font-bold text-neutral-900">{confirmedOrder.paymentMethod === "FULL_PAYMENT" ? "Full Online Payment" : "Cash on Delivery"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Payment Status:</span>
-              <span className="font-bold text-emerald-600">{confirmedOrder.paymentStatus}</span>
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
+                Pending Verification
+              </span>
             </div>
-            <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold text-neutral-900">
+            <div className="flex justify-between pt-1 border-t border-neutral-200 text-neutral-900 font-bold">
               <span>Total Amount:</span>
-              <span className="text-red-600">{formatNpr(confirmedOrder.finalAmountNPR)}</span>
+              <span>{formatNpr(confirmedOrder.finalAmountNPR)}</span>
             </div>
+            {confirmedOrder.paymentMethod === "COD" ? (
+              <>
+                <div className="flex justify-between text-blue-700 font-semibold">
+                  <span>50% Paid Online / Submitted:</span>
+                  <span>{formatNpr(confirmedOrder.onlineAdvanceAmountNPR || Math.round(confirmedOrder.finalAmountNPR * 0.5))}</span>
+                </div>
+                <div className="flex justify-between text-neutral-700 font-semibold">
+                  <span>50% Remaining on Delivery:</span>
+                  <span>{formatNpr(confirmedOrder.codRemainingAmountNPR || (confirmedOrder.finalAmountNPR - Math.round(confirmedOrder.finalAmountNPR * 0.5)))}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between text-emerald-700 font-semibold">
+                <span>100% Online Submitted:</span>
+                <span>{formatNpr(confirmedOrder.finalAmountNPR)}</span>
+              </div>
+            )}
           </div>
 
-          {/* Action Buttons: View Invoice & Back to Store */}
+          {/* Action Buttons */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
             <a
               href={confirmedOrder.invoiceUrl}
@@ -893,7 +1151,7 @@ function RequestProductFlow() {
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-950 text-white text-xs sm:text-sm font-black hover:bg-neutral-800 transition shadow-md"
             >
-              <span>🖨️ View &amp; Print Official Invoice</span>
+              <span>🖨️ View &amp; Print Official Receipt</span>
               <span>↗</span>
             </a>
 
