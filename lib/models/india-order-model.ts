@@ -80,9 +80,16 @@ export interface IIndiaOrder {
   conversionAmountNPR: number;
   serviceChargeNPR: number;
   deliveryChargeNPR: number;
+  discountNPR?: number;
+  referralCode?: string;
   finalAmountNPR: number;
+  onlineAdvanceAmountNPR?: number;
+  codRemainingAmountNPR?: number;
   paymentMethod: "COD" | "FULL_PAYMENT";
   paymentStatus: "Pending" | "PAID" | "Failed" | "Refunded";
+  onlinePaymentStatus?: string;
+  codPaymentStatus?: string;
+  paymentScreenshot?: string;
   paymentTransactionId?: string;
   orderStatus: (typeof ORDER_STATUSES)[number];
   invoiceUrl?: string;

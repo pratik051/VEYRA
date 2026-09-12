@@ -10,6 +10,8 @@ import { PaymentProvider } from "@/lib/payments/types";
 import { generateId } from "@/lib/utils";
 import { products as catalogProducts } from "@/lib/data";
 
+import { calculateOrderBreakdown } from "@/app/api/checkout/calculate/route";
+
 type CheckoutPayload = {
   fullName?: string;
   phone?: string;
@@ -23,7 +25,8 @@ type CheckoutPayload = {
   postalCode?: string;
   country?: string;
   saveAsDefault?: boolean;
-  paymentMethod?: PaymentProvider;
+  paymentMethod?: PaymentProvider | "COD";
+  referralCode?: string;
   items?: Array<{ productId: string; quantity: number; unitPrice: number }>;
 };
 
@@ -34,7 +37,7 @@ export async function POST(req: Request) {
   if (!body.fullName || !body.phone || !body.fullAddress || !body.items?.length || !body.paymentMethod) {
     return NextResponse.json({ error: "Missing required checkout information." }, { status: 400 });
   }
-  const allowedMethods = new Set(["Khalti", "eSewa", "MyPay", "Bank Transfer", "Cash on Delivery"]);
+  const allowedMethods = new Set(["Khalti", "eSewa", "MyPay", "Bank Transfer", "Cash on Delivery", "COD"]);
   if (!allowedMethods.has(body.paymentMethod)) return NextResponse.json({ error: "Invalid payment method." }, { status: 400 });
   const deliveryFee = 200;
   await connectToDatabase();
