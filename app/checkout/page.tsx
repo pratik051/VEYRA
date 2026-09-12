@@ -425,6 +425,56 @@ export default function CheckoutPage() {
     );
   }
 
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!items.length) return;
+    let isSubscribed = true;
+
+    async function fetchPaymentQr() {
+      setQrLoading(true);
+      setQrError(false);
+      try {
+        const delFee = subtotal >= 3000 ? 0 : 200;
+        const res = await fetch("/api/payments/create-qr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: selectedPayment,
+            paymentMode: paymentMode,
+            subtotal,
+            deliveryFee: delFee,
+            referralCode: appliedReferral
+          })
+        });
+
+        const data = await res.json();
+        if (isSubscribed) {
+          if (res.ok && data.success && data.qrCode) {
+            setQrCodeUrl(data.qrCode);
+          } else {
+            setQrError(true);
+            setQrCodeUrl(null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch payment QR:", err);
+        if (isSubscribed) {
+          setQrError(true);
+          setQrCodeUrl(null);
+        }
+      } finally {
+        if (isSubscribed) setQrLoading(false);
+      }
+    }
+
+    void fetchPaymentQr();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [items.length, subtotal, selectedPayment, paymentMode, appliedReferral, qrKey]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-extrabold text-neutral-900">Checkout</h1>
@@ -764,21 +814,27 @@ export default function CheckoutPage() {
                 </span>
               </div>
 
-              {!qrError ? (
+              {qrLoading ? (
+                <div className="relative mx-auto h-64 w-64 rounded-2xl bg-white p-6 border border-neutral-200 flex flex-col items-center justify-center space-y-3">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-black" />
+                  <p className="text-xs font-semibold text-neutral-600">Generating secure payment QR...</p>
+                </div>
+              ) : !qrError && qrCodeUrl ? (
                 <div className="relative mx-auto h-64 w-64 rounded-2xl bg-white p-2 border border-neutral-200 flex items-center justify-center">
                   <Image
                     key={qrKey}
-                    src={`/payment-qr/${selectedPayment === "Khalti" ? "khalti" : selectedPayment === "eSewa" ? "esewa" : "mypay"}-qr.png`}
+                    src={qrCodeUrl}
                     alt={`${selectedPayment} Payment QR`}
                     fill
                     className="rounded-xl object-contain p-1"
                     onError={() => setQrError(true)}
+                    unoptimized
                   />
                 </div>
               ) : (
                 <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center space-y-3 my-2">
                   <p className="text-xs font-bold text-red-800">Unable to load payment QR.</p>
-                  <p className="text-[11px] text-red-600">Please try again or use the available online payment option.</p>
+                  <p className="text-[11px] text-red-600">Please try again or select another payment gateway.</p>
                   <button
                     type="button"
                     onClick={() => {
