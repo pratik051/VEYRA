@@ -271,6 +271,14 @@
   animation: glowPulse 3s ease-in-out infinite;
 }
 
+.animate-orb-float {
+  animation: orbFloat 14s ease-in-out infinite;
+}
+
+.animate-orb-float-reverse {
+  animation: orbFloat 18s ease-in-out infinite reverse;
+}
+
 /* Staggered entrance helpers */
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.10s; }
