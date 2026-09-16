@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import UserModel from "../models/user-model.js";
 import AuthSessionModel from "../models/auth-session-model.js";
 import PasswordResetTokenModel from "../models/password-reset-token-model.js";
-import { hashPassword } from "../utils/password.js";
+import { hashPassword, verifyPassword } from "../utils/password.js";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
@@ -12,7 +12,11 @@ export async function seedAdmin() {
   try {
     const passwordHash = await hashPassword(adminPassword);
     const existingAdmin = await UserModel.findOne({
-      $or: [{ email: adminEmail }, { role: "admin" }]
+      $or: [
+        { email: adminEmail },
+        { email: "admin@sajilomarts.tech" },
+        { role: "admin" }
+      ]
     });
 
     if (!existingAdmin) {
@@ -25,7 +29,6 @@ export async function seedAdmin() {
       });
       console.log("[Admin Seeded successfully]:", adminEmail);
     } else {
-      // Always update admin to ensure email, role, and valid password hash are synced
       await UserModel.updateOne(
         { _id: existingAdmin._id },
         {
@@ -45,12 +48,20 @@ export async function seedAdmin() {
 
 export async function getUserByEmail(email) {
   await seedAdmin();
-  const normalizedEmail = email.toLowerCase().trim();
-  // Support both full email and 'admin' username
-  if (normalizedEmail === "admin") {
-    const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
-    return await UserModel.findOne({ email: adminEmail }).lean();
+  const normalizedEmail = (email || "").toLowerCase().trim();
+  
+  if (normalizedEmail === "admin" || normalizedEmail.startsWith("admin@")) {
+    const adminUser = await UserModel.findOne({
+      $or: [
+        { role: "admin" },
+        { email: normalizedEmail },
+        { email: "admin@sajilomarts.com" },
+        { email: "admin@sajilomarts.tech" }
+      ]
+    }).lean();
+    if (adminUser) return adminUser;
   }
+  
   return await UserModel.findOne({ email: normalizedEmail }).lean();
 }
 
@@ -120,7 +131,7 @@ export async function deleteSessionByToken(token) {
 }
 
 export async function getSessionUserByToken(token) {
-  if (!token) return null;
+  if (!token || token === "null" || token === "undefined") return null;
   const session = await AuthSessionModel.findOne({ token }).lean();
   if (session && new Date(session.expiresAt).getTime() > Date.now()) {
     const user = await UserModel.findById(session.userId).lean();
