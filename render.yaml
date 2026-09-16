@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: veyra-backend
+    name: sajilomarts-backend
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
@@ -10,6 +10,8 @@ services:
         value: production
       - key: MONGODB_URI
         sync: false
+      - key: MONGO_URI
+        sync: false
       - key: FRONTEND_URL
         sync: false
       - key: ADMIN_EMAIL
@@ -18,6 +20,26 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: NEXT_PUBLIC_GEMINI_ENABLED
+        value: "true"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        value: "veyra-np"
+      - key: FIREBASE_CLIENT_EMAIL
+        value: "firebase-adminsdk-fbsvc@veyra-np.iam.gserviceaccount.com"
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: INDIA_SOURCE_PIN
+        value: "854341"
+      - key: INDIA_NPR_CONVERSION_RATE
+        value: "1.65"
+      - key: SERVICE_CHARGE_PERCENT
+        value: "20"
+      - key: DELIVERY_CHARGE_NPR
+        value: "200"
       - key: ESEWA_MERCHANT_CODE
         sync: false
       - key: ESEWA_SECRET_KEY
