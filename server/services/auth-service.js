@@ -10,9 +10,12 @@ export async function seedAdmin() {
   const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
   try {
-    const existingAdmin = await UserModel.findOne({ email: adminEmail }).lean();
+    const passwordHash = await hashPassword(adminPassword);
+    const existingAdmin = await UserModel.findOne({
+      $or: [{ email: adminEmail }, { role: "admin" }]
+    });
+
     if (!existingAdmin) {
-      const passwordHash = await hashPassword(adminPassword);
       await UserModel.create({
         fullName: "SAJILOMARTS Admin",
         email: adminEmail,
@@ -20,16 +23,34 @@ export async function seedAdmin() {
         passwordHash,
         role: "admin"
       });
-      console.log("[Admin Seeded successfully]");
+      console.log("[Admin Seeded successfully]:", adminEmail);
+    } else {
+      // Always update admin to ensure email, role, and valid password hash are synced
+      await UserModel.updateOne(
+        { _id: existingAdmin._id },
+        {
+          $set: {
+            email: adminEmail,
+            role: "admin",
+            passwordHash
+          }
+        }
+      );
+      console.log("[Admin Synchronized successfully]:", adminEmail);
     }
   } catch (error) {
-    console.warn("Failed to seed admin:", error.message);
+    console.warn("Failed to seed/sync admin:", error.message);
   }
 }
 
 export async function getUserByEmail(email) {
   await seedAdmin();
   const normalizedEmail = email.toLowerCase().trim();
+  // Support both full email and 'admin' username
+  if (normalizedEmail === "admin") {
+    const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
+    return await UserModel.findOne({ email: adminEmail }).lean();
+  }
   return await UserModel.findOne({ email: normalizedEmail }).lean();
 }
 
