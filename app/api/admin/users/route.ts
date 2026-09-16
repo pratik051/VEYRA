@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       filter.role = role;
     }
 
-    const users = await UserModel.find(filter)
+    const users: any[] = await UserModel.find(filter)
       .select("-passwordHash")
       .sort({ createdAt: -1 })
       .lean();

@@ -48,7 +48,7 @@ export async function PATCH(
 
     updateData.updatedAt = new Date();
 
-    const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData, { new: true })
+    const updatedUser: any = await UserModel.findByIdAndUpdate(userId, updateData, { new: true })
       .select("-passwordHash")
       .lean();
 
