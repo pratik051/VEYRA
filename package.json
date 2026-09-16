@@ -1,43 +1,11 @@
 {
   "name": "sajilomarts",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p ${PORT:-3000}",
-    "lint": "next lint",
-    "migrate:user-model": "node scripts/migrations/user-model-migration.js",
-    "set-admin": "node scripts/set-admin.js",
-    "test:node": "node tests/run-quote-utils-test.js",
-    "test": "vitest"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "@google/genai": "^2.22.0",
-    "@types/node": "22.7.4",
-    "@types/nodemailer": "^8.0.1",
-    "@types/qrcode": "^1.5.6",
-    "@types/react": "18.3.11",
-    "@types/react-dom": "18.3.1",
-    "autoprefixer": "10.4.20",
-    "firebase": "^10.13.1",
-    "firebase-admin": "12.4.0",
-    "mongoose": "8.7.1",
-    "next": "14.2.5",
-    "nodemailer": "^10.0.8",
-    "postcss": "8.4.47",
-    "qrcode": "^1.5.4",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "tailwindcss": "3.4.13",
-    "typescript": "5.6.2"
-  },
-  "devDependencies": {
-    "eslint": "8.57.1",
-    "eslint-config-next": "14.2.5",
-    "vitest": "1.2.1"
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build",
+    "start:server": "cd server && npm start"
   }
 }
