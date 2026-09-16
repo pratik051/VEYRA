@@ -307,7 +307,7 @@ function LoginContent() {
               <p className="text-xs text-slate-500 mt-1">
                 {isForgot
                   ? "Enter your email to receive a 6-digit verification code."
-                  : "Sign in to access your orders, track shipments &amp; manage account."}
+                  : "Sign in to access your orders, track shipments & manage account."}
               </p>
             </div>
 
