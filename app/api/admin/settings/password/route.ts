@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     await connectToDatabase();
-    const dbUser = await UserModel.findById(adminUser.id);
+    const dbUser = await UserModel.findById(adminUser._id);
     if (!dbUser) {
       return NextResponse.json({ error: "Admin user account not found." }, { status: 404 });
     }
