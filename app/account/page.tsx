@@ -643,33 +643,13 @@ function AccountContent() {
   }
 
   if (!user) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login?redirect=/account";
+    }
     return (
-      <div className="min-h-[650px] flex items-center justify-center p-4 sm:p-8 bg-[#F5F7FA]">
-        <div className="max-w-md w-full rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl text-center space-y-6">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 text-3xl">
-            🔒
-          </div>
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Customer Portal Access</h2>
-            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-              Sign in to manage your India sourcing orders, access live delivery tracking, view billing invoices, and raise support tickets.
-            </p>
-          </div>
-          <div className="space-y-3 pt-2">
-            <Link
-              href="/login?redirect=/account"
-              className="w-full flex items-center justify-center py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition"
-            >
-              Sign In to Your Account ➔
-            </Link>
-            <Link
-              href="/signup?redirect=/account"
-              className="w-full flex items-center justify-center py-3.5 px-4 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-900 font-bold text-xs transition"
-            >
-              Create Account
-            </Link>
-          </div>
-        </div>
+      <div className="min-h-[600px] flex flex-col items-center justify-center gap-3 bg-slate-50">
+        <div className="h-8 w-8 animate-spin rounded-full border-3 border-slate-900 border-t-transparent" />
+        <span className="text-xs font-semibold text-slate-600">Redirecting to Login...</span>
       </div>
     );
   }
