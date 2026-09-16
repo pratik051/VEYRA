@@ -260,7 +260,6 @@ function LoginContent() {
   };
 
   return (
-  return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 font-sans">
       <div className="w-full max-w-4xl bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
         {/* Left Side: Brand & Benefits */}
