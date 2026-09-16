@@ -202,7 +202,7 @@ type AdminUserItem = {
 
 const adminTabs = [
   "Overview",
-  "👑 Master Control Panel",
+  "Control Panel",
   "India Orders & Invoices",
   "Product Requests",
   "User Problems",
@@ -1254,17 +1254,17 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 3.1.5 Master Control Panel Tab */}
-      {activeTab === "👑 Master Control Panel" && (
+      {/* 3.1.5 Control Panel Tab */}
+      {activeTab === "Control Panel" && (
         <div className="space-y-6">
           {/* Admin Password Management & Quick Action Banner */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Admin Security Card */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
               <div className="border-b border-slate-100 pb-3">
-                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Admin Security</span>
-                <h3 className="text-base font-black text-slate-900">Set Admin Account Password</h3>
-                <p className="text-xs text-slate-400">Update the primary admin login credentials for SajiloMarts portal</p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Security</span>
+                <h3 className="text-base font-bold text-slate-900">Admin Password</h3>
+                <p className="text-xs text-slate-500">Update administrative account password</p>
               </div>
 
               <form onSubmit={handleSaveAdminPassword} className="space-y-4 text-xs">
