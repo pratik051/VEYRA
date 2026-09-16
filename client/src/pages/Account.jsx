@@ -13,12 +13,16 @@ export function Account() {
   useEffect(() => {
     if (!user) return;
     const token = localStorage.getItem('sajilomarts_session');
-    fetch(`${API_URL}/api/india-order/my-orders`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const headers = { 'Content-Type': 'application/json' };
+    if (token && token !== 'undefined' && token !== 'null') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch(`${API_URL}/api/user/orders`, { headers, credentials: 'include' })
+      .then((res) => {
+        if (!res.ok) return fetch(`${API_URL}/api/india-order/my-orders`, { headers, credentials: 'include' });
+        return res;
+      })
       .then((res) => res.json())
       .then((data) => {
         setOrders(data.orders || []);

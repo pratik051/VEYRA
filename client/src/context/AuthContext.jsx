@@ -12,9 +12,14 @@ export function AuthProvider({ children }) {
     try {
       const token = localStorage.getItem('sajilomarts_session');
       const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (token && token !== 'undefined' && token !== 'null') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-      const res = await fetch(`${API_URL}/api/auth/me`, { headers, credentials: 'omit' });
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers,
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -37,6 +42,7 @@ export function AuthProvider({ children }) {
     const res = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
@@ -52,6 +58,7 @@ export function AuthProvider({ children }) {
     const res = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ fullName, email, phone, password })
     });
     const data = await res.json();
@@ -71,7 +78,8 @@ export function AuthProvider({ children }) {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: 'include'
       });
     } catch (e) {
       console.error(e);

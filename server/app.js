@@ -10,6 +10,7 @@ import paymentRoutes from "./routes/payment-routes.js";
 import supportRoutes from "./routes/support-routes.js";
 import requestRoutes from "./routes/request-routes.js";
 import aiRoutes from "./routes/ai-routes.js";
+import userRoutes from "./routes/user-routes.js";
 import { authenticateUser } from "./middleware/auth.js";
 
 dotenv.config();
@@ -26,15 +27,29 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
+        process.env.NODE_ENV !== "production"
+      ) {
         callback(null, true);
       } else {
-        callback(null, true); // Allow all during dev/transition
+        callback(null, true); // Allow production origins seamlessly
       }
     },
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Session-Token", "Accept"]
   })
 );
+
+// Security and Cross-Origin Opener Policy middleware
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -47,6 +62,7 @@ app.get("/api/health", (req, res) => {
 
 // API Routers
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/india-order", indiaOrderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
