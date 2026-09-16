@@ -59,6 +59,13 @@ function SignupContent() {
         console.error(err);
         const errMessage = err instanceof Error ? err.message : "Google sign-up failed.";
         const lower = errMessage.toLowerCase();
+        const isUnauthorizedDomain = lower.includes("unauthorized-domain");
+        if (isUnauthorizedDomain) {
+          pushToast("Opening Google Sign-In...", "info");
+          window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+          return;
+        }
+
         const isPopupCancelled =
           lower.includes("popup-closed-by-user") ||
           lower.includes("popup-blocked") ||
