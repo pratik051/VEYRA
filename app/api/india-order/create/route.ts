@@ -19,10 +19,10 @@ export const dynamic = "force-dynamic";
 // In-memory fallback for local development resilience
 declare global {
   // eslint-disable-next-line no-var
-  var __linkova_mem_india_orders: Map<string, any> | undefined;
+  var __sajilomarts_mem_india_orders: Map<string, any> | undefined;
 }
-const memOrders = global.__linkova_mem_india_orders || new Map<string, any>();
-if (!global.__linkova_mem_india_orders) global.__linkova_mem_india_orders = memOrders;
+const memOrders = global.__sajilomarts_mem_india_orders || new Map<string, any>();
+if (!global.__sajilomarts_mem_india_orders) global.__sajilomarts_mem_india_orders = memOrders;
 
 export async function POST(req: Request) {
   try {

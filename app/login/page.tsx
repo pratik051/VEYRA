@@ -11,7 +11,7 @@ import {
   isFirebaseEnabled
 } from "@/lib/firebase/client";
 import { useToast } from "@/components/providers/toast-provider";
-import { LinkovaBrandLogo } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsBrandLogo } from "@/components/ui/sajilomarts-brand-logo";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -84,18 +84,17 @@ function LoginContent() {
           lower.includes("auth/popup");
 
         if (isPopupCancelled) {
-          pushToast("Opening Google Sign-In...", "info");
-          window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+          pushToast("Google Sign-In popup was closed or blocked. Please enable popups or sign in with your email.", "info");
           return;
         }
 
         setError(errMessage);
-        pushToast("Google sign-in failed. Redirecting...", "error");
-        window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+        pushToast(errMessage, "error");
       } finally {
         setIsSubmitting(false);
       }
     } else {
+      pushToast("Opening Google Sign-In...", "info");
       window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
     }
   };
@@ -277,7 +276,7 @@ function LoginContent() {
           {/* Top Brand Hero */}
           <div className="relative z-10 flex flex-col items-center text-center space-y-3">
             <Link href="/" className="hover:scale-105 transition-transform duration-300 inline-block">
-              <LinkovaBrandLogo size="lg" theme="dark" showTagline={true} showFlags={true} />
+              <SajiloMartsBrandLogo size="lg" theme="dark" showTagline={true} showFlags={true} />
             </Link>
           </div>
 
@@ -499,7 +498,7 @@ function LoginContent() {
                         <span>Signing In...</span>
                       </>
                     ) : (
-                      <span>Sign In to LINKOVA ➔</span>
+                      <span>Sign In to SAJILOMARTS ➔</span>
                     )}
                   </button>
 

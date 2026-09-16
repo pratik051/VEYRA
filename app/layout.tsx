@@ -30,14 +30,14 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://linkova.com.np"),
+  metadataBase: new URL("https://sajilomarts.com.np"),
   title: {
-    default: "LINKOVA — Your Style. Your Essentials. | Nepal",
-    template: "%s | LINKOVA"
+    default: "SAJILOMARTS — Your Style. Your Essentials. | Nepal",
+    template: "%s | SAJILOMARTS"
   },
   description: "Nepal's modern lifestyle shopping & India-to-Nepal product ordering platform. Discover fashion, tech accessories, wearables & essentials.",
   keywords: [
-    "LINKOVA",
+    "SAJILOMARTS",
     "Nepal online shopping",
     "Buy from Amazon India in Nepal",
     "Order Flipkart products in Nepal",
@@ -47,11 +47,11 @@ export const metadata: Metadata = {
     "India to Nepal delivery"
   ],
   openGraph: {
-    title: "LINKOVA — Your Style. Your Essentials.",
+    title: "SAJILOMARTS — Your Style. Your Essentials.",
     description: "Discover fashion, tech accessories & essentials in Nepal or request direct products from Indian marketplaces.",
     type: "website",
     locale: "en_NP",
-    siteName: "LINKOVA"
+    siteName: "SAJILOMARTS"
   }
 };
 

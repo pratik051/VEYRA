@@ -146,7 +146,7 @@ export async function POST(req: Request) {
   const paymentInit = initiatePayment(paymentMethodChoice, {
     orderId,
     amount: calc.onlineAmount,
-    productName: "LINKOVA Order",
+    productName: "SAJILOMARTS Order",
     customerName: body.fullName,
     customerPhone: body.phone
   });

@@ -10,7 +10,7 @@ import { formatNpr } from "@/lib/utils";
 import { useToast } from "@/components/providers/toast-provider";
 import { ProductRequestItem } from "@/lib/types";
 import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
-import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsHeaderBrand } from "@/components/ui/sajilomarts-brand-logo";
 import { SupportChat } from "@/components/support/support-chat";
 
 export type CustomerOrder = {
@@ -693,7 +693,7 @@ function AccountContent() {
           {/* Brand Header */}
           <div className="flex items-center justify-between">
             <Link href="/" className="group flex items-center gap-2">
-              <LinkovaHeaderBrand theme="light" />
+              <SajiloMartsHeaderBrand theme="light" />
             </Link>
             <button
               type="button"

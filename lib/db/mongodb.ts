@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 
 declare global {
   // eslint-disable-next-line no-var
-  var __linkova_mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } | undefined;
+  var __sajilomarts_mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } | undefined;
 }
 
 const MONGODB_URI = process.env.MONGODB_URI ?? process.env.MONGO_URI ?? "";
 
-const cached = global.__linkova_mongoose || { conn: null, promise: null };
-if (!global.__linkova_mongoose) {
-  global.__linkova_mongoose = cached;
+const cached = global.__sajilomarts_mongoose || { conn: null, promise: null };
+if (!global.__sajilomarts_mongoose) {
+  global.__sajilomarts_mongoose = cached;
 }
 
 export async function connectToDatabase() {

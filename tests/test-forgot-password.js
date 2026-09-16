@@ -2,7 +2,7 @@
 const assert = require("assert");
 
 console.log("=======================================================");
-console.log("🧪 LINKOVA FORGOT PASSWORD & OTP TEST SUITE");
+console.log("🧪 SAJILOMARTS FORGOT PASSWORD & OTP TEST SUITE");
 console.log("=======================================================");
 
 // Test 1: OTP Format Validation

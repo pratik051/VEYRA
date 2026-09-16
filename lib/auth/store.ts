@@ -29,20 +29,20 @@ export type AuthUser = {
 // In-memory fallback stores for development resilience
 declare global {
   // eslint-disable-next-line no-var
-  var __linkova_mem_users: Map<string, AuthUser> | undefined;
+  var __sajilomarts_mem_users: Map<string, AuthUser> | undefined;
   // eslint-disable-next-line no-var
-  var __linkova_mem_sessions: Map<string, { token: string; userId: string; expiresAt: Date }> | undefined;
+  var __sajilomarts_mem_sessions: Map<string, { token: string; userId: string; expiresAt: Date }> | undefined;
   // eslint-disable-next-line no-var
-  var __linkova_mem_tokens: Map<string, { token: string; userId: string; expiresAt: Date }> | undefined;
+  var __sajilomarts_mem_tokens: Map<string, { token: string; userId: string; expiresAt: Date }> | undefined;
 }
 
-const memUsers = global.__linkova_mem_users || new Map<string, AuthUser>();
-const memSessions = global.__linkova_mem_sessions || new Map<string, { token: string; userId: string; expiresAt: Date }>();
-const memTokens = global.__linkova_mem_tokens || new Map<string, { token: string; userId: string; expiresAt: Date }>();
+const memUsers = global.__sajilomarts_mem_users || new Map<string, AuthUser>();
+const memSessions = global.__sajilomarts_mem_sessions || new Map<string, { token: string; userId: string; expiresAt: Date }>();
+const memTokens = global.__sajilomarts_mem_tokens || new Map<string, { token: string; userId: string; expiresAt: Date }>();
 
-if (!global.__linkova_mem_users) global.__linkova_mem_users = memUsers;
-if (!global.__linkova_mem_sessions) global.__linkova_mem_sessions = memSessions;
-if (!global.__linkova_mem_tokens) global.__linkova_mem_tokens = memTokens;
+if (!global.__sajilomarts_mem_users) global.__sajilomarts_mem_users = memUsers;
+if (!global.__sajilomarts_mem_sessions) global.__sajilomarts_mem_sessions = memSessions;
+if (!global.__sajilomarts_mem_tokens) global.__sajilomarts_mem_tokens = memTokens;
 
 async function tryDb(): Promise<boolean> {
   try {
@@ -55,7 +55,7 @@ async function tryDb(): Promise<boolean> {
 
 async function seedAdmin() {
   const dbOk = await tryDb();
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@linkova.com").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
 
   if (dbOk) {
@@ -64,7 +64,7 @@ async function seedAdmin() {
       if (!existingAdmin) {
         const passwordHash = await hashPassword(adminPassword);
         await UserModel.create({
-          fullName: "LINKOVA Admin",
+          fullName: "SAJILOMARTS Admin",
           email: adminEmail,
           phone: "9800000000",
           passwordHash,
@@ -83,7 +83,7 @@ async function seedAdmin() {
     const adminId = "mem-admin-" + randomUUID().slice(0, 8);
     memUsers.set(adminId, {
       _id: adminId,
-      fullName: "LINKOVA Admin",
+      fullName: "SAJILOMARTS Admin",
       email: adminEmail,
       phone: "9800000000",
       role: "admin",
@@ -261,7 +261,7 @@ export async function findOrCreateAppleUser(input: {
   firebaseUid?: string;
 }): Promise<AuthUser | null> {
   await seedAdmin();
-  const normalizedEmail = (input.email || `apple_${input.appleId.slice(0, 10)}@linkova.internal`).trim().toLowerCase();
+  const normalizedEmail = (input.email || `apple_${input.appleId.slice(0, 10)}@sajilomarts.internal`).trim().toLowerCase();
   const displayName = input.fullName || "Apple User";
   const fallbackPhone = input.phone || "+977-9800000000";
   const dbOk = await tryDb();
@@ -344,7 +344,7 @@ export async function findOrCreatePhoneUser(input: {
 }): Promise<AuthUser | null> {
   await seedAdmin();
   const cleanPhone = input.phone.trim();
-  const normalizedEmail = (input.email || `phone_${cleanPhone.replace(/[^0-9]/g, "")}@linkova.internal`).trim().toLowerCase();
+  const normalizedEmail = (input.email || `phone_${cleanPhone.replace(/[^0-9]/g, "")}@sajilomarts.internal`).trim().toLowerCase();
   const displayName = input.fullName || `User (${cleanPhone})`;
   const dbOk = await tryDb();
 

@@ -531,7 +531,7 @@ export default function ShopPage() {
         <div className="flex items-center justify-center p-20 text-sm text-neutral-500">
           <span className="inline-flex items-center gap-2 font-bold">
             <span className="h-2 w-2 rounded-full bg-red-600 animate-ping" />
-            Loading LINKOVA India Catalog...
+            Loading SAJILOMARTS India Catalog...
           </span>
         </div>
       }

@@ -6,13 +6,8 @@ import { MARKETPLACE_METAS, getMarketplaceMeta } from "@/lib/marketplace-constan
 import { LinkVerifier } from "@/components/ui/link-verifier";
 import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  return MARKETPLACE_METAS.map((m) => ({
-    platform: m.slug
-  }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PlatformPageProps {
   params: { platform: string };

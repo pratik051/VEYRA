@@ -2,7 +2,7 @@ import { cert, getApp, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
 let adminApp: ReturnType<typeof initializeApp> | null = null;
-const ADMIN_APP_NAME = "linkova-auth";
+const ADMIN_APP_NAME = "sajilomarts-auth";
 
 function buildServiceAccountFromEnv() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
@@ -51,27 +51,36 @@ function buildServiceAccountFromEnv() {
 export function getFirebaseAdminApp() {
   if (adminApp) return adminApp;
 
-  const serviceAccount = buildServiceAccountFromEnv();
-  if (serviceAccount) {
-    adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
-      ? getApp(ADMIN_APP_NAME)
-      : initializeApp({ credential: cert(serviceAccount as any) }, ADMIN_APP_NAME);
-    return adminApp;
-  }
+  try {
+    const serviceAccount = buildServiceAccountFromEnv();
+    if (serviceAccount) {
+      adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
+        ? getApp(ADMIN_APP_NAME)
+        : initializeApp({ credential: cert(serviceAccount as any) }, ADMIN_APP_NAME);
+      return adminApp;
+    }
 
-  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS || projectId) {
-    adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
-      ? getApp(ADMIN_APP_NAME)
-      : initializeApp(undefined, ADMIN_APP_NAME);
-    return adminApp;
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      adminApp = getApps().some((app) => app.name === ADMIN_APP_NAME)
+        ? getApp(ADMIN_APP_NAME)
+        : initializeApp(undefined, ADMIN_APP_NAME);
+      return adminApp;
+    }
+  } catch (err) {
+    console.warn("Firebase Admin initialization warning:", err);
+    adminApp = null;
   }
 
   return null;
 }
 
 export function getFirebaseAdminAuth() {
-  const app = getFirebaseAdminApp();
-  if (!app) return null;
-  return getAuth(app);
+  try {
+    const app = getFirebaseAdminApp();
+    if (!app) return null;
+    return getAuth(app);
+  } catch (err) {
+    console.warn("Failed to get Firebase Admin Auth:", err);
+    return null;
+  }
 }

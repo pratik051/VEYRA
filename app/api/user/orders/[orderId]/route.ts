@@ -112,7 +112,7 @@ export async function GET(
           productName: "Store Order",
           productImage: "",
           productUrl: "",
-          marketplace: "LINKOVA Store",
+          marketplace: "SAJILOMARTS Store",
           quantity: legacyOrder.items?.reduce((acc: number, curr: any) => acc + (curr.quantity || 1), 0) || 1,
           items: legacyOrder.items || [],
           total: legacyOrder.total || 0,

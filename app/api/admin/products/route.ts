@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     slug: slugify(body.name),
     name: body.name,
     category: body.category,
-    brand: body.brand || "LINKOVA",
+    brand: body.brand || "SAJILOMARTS",
     price: body.price,
     originalPrice: body.originalPrice,
     stock: body.stock ?? 0,

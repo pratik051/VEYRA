@@ -11,11 +11,11 @@ async function testGeminiApi() {
     contents: [
       {
         role: "user",
-        parts: [{ text: "Hello! What is LINKOVA Nepal?" }]
+        parts: [{ text: "Hello! What is SAJILOMARTS Nepal?" }]
       }
     ],
     systemInstruction: {
-      parts: [{ text: "You are LINKOVA AI, the customer assistant for LINKOVA Nepal, the premier India-to-Nepal direct marketplace sourcing service." }]
+      parts: [{ text: "You are SAJILOMARTS AI, the customer assistant for SAJILOMARTS Nepal, the premier India-to-Nepal direct marketplace sourcing service." }]
     }
   };
 

@@ -9,7 +9,7 @@ const faqGroups = [
     items: [
       {
         q: "Can I order products from Amazon India?",
-        a: "Yes. Customers in Nepal can send any Amazon India (amazon.in) product URL. LINKOVA will verify availability, calculate cross-border freight and customs charges, and provide an all-inclusive NPR quotation."
+        a: "Yes. Customers in Nepal can send any Amazon India (amazon.in) product URL. SAJILOMARTS will verify availability, calculate cross-border freight and customs charges, and provide an all-inclusive NPR quotation."
       },
       {
         q: "Can I order products from Flipkart?",
@@ -24,7 +24,7 @@ const faqGroups = [
         a: "Yes. You can paste any Meesho product link for review and price estimation."
       },
       {
-        q: "Can I request products that are not listed on LINKOVA?",
+        q: "Can I request products that are not listed on SAJILOMARTS?",
         a: "Absolutely. The primary purpose of our 'Request From India' feature is to help you buy any legal wearable, gadget, or lifestyle product that is not currently listed in our store."
       },
       {
@@ -38,7 +38,7 @@ const faqGroups = [
     items: [
       {
         q: "How long does delivery take in Nepal?",
-        a: "For in-stock LINKOVA catalog products: Kathmandu Valley takes 1-2 business days; other Nepal cities take 2-4 days. For custom India-sourced orders: typical delivery is 5-10 business days depending on cross-border logistics and customs clearance."
+        a: "For in-stock SAJILOMARTS catalog products: Kathmandu Valley takes 1-2 business days; other Nepal cities take 2-4 days. For custom India-sourced orders: typical delivery is 5-10 business days depending on cross-border logistics and customs clearance."
       },
       {
         q: "What payment methods are supported?",
@@ -50,7 +50,7 @@ const faqGroups = [
       },
       {
         q: "Do products have a warranty?",
-        a: "In-stock electronics and tech accessories carry a 6-month LINKOVA verified supplier warranty against manufacturing defects. For third-party marketplace requests, warranty terms follow the original manufacturer/brand policy."
+        a: "In-stock electronics and tech accessories carry a 6-month SAJILOMARTS verified supplier warranty against manufacturing defects. For third-party marketplace requests, warranty terms follow the original manufacturer/brand policy."
       }
     ]
   }
@@ -87,7 +87,7 @@ export default function FaqPage() {
         <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">Help Center</span>
         <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">Frequently Asked Questions</h1>
         <p className="text-xs sm:text-sm text-neutral-500">
-          Everything you need to know about shopping with LINKOVA and ordering items from India.
+          Everything you need to know about shopping with SAJILOMARTS and ordering items from India.
         </p>
       </div>
 
@@ -143,7 +143,7 @@ export default function FaqPage() {
             Contact Customer Support
           </Link>
           <a
-            href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20a%20question"
+            href="https://wa.me/9779767797748?text=Hi%20SAJILOMARTS%2C%20I%20have%20a%20question"
             target="_blank"
             rel="noreferrer"
             className="rounded-xl border border-emerald-500 bg-emerald-50 px-6 py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100"

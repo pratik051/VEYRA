@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const payment = initiatePayment(body.provider, {
     orderId: body.orderId,
     amount: body.amount,
-    productName: body.productName || "LINKOVA Order",
+    productName: body.productName || "SAJILOMARTS Order",
     customerName: body.customerName,
     customerPhone: body.customerPhone
   });

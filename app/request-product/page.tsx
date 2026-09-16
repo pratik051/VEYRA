@@ -1092,7 +1092,7 @@ function RequestProductFlow() {
               Order Confirmation
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500">
-              Thank you for ordering with LINKOVA Nepal. Your payment proof has been submitted for admin verification.
+              Thank you for ordering with SAJILOMARTS Nepal. Your payment proof has been submitted for admin verification.
             </p>
           </div>
 

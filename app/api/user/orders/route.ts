@@ -87,7 +87,7 @@ export async function GET() {
       productName: ord.items?.length > 1 ? `${ord.items[0]?.productId || "Product"} + ${ord.items.length - 1} more` : (ord.items?.[0]?.productId || "Store Product"),
       productImage: "",
       productUrl: "",
-      marketplace: "LINKOVA Store",
+      marketplace: "SAJILOMARTS Store",
       quantity: ord.items?.reduce((acc: number, curr: any) => acc + (curr.quantity || 1), 0) || 1,
       variant: "",
       size: "",

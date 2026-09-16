@@ -57,16 +57,12 @@ export async function GET(request: Request) {
     process.env.GOOGLE_CLIENT_SECRET ||
     process.env.FIREBASE_CLIENT_SECRET;
 
-  if (!clientId || !clientSecret) {
-    return NextResponse.json(
-      {
-        error: "Google OAuth credentials (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET) are not fully configured on the server."
-      },
-      { status: 500 }
-    );
-  }
-
   const baseUrl = getBaseUrl(request);
+
+  if (!clientId || !clientSecret) {
+    const msg = "Google OAuth credentials (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET) are not configured in Vercel Environment Variables.";
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(msg)}`, baseUrl));
+  }
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   try {

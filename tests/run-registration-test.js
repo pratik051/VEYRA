@@ -1,11 +1,11 @@
 /**
- * LINKOVA - Registration & Authentication Automated Regression Test
+ * SAJILOMARTS - Registration & Authentication Automated Regression Test
  */
 
 const assert = require("assert");
 
 console.log("\n=======================================================");
-console.log("🧪 LINKOVA MANUAL REGISTRATION & AUTH REGRESSION TEST SUITE");
+console.log("🧪 SAJILOMARTS MANUAL REGISTRATION & AUTH REGRESSION TEST SUITE");
 console.log("=======================================================\n");
 
 let passed = 0;

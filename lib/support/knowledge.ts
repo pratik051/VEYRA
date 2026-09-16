@@ -13,7 +13,7 @@ const topics: SupportTopic[] = [
   {
     keywords: ["delivery", "deliver", "shipping", "arrive", "how long"],
     answer:
-      "In-stock LINKOVA products usually arrive in 1–2 business days in Kathmandu Valley and 2–4 days elsewhere in Nepal. Custom India-sourced orders typically take 5–10 business days, depending on logistics and customs.",
+      "In-stock SAJILOMARTS products usually arrive in 1–2 business days in Kathmandu Valley and 2–4 days elsewhere in Nepal. Custom India-sourced orders typically take 5–10 business days, depending on logistics and customs.",
     suggestions: ["What payment methods do you accept?", "Can I cancel my order?"]
   },
   {
@@ -43,7 +43,7 @@ const topics: SupportTopic[] = [
   {
     keywords: ["warranty", "return", "refund", "defect"],
     answer:
-      "In-stock electronics and tech accessories include a 6-month LINKOVA supplier warranty for manufacturing defects. Marketplace-request warranty terms follow the original brand policy. For a specific return or refund, please contact support.",
+      "In-stock electronics and tech accessories include a 6-month SAJILOMARTS supplier warranty for manufacturing defects. Marketplace-request warranty terms follow the original brand policy. For a specific return or refund, please contact support.",
     suggestions: ["Contact customer support", "What payment methods do you accept?"]
   },
   {

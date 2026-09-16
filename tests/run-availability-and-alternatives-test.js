@@ -1,5 +1,5 @@
 /**
- * LINKOVA - Automated Regression Test Suite for Marketplace Product Verification,
+ * SAJILOMARTS - Automated Regression Test Suite for Marketplace Product Verification,
  * URL Normalization, Availability Distinction, Private Transit Security & Sourcing Flow.
  */
 
@@ -7,7 +7,7 @@ const assert = require("assert");
 
 async function runTests() {
   console.log("\n=======================================================");
-  console.log("🧪 LINKOVA MARKETPLACE VERIFICATION REGRESSION TEST SUITE");
+  console.log("🧪 SAJILOMARTS MARKETPLACE VERIFICATION REGRESSION TEST SUITE");
   console.log("=======================================================\n");
 
   let passed = 0;

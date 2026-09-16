@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import { LinkovaBrandLogo } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsBrandLogo } from "@/components/ui/sajilomarts-brand-logo";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
         {/* Brand Header */}
         <div className="text-center mb-8 flex flex-col items-center">
           <Link href="/" className="inline-block transition hover:scale-105">
-            <LinkovaBrandLogo size="md" />
+            <SajiloMartsBrandLogo size="md" />
           </Link>
           <div className="flex items-center justify-center gap-2 pt-3">
             <span className="px-3 py-1 rounded-full bg-[#00A3FF]/10 border border-[#00A3FF]/30 text-[10px] font-bold text-[#00E5FF] uppercase tracking-widest">
@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
           <div>
             <h1 className="text-xl font-black text-white tracking-tight">Staff Authentication</h1>
             <p className="text-xs text-slate-400 mt-1">
-              Sign in with your administrative credentials to access the LINKOVA management console.
+              Sign in with your administrative credentials to access the SAJILOMARTS management console.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@linkova.com"
+                  placeholder="admin@sajilomarts.com"
                   className="w-full rounded-2xl border border-slate-800 bg-slate-950/60 pl-10 pr-4 py-3 text-xs font-semibold text-white placeholder:text-slate-500 focus:border-amber-500 focus:outline-none transition shadow-inner"
                 />
               </div>
@@ -143,14 +143,14 @@ export default function AdminLoginPage() {
               href="/"
               className="text-xs font-bold text-slate-400 hover:text-white transition inline-flex items-center gap-1"
             >
-              ← Return to LINKOVA Storefront
+              ← Return to SAJILOMARTS Storefront
             </Link>
           </div>
         </div>
 
         {/* Footer info */}
         <p className="text-center text-[11px] text-slate-600 mt-6">
-          Protected by LINKOVA Enterprise Auth &bull; 256-Bit SSL Encryption
+          Protected by SAJILOMARTS Enterprise Auth &bull; 256-Bit SSL Encryption
         </p>
       </div>
     </div>

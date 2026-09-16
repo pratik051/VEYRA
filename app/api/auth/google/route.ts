@@ -25,12 +25,9 @@ export async function GET(request: Request) {
     process.env.FIREBASE_CLIENT_ID;
 
   if (!clientId) {
-    return NextResponse.json(
-      {
-        error: "Google sign-in is not configured yet. Please set GOOGLE_CLIENT_ID in your environment variables."
-      },
-      { status: 500 }
-    );
+    const baseUrl = getBaseUrl(request);
+    const msg = "Google Sign-In requires GOOGLE_CLIENT_ID in Vercel Environment Variables. Please configure it in your Vercel project settings or sign in with email.";
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(msg)}`, baseUrl));
   }
 
   const { searchParams } = new URL(request.url);

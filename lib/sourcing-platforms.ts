@@ -1,5 +1,5 @@
 /**
- * LINKOVA Sourcing Platform Registry — SERVER ONLY
+ * SAJILOMARTS Sourcing Platform Registry — SERVER ONLY
  *
  * This file must NEVER be imported by any client component.
  * The INDIA_SOURCE_PIN environment variable is accessed only within

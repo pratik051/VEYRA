@@ -1,4 +1,4 @@
-# LINKOVA — India-to-Nepal Direct Marketplace Sourcing & Ordering Platform
+# SAJILOMARTS — India-to-Nepal Direct Marketplace Sourcing & Ordering Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -6,7 +6,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-Auth-orange?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 
-**LINKOVA** (`linkova.com.np`) is an enterprise full-stack Next.js web application built for cross-border shopping from India to Nepal. LINKOVA eliminates international payment barriers, shipping restrictions, and complex customs clearance by allowing customers in Nepal to browse, order, and track products directly from top Indian e-commerce marketplaces with transparent, all-inclusive pricing in Nepali Rupees (NPR) and reliable doorstep delivery across all 7 provinces of Nepal.
+**SAJILOMARTS** (`sajilomarts.com.np`) is an enterprise full-stack Next.js web application built for cross-border shopping from India to Nepal. SAJILOMARTS eliminates international payment barriers, shipping restrictions, and complex customs clearance by allowing customers in Nepal to browse, order, and track products directly from top Indian e-commerce marketplaces with transparent, all-inclusive pricing in Nepali Rupees (NPR) and reliable doorstep delivery across all 7 provinces of Nepal.
 
 ---
 
@@ -41,7 +41,7 @@
 
 ## 🔒 Architecture & Role Separation
 
-LINKOVA enforces strict architectural and server-side separation between **Admin** and **User**:
+SAJILOMARTS enforces strict architectural and server-side separation between **Admin** and **User**:
 
 1. **Strict Admin Dashboard (`/admin`):**
    - Only authenticated users with `role: "admin"` can access `/admin` or any `/api/admin/*` endpoint.
@@ -57,7 +57,7 @@ LINKOVA enforces strict architectural and server-side separation between **Admin
 
 ## 🔍 Product Order Flow & Admin Verification Model
 
-LINKOVA provides a friction-free customer experience where customers can paste any marketplace product link and submit their order request smoothly without being blocked by automated scraper false-negatives:
+SAJILOMARTS provides a friction-free customer experience where customers can paste any marketplace product link and submit their order request smoothly without being blocked by automated scraper false-negatives:
 
 1. **Seamless Customer Flow:**
    ```text
@@ -102,7 +102,7 @@ Users can manage orders and get help with a dedicated ticket workflow in `/accou
 
 ## 🛡️ Admin Management Portal
 
-The LINKOVA Admin Console (`/admin`) provides comprehensive oversight of operations:
+The SAJILOMARTS Admin Console (`/admin`) provides comprehensive oversight of operations:
 
 - **Real-Time DB Metrics:** Live counts for Total Sourcing Volume, India Orders, Product Requests, Store Orders, Pending Payment Reviews, and User Problems.
 - **India Orders & Verification Desk:**
@@ -301,4 +301,4 @@ veyra/
 
 ## 📄 License & Ownership
 
-Copyright © 2026 **LINKOVA Nepal** (`linkova.com.np`). All rights reserved.
+Copyright © 2026 **SAJILOMARTS Nepal** (`sajilomarts.com.np`). All rights reserved.

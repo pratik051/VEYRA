@@ -53,9 +53,9 @@ export default async function HomePage() {
   const organizationLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "LINKOVA",
+    name: "SAJILOMARTS",
     slogan: "Your Style. Your Essentials. India to Nepal Direct.",
-    url: "https://linkova.com.np",
+    url: "https://sajilomarts.com.np",
     description: "Nepal premier Indian marketplace product discovery and doorstep delivery concierge platform.",
     contactPoint: {
       "@type": "ContactPoint",

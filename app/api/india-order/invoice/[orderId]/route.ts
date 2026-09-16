@@ -19,8 +19,8 @@ export async function GET(
     // Memory fallback
   }
 
-  if (!order && global.__linkova_mem_india_orders) {
-    order = global.__linkova_mem_india_orders.get(orderId);
+  if (!order && global.__sajilomarts_mem_india_orders) {
+    order = global.__sajilomarts_mem_india_orders.get(orderId);
   }
 
   if (!order) {
@@ -39,7 +39,7 @@ export async function GET(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice - ${order.invoiceNumber} | LINKOVA Nepal</title>
+  <title>Invoice - ${order.invoiceNumber} | SAJILOMARTS Nepal</title>
   <style>
     * {
       box-sizing: border-box;
@@ -297,15 +297,15 @@ export async function GET(
         <div class="brand">
           <div class="brand-logo">L</div>
           <div>
-            <div class="brand-name">LINKOVA</div>
+            <div class="brand-name">SAJILOMARTS</div>
             <div class="brand-sub">Nepal • India Sourcing Facilitator</div>
           </div>
         </div>
         <div class="company-info">
-          LINKOVA E-Commerce & Concierge Services<br>
+          SAJILOMARTS E-Commerce & Concierge Services<br>
           Kathmandu, Bagmati Province, Nepal<br>
-          Contact: +977-9800000000 | Email: support@linkova.com.np<br>
-          Web: https://linkova.com.np
+          Contact: +977-9800000000 | Email: support@sajilomarts.com.np<br>
+          Web: https://sajilomarts.com.np
         </div>
       </div>
 
@@ -399,8 +399,8 @@ export async function GET(
 
     <!-- Footer Note -->
     <div class="footer-note">
-      Thank you for shopping with LINKOVA Nepal!<br>
-      This is a computer-generated commercial invoice. For tracking and delivery queries, please contact our support team at +977-9767797748 or email support@linkova.com.np.
+      Thank you for shopping with SAJILOMARTS Nepal!<br>
+      This is a computer-generated commercial invoice. For tracking and delivery queries, please contact our support team at +977-9767797748 or email support@sajilomarts.com.np.
     </div>
   </div>
 

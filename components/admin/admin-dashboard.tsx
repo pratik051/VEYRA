@@ -1859,7 +1859,7 @@ export function AdminDashboard() {
                 <span className="text-slate-600">10% Off (Min Rs. 1,500)</span>
               </div>
               <div className="flex justify-between border-b border-slate-100 py-2.5">
-                <span className="font-mono font-black text-slate-900">LINKOVA500</span>
+                <span className="font-mono font-black text-slate-900">SAJILOMARTS500</span>
                 <span className="text-slate-600">Rs. 500 Flat Off (Min Rs. 3,500)</span>
               </div>
               <div className="flex justify-between py-2.5">

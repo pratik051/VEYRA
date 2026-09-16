@@ -4,7 +4,7 @@ const { getAllProviders } = require('../lib/marketplace/index.ts');
 
 async function runTests() {
   console.log('====================================================');
-  console.log('🚀 TESTING LINKOVA INDIA MARKETPLACE DISCOVERY SUITE');
+  console.log('🚀 TESTING SAJILOMARTS INDIA MARKETPLACE DISCOVERY SUITE');
   console.log('====================================================\n');
 
   // Test 1: All 10 Providers Registered

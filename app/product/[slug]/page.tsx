@@ -68,9 +68,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   useEffect(() => {
     if (product) {
       try {
-        const saved = JSON.parse(localStorage.getItem("linkova_recent_views") || "[]") as string[];
+        const saved = JSON.parse(localStorage.getItem("sajilomarts_recent_views") || "[]") as string[];
         const updated = [product.slug, ...saved.filter((s) => s !== product.slug)].slice(0, 6);
-        localStorage.setItem("linkova_recent_views", JSON.stringify(updated));
+        localStorage.setItem("sajilomarts_recent_views", JSON.stringify(updated));
       } catch (e) {
         console.error(e);
       }
@@ -96,7 +96,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       <div className="mx-auto max-w-4xl px-4 py-24 text-center">
         <div className="inline-flex items-center gap-3 text-neutral-600 font-bold">
           <span className="h-3 w-3 rounded-full bg-red-600 animate-ping" />
-          Loading Product Details from LINKOVA...
+          Loading Product Details from SAJILOMARTS...
         </div>
       </div>
     );
@@ -254,7 +254,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               <div className="flex items-baseline justify-between pt-1">
                 <div>
                   <span className="block text-[11px] font-black uppercase tracking-wider text-neutral-500">
-                    Final Landed Nepal Price (LINKOVA)
+                    Final Landed Nepal Price (SAJILOMARTS)
                   </span>
                   <div className="flex items-baseline gap-3 mt-0.5">
                     <span className="text-3xl font-black text-red-600">
@@ -392,7 +392,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                     </div>
                   ))}
                   {(!product.specs || Object.keys(product.specs).length === 0) && (
-                    <p className="text-neutral-500">Standard brand specifications verified by LINKOVA.</p>
+                    <p className="text-neutral-500">Standard brand specifications verified by SAJILOMARTS.</p>
                   )}
                 </div>
               )}

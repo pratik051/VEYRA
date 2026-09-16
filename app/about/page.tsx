@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsHeaderBrand } from "@/components/ui/sajilomarts-brand-logo";
 import { MARKETPLACE_METAS } from "@/lib/marketplace-constants";
 import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
 
 export const metadata = {
-  title: "About Us | LINKOVA — Nepal's Premier Indian Marketplace & Lifestyle Store",
+  title: "About Us | SAJILOMARTS — Nepal's Premier Indian Marketplace & Lifestyle Store",
   description:
-    "LINKOVA connects Nepal to top Indian marketplaces including Amazon India, Flipkart, Myntra, Meesho, Nykaa, and boAt with transparent pricing and doorstep delivery."
+    "SAJILOMARTS connects Nepal to top Indian marketplaces including Amazon India, Flipkart, Myntra, Meesho, Nykaa, and boAt with transparent pricing and doorstep delivery."
 };
 
 export default function AboutPage() {
@@ -21,12 +21,12 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-bold text-amber-300">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>About LINKOVA Nepal</span>
+            <span>About SAJILOMARTS Nepal</span>
           </div>
 
           <div className="space-y-3">
             <div className="inline-block bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-md border border-neutral-200">
-              <LinkovaHeaderBrand theme="light" />
+              <SajiloMartsHeaderBrand theme="light" />
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight pt-2">
               Your Link to India&apos;s Best Marketplaces. <br />
@@ -37,7 +37,7 @@ export default function AboutPage() {
           </div>
 
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-medium">
-            LINKOVA was founded with a singular purpose: to make genuine Indian marketplace goods, electronics, fashion, beauty, and lifestyle essentials completely accessible, affordable, and frictionless for every household across all 7 provinces of Nepal.
+            SAJILOMARTS was founded with a singular purpose: to make genuine Indian marketplace goods, electronics, fashion, beauty, and lifestyle essentials completely accessible, affordable, and frictionless for every household across all 7 provinces of Nepal.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
@@ -62,7 +62,7 @@ export default function AboutPage() {
         <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100 shadow-card aspect-4/3">
           <Image
             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=85"
-            alt="LINKOVA Sourcing & Logistics"
+            alt="SAJILOMARTS Sourcing & Logistics"
             fill
             className="object-cover"
           />
@@ -78,13 +78,13 @@ export default function AboutPage() {
             Our Mission
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 tracking-tight">
-            Why We Built LINKOVA
+            Why We Built SAJILOMARTS
           </h2>
           <p>
             For shoppers across Kathmandu, Pokhara, Biratnagar, Butwal, and remote districts of Nepal, purchasing authentic products from Indian platforms like Amazon India, Flipkart, Myntra, Nykaa, or Meesho used to mean relying on informal couriers, paying unpredictable customs fees, or dealing with fake replicas.
           </p>
           <p>
-            <strong>LINKOVA fixes that.</strong> We combine a live catalog of in-stock verified essentials with an automated <strong>Direct India Sourcing Engine</strong>. Paste any URL from 10+ Indian platforms, see the exact landed NPR price with all customs and freight included, and receive your delivery right at your door.
+            <strong>SAJILOMARTS fixes that.</strong> We combine a live catalog of in-stock verified essentials with an automated <strong>Direct India Sourcing Engine</strong>. Paste any URL from 10+ Indian platforms, see the exact landed NPR price with all customs and freight included, and receive your delivery right at your door.
           </p>
           <div className="pt-2 flex items-center gap-4 text-xs font-bold text-neutral-900">
             <div className="flex items-center gap-1.5">
@@ -181,7 +181,7 @@ export default function AboutPage() {
 
         <div className="flex flex-wrap gap-3 flex-shrink-0">
           <a
-            href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services"
+            href="https://wa.me/9779767797748?text=Hi%20SAJILOMARTS%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services"
             target="_blank"
             rel="noreferrer"
             className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-6 py-3.5 transition shadow-md flex items-center gap-2"

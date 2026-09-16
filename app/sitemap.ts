@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return routes.map((route) => ({
-    url: `https://linkova.com.np${route}`,
+    url: `https://sajilomarts.com.np${route}`,
     lastModified: new Date()
   }));
 }

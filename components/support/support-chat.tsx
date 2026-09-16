@@ -47,7 +47,7 @@ type Message = {
 };
 
 const welcomeMessage =
-  "👋 Namaste! I’m your **LINKOVA Shopping & Sourcing Concierge**.\n\nI can help you explore verified products from Amazon India, Flipkart, Myntra, track your live orders, calculate landed prices in Nepal, and check availability.";
+  "👋 Namaste! I’m your **SAJILOMARTS Shopping & Sourcing Concierge**.\n\nI can help you explore verified products from Amazon India, Flipkart, Myntra, track your live orders, calculate landed prices in Nepal, and check availability.";
 
 const quickActions = [
   { label: "🔥 Trending Now", query: "Show me trending products" },
@@ -183,7 +183,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
   if (embedded) {
     return (
       <section
-        aria-label="LINKOVA Customer Shopping & Order Assistant"
+        aria-label="SAJILOMARTS Customer Shopping & Order Assistant"
         className="flex h-[34rem] w-full flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm"
       >
         {/* Header */}
@@ -194,7 +194,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-neutral-950 animate-pulse" />
             </div>
             <div>
-              <p className="text-xs font-black tracking-wide">LINKOVA AI Support Assistant</p>
+              <p className="text-xs font-black tracking-wide">SAJILOMARTS AI Support Assistant</p>
               <p className="text-[10px] text-neutral-300 font-medium">Customer Shopping & Order Sourcing Support</p>
             </div>
           </div>
@@ -364,7 +364,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
           {loading && (
             <div className="flex items-center gap-2 rounded-2xl rounded-bl-xs border border-neutral-200 bg-white px-4 py-2.5 text-xs text-neutral-500 w-fit">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-              <span>Checking LINKOVA live database…</span>
+              <span>Checking SAJILOMARTS live database…</span>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -380,7 +380,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
             className="flex gap-2"
           >
             <label htmlFor="support-message-embedded" className="sr-only">
-              Ask LINKOVA AI Assistant
+              Ask SAJILOMARTS AI Assistant
             </label>
             <input
               id="support-message-embedded"
@@ -407,7 +407,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
     <div className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 z-50">
       {open && (
         <section
-          aria-label="LINKOVA Customer Shopping & Order Assistant"
+          aria-label="SAJILOMARTS Customer Shopping & Order Assistant"
           className="mb-2 flex h-[min(36rem,calc(100dvh-9.5rem))] w-[min(26rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl transition-all"
         >
           {/* Header */}
@@ -418,7 +418,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-neutral-950 animate-pulse" />
               </div>
               <div>
-                <p className="text-xs font-black tracking-wide">LINKOVA AI Concierge</p>
+                <p className="text-xs font-black tracking-wide">SAJILOMARTS AI Concierge</p>
                 <p className="text-[10px] text-neutral-300 font-medium">Live Database &amp; Order Support</p>
               </div>
             </div>
@@ -600,7 +600,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
             {loading && (
               <div className="flex items-center gap-2 rounded-2xl rounded-bl-xs border border-neutral-200 bg-white px-4 py-2.5 text-xs text-neutral-500 w-fit">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                <span>Checking LINKOVA live database…</span>
+                <span>Checking SAJILOMARTS live database…</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -616,7 +616,7 @@ export function SupportChat({ embedded = false }: { embedded?: boolean }) {
               className="flex gap-2"
             >
               <label htmlFor="support-message" className="sr-only">
-                Ask LINKOVA AI Concierge
+                Ask SAJILOMARTS AI Concierge
               </label>
               <input
                 id="support-message"

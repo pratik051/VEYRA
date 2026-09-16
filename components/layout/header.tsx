@@ -8,7 +8,7 @@ import { SearchModal } from "@/components/ui/search-modal";
 import { usePathname } from "next/navigation";
 import { MARKETPLACE_METAS } from "@/lib/marketplace-constants";
 import { MarketplaceLogo } from "@/components/ui/marketplace-logos";
-import { LinkovaHeaderBrand } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsHeaderBrand } from "@/components/ui/sajilomarts-brand-logo";
 import { categories } from "@/lib/data";
 
 function SearchIcon() {
@@ -115,7 +115,7 @@ export function Header() {
             </button>
 
             <Link href="/" className="group flex items-center gap-2 flex-shrink-0">
-              <LinkovaHeaderBrand theme="light" />
+              <SajiloMartsHeaderBrand theme="light" />
             </Link>
           </div>
 
@@ -256,7 +256,7 @@ export function Header() {
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
                 <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                  <LinkovaHeaderBrand theme="light" />
+                  <SajiloMartsHeaderBrand theme="light" />
                 </Link>
                 <button
                   type="button"

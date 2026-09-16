@@ -102,7 +102,7 @@ function TrackOrderContent() {
         <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">Real-Time Logistics</span>
         <h1 className="text-3xl font-extrabold text-neutral-900 mt-1 sm:text-4xl">Track Your Order</h1>
         <p className="mt-2 text-xs sm:text-sm text-neutral-500">
-          Enter your LINKOVA Order ID to check the current sourcing, transit and Nepal doorstep delivery milestone.
+          Enter your SAJILOMARTS Order ID to check the current sourcing, transit and Nepal doorstep delivery milestone.
         </p>
       </div>
 
@@ -115,7 +115,7 @@ function TrackOrderContent() {
               value={orderIdInput}
               onChange={(e) => setOrderIdInput(e.target.value)}
               required
-              placeholder="e.g. LINKOVA-ORD-10245"
+              placeholder="e.g. SAJILOMARTS-ORD-10245"
               className="w-full rounded-xl border border-neutral-300 px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-900 focus:border-black focus:outline-none"
             />
           </div>
@@ -139,12 +139,12 @@ function TrackOrderContent() {
             <button
               type="button"
               onClick={() => {
-                setOrderIdInput("LINKOVA-ORD-10245");
+                setOrderIdInput("SAJILOMARTS-ORD-10245");
                 setContactInput("9801234567");
               }}
               className="rounded-lg bg-neutral-100 px-2 py-1 text-[11px] font-mono font-bold text-neutral-800 hover:bg-neutral-200"
             >
-              LINKOVA-ORD-10245
+              SAJILOMARTS-ORD-10245
             </button>
           </div>
 
@@ -239,12 +239,12 @@ function TrackOrderContent() {
                       </div>
 
                       <p className="mt-0.5 text-xs text-neutral-500">
-                        {idx === 0 && "Order recorded and verified in LINKOVA system."}
+                        {idx === 0 && "Order recorded and verified in SAJILOMARTS system."}
                         {idx === 1 && "Payment confirmed via chosen gateway or bank."}
                         {idx === 2 && "Package prepared & cross-checked for dispatch."}
                         {idx === 3 && "Sourced from Indian/supplier warehouse & packed."}
                         {idx === 4 && "Cross-border logistics & international freight in progress."}
-                        {idx === 5 && "Cleared customs and arrived at LINKOVA Nepal Central Hub."}
+                        {idx === 5 && "Cleared customs and arrived at SAJILOMARTS Nepal Central Hub."}
                         {idx === 6 && "Handed over to local courier for final doorstep delivery."}
                         {idx === 7 && "Successfully received by customer in Nepal."}
                       </p>
@@ -259,7 +259,7 @@ function TrackOrderContent() {
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <span className="text-neutral-600">Have questions regarding this shipment?</span>
             <a
-              href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry%20regarding%20my%20order"
+              href="https://wa.me/9779767797748?text=Hi%20SAJILOMARTS%2C%20I%20have%20an%20inquiry%20regarding%20my%20order"
               target="_blank"
               rel="noreferrer"
               className="font-bold text-emerald-700 hover:underline"

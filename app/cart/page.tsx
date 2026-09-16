@@ -25,9 +25,9 @@ export default function CartPage() {
     setCouponError("");
     const cleanCode = couponCode.trim().toUpperCase();
 
-    const found = coupons.find((c) => c.code === cleanCode || (cleanCode === "VEYRA500" && c.code === "LINKOVA500"));
+    const found = coupons.find((c) => c.code === cleanCode || (cleanCode === "VEYRA500" && c.code === "SAJILOMARTS500"));
     if (!found) {
-      setCouponError("Invalid coupon code. Try WELCOME10 or LINKOVA500.");
+      setCouponError("Invalid coupon code. Try WELCOME10 or SAJILOMARTS500.");
       pushToast("Invalid coupon code.", "error");
       return;
     }
@@ -183,7 +183,7 @@ export default function CartPage() {
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="e.g. WELCOME10 or LINKOVA500"
+                  placeholder="e.g. WELCOME10 or SAJILOMARTS500"
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-900 focus:border-black focus:outline-none"
                 />
                 <button
@@ -196,7 +196,7 @@ export default function CartPage() {
             )}
             {couponError && <p className="mt-2 text-xs text-red-600">{couponError}</p>}
             <p className="mt-2 text-[11px] text-neutral-400">
-              Try <code className="font-mono text-neutral-700 bg-neutral-200 px-1 py-0.5 rounded">WELCOME10</code> for 10% off or <code className="font-mono text-neutral-700 bg-neutral-200 px-1 py-0.5 rounded">LINKOVA500</code> for Rs. 500 off.
+              Try <code className="font-mono text-neutral-700 bg-neutral-200 px-1 py-0.5 rounded">WELCOME10</code> for 10% off or <code className="font-mono text-neutral-700 bg-neutral-200 px-1 py-0.5 rounded">SAJILOMARTS500</code> for Rs. 500 off.
             </p>
           </div>
         </div>

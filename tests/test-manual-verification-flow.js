@@ -1,12 +1,12 @@
 /**
- * LINKOVA / VEYRA - Automated Verification Test Suite for
+ * SAJILOMARTS / VEYRA - Automated Verification Test Suite for
  * Manual Admin Verification Workflow & Non-blocking Customer Flow.
  */
 
 const assert = require("assert");
 
 console.log("\n===================================================================");
-console.log("🧪 LINKOVA MANUAL ADMIN PRODUCT LINK VERIFICATION TEST SUITE");
+console.log("🧪 SAJILOMARTS MANUAL ADMIN PRODUCT LINK VERIFICATION TEST SUITE");
 console.log("===================================================================\n");
 
 let passed = 0;
@@ -77,7 +77,7 @@ test("2. Admin verifying link as 'Verified / Orderable' updates orderStatus to V
     adminVerifiedPriceINR: 2999,
     adminVerifiedVariant: "Size L / Blue",
     adminNote: "Verified directly from seller on Flipkart.",
-    adminUserEmail: "admin@linkova.np"
+    adminUserEmail: "admin@sajilomarts.np"
   };
 
   if (adminUpdate.adminVerificationStatus === "Verified / Orderable") {
@@ -98,7 +98,7 @@ test("2. Admin verifying link as 'Verified / Orderable' updates orderStatus to V
   assert.strictEqual(orderDoc.stockStatus, "Available");
   assert.strictEqual(orderDoc.adminVerifiedPriceINR, 2999);
   assert.strictEqual(Boolean(orderDoc.adminVerifiedAt), true);
-  assert.strictEqual(orderDoc.adminVerifiedBy, "admin@linkova.np");
+  assert.strictEqual(orderDoc.adminVerifiedBy, "admin@sajilomarts.np");
 });
 
 // ── 3. Admin Verification Workflow: Alternative Required ─────────────────────────

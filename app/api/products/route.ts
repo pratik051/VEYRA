@@ -74,7 +74,7 @@ function toProductView(item: ProductRecord): ProductView {
     slug: String(item.slug ?? ""),
     name: String(item.name ?? ""),
     category: String(item.category ?? ""),
-    brand: String(item.brand ?? "LINKOVA"),
+    brand: String(item.brand ?? "SAJILOMARTS"),
     price: Number(item.price ?? 0),
     originalPrice: Number(item.originalPrice ?? 0),
     rating: Number(item.rating ?? 0),

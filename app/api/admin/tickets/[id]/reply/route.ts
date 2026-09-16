@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     await connectToDatabase();
     const queryId = params.id;
     const adminId = String(sessionUser._id);
-    const adminName = sessionUser.fullName || sessionUser.email || "LINKOVA Support Team";
+    const adminName = sessionUser.fullName || sessionUser.email || "SAJILOMARTS Support Team";
 
     const ticket = await SupportTicketModel.findOne({
       $or: [{ ticketId: queryId }, { _id: queryId.match(/^[0-9a-fA-F]{24}$/) ? queryId : undefined }]

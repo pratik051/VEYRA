@@ -26,8 +26,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: true, orders });
   } catch (error: unknown) {
     // Memory fallback
-    const memList = global.__linkova_mem_india_orders
-      ? Array.from(global.__linkova_mem_india_orders.values()).reverse()
+    const memList = global.__sajilomarts_mem_india_orders
+      ? Array.from(global.__sajilomarts_mem_india_orders.values()).reverse()
       : [];
     return NextResponse.json({ success: true, orders: memList });
   }

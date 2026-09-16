@@ -39,7 +39,7 @@ export async function GET(
     }
     return NextResponse.json({ success: true, order });
   } catch {
-    const memOrder = global.__linkova_mem_india_orders?.get(id);
+    const memOrder = global.__sajilomarts_mem_india_orders?.get(id);
     if (memOrder) {
       return NextResponse.json({ success: true, order: memOrder });
     }
@@ -105,8 +105,8 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, order: result });
   } catch {
-    if (global.__linkova_mem_india_orders) {
-      const existing = global.__linkova_mem_india_orders.get(id);
+    if (global.__sajilomarts_mem_india_orders) {
+      const existing = global.__sajilomarts_mem_india_orders.get(id);
       if (existing) {
         Object.assign(existing, updates);
         return NextResponse.json({ success: true, order: existing });

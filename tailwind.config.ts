@@ -6,7 +6,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        linkova: {
+        sajilomarts: {
           bg: "#fcfcfd",
           surface: "#ffffff",
           "surface-2": "#f5f5f5",

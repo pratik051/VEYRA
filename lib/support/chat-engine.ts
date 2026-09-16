@@ -101,7 +101,7 @@ export async function processCustomerChat(
   if (isInternalAdminQuery) {
     return {
       answer:
-        "I am your LINKOVA Customer Shopping Assistant. I can only assist with customer shopping, product sourcing from India, landed price calculations, delivery in Nepal, and user account support. For internal or administrative inquiries, please contact LINKOVA management directly.",
+        "I am your SAJILOMARTS Customer Shopping Assistant. I can only assist with customer shopping, product sourcing from India, landed price calculations, delivery in Nepal, and user account support. For internal or administrative inquiries, please contact SAJILOMARTS management directly.",
       suggestions: ["Show trending products", "Today's best deals", "How does India sourcing work?"]
     };
   }
@@ -121,7 +121,7 @@ export async function processCustomerChat(
     if (!user) {
       return {
         answer:
-          "To check your order status and track shipments, please sign in to your LINKOVA account. We protect your order privacy by requiring authentication.",
+          "To check your order status and track shipments, please sign in to your SAJILOMARTS account. We protect your order privacy by requiring authentication.",
         suggestions: ["How do I place an order?", "What payment options are available?", "How does India sourcing work?"]
       };
     }
@@ -171,8 +171,8 @@ export async function processCustomerChat(
       ...standardOrders.map((o: any) => ({
         orderId: o.orderId,
         date: new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        productName: "LINKOVA Standard Order",
-        marketplace: "LINKOVA Store",
+        productName: "SAJILOMARTS Standard Order",
+        marketplace: "SAJILOMARTS Store",
         quantity: o.items?.length || 1,
         totalNPR: o.total,
         paymentMethod: o.paymentMethod,
@@ -362,7 +362,7 @@ export async function processCustomerChat(
   if (lower.includes("payment") || lower.includes("cod") || lower.includes("cash on delivery") || lower.includes("esewa") || lower.includes("khalti")) {
     return {
       answer:
-        "LINKOVA supports flexible local payment options in Nepal:\n\n1. **Cash on Delivery (COD):** Pay directly in cash to the courier when your order arrives at your doorstep in Nepal.\n2. **Full Online Payment:** Pay securely via **eSewa**, **Khalti**, or **MyPay QR** for expedited priority dispatch from Indian hubs.\n\n*All payments are verified server-side with transparent NPR receipts.*",
+        "SAJILOMARTS supports flexible local payment options in Nepal:\n\n1. **Cash on Delivery (COD):** Pay directly in cash to the courier when your order arrives at your doorstep in Nepal.\n2. **Full Online Payment:** Pay securely via **eSewa**, **Khalti**, or **MyPay QR** for expedited priority dispatch from Indian hubs.\n\n*All payments are verified server-side with transparent NPR receipts.*",
       suggestions: ["How long does delivery take?", "Show trending products", "How do I request a product from India?"]
     };
   }
@@ -378,7 +378,7 @@ export async function processCustomerChat(
   if (lower.includes("how to order") || lower.includes("how does it work") || lower.includes("request product") || lower.includes("source")) {
     return {
       answer:
-        "Ordering Indian products to Nepal is easy with LINKOVA:\n\n1. **Browse or Paste Link:** Browse verified catalog products or paste any product link from Amazon India, Flipkart, Myntra, Meesho, Nykaa, etc., at `/request-product`.\n2. **Clear NPR Landed Price:** We calculate the exact NPR price with customs, freight, and doorstep delivery included.\n3. **Choose Payment:** Select Cash on Delivery (COD) or Online Payment (eSewa / Khalti).\n4. **Doorstep Delivery:** We procure the authentic product directly from India and deliver it to your address across all 7 provinces.",
+        "Ordering Indian products to Nepal is easy with SAJILOMARTS:\n\n1. **Browse or Paste Link:** Browse verified catalog products or paste any product link from Amazon India, Flipkart, Myntra, Meesho, Nykaa, etc., at `/request-product`.\n2. **Clear NPR Landed Price:** We calculate the exact NPR price with customs, freight, and doorstep delivery included.\n3. **Choose Payment:** Select Cash on Delivery (COD) or Online Payment (eSewa / Khalti).\n4. **Doorstep Delivery:** We procure the authentic product directly from India and deliver it to your address across all 7 provinces.",
       suggestions: ["Paste Indian Product Link", "Show trending products", "What are today's best deals?"]
     };
   }
@@ -396,7 +396,7 @@ export async function processCustomerChat(
 
   return {
     answer:
-      "I am your LINKOVA Shopping & Sourcing Assistant! I can help you find verified products from Amazon India, Flipkart, Myntra, track your live orders, calculate landed prices in Nepal, and explain payment options.\n\nHere are some of today's most popular verified Indian products:",
+      "I am your SAJILOMARTS Shopping & Sourcing Assistant! I can help you find verified products from Amazon India, Flipkart, Myntra, track your live orders, calculate landed prices in Nepal, and explain payment options.\n\nHere are some of today's most popular verified Indian products:",
     products: fallbackProducts,
     suggestions: [
       "🔥 What's trending today?",

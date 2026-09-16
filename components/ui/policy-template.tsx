@@ -19,7 +19,7 @@ export function PolicyTemplate({ title, lastUpdated = "August 2026", summary, se
       <div className="border-b border-neutral-200 pb-6 space-y-2">
         <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Legal &amp; Policy</span>
         <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">{title}</h1>
-        <p className="text-xs text-neutral-500">Last updated: {lastUpdated} • LINKOVA Retail Nepal</p>
+        <p className="text-xs text-neutral-500">Last updated: {lastUpdated} • SAJILOMARTS Retail Nepal</p>
       </div>
 
       {/* Summary Box */}
@@ -45,10 +45,10 @@ export function PolicyTemplate({ title, lastUpdated = "August 2026", summary, se
       <div className="border-t border-neutral-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
         <span>Have questions about our terms?</span>
         <div className="flex gap-4 font-semibold text-neutral-900">
-          <Link href="/contact" className="hover:text-linkova-gold transition">
+          <Link href="/contact" className="hover:text-sajilomarts-gold transition">
             Contact Support →
           </Link>
-          <Link href="/faq" className="hover:text-linkova-gold transition">
+          <Link href="/faq" className="hover:text-sajilomarts-gold transition">
             View FAQ →
           </Link>
         </div>

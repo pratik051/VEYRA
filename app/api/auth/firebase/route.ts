@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       // Default to Google / Email Auth
       user = await findOrCreateGoogleUser({
         googleId: uid,
-        email: email || `user_${uid.slice(0, 8)}@linkova.internal`,
+        email: email || `user_${uid.slice(0, 8)}@sajilomarts.internal`,
         fullName: fullName || "Google User",
         phone: phone || "+977-9800000000"
       });

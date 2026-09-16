@@ -379,7 +379,7 @@ export default function CheckoutPage() {
           <div>
             <h1 className="text-3xl font-extrabold text-neutral-900">Order Confirmed!</h1>
             <p className="mt-2 text-sm text-neutral-500">
-              Thank you for shopping with LINKOVA. We are preparing your order for dispatch.
+              Thank you for shopping with SAJILOMARTS. We are preparing your order for dispatch.
             </p>
           </div>
 
@@ -965,7 +965,7 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-[11px] text-neutral-400 text-center">
-              By placing this order, you agree to LINKOVA terms and delivery policies.
+              By placing this order, you agree to SAJILOMARTS terms and delivery policies.
             </p>
           </div>
         </aside>

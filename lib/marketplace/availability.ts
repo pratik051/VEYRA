@@ -385,7 +385,7 @@ export async function checkProductAvailabilityAndDelivery(
       orderable: false,
       verificationStatus: "INVALID",
       reason: "UNSUPPORTED_PLATFORM",
-      message: `Domain '${hostname}' is not a supported marketplace channel. LINKOVA supports Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, etc.`,
+      message: `Domain '${hostname}' is not a supported marketplace channel. SAJILOMARTS supports Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, Croma, boAt, etc.`,
       originalSourceUrl: rawUrl,
       normalizedSourceUrl: normalizedInfo.normalizedSourceUrl,
       verifiedSourceUrl: "",

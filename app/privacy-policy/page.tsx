@@ -4,7 +4,7 @@ export default function PrivacyPolicyPage() {
   return (
     <PolicyTemplate
       title="Privacy Policy"
-      summary="At LINKOVA, we are committed to safeguarding your personal information. This Privacy Policy explains how we collect, use, and protect your data when you browse our website, place orders, or request products from Indian marketplaces."
+      summary="At SAJILOMARTS, we are committed to safeguarding your personal information. This Privacy Policy explains how we collect, use, and protect your data when you browse our website, place orders, or request products from Indian marketplaces."
       sections={[
         {
           heading: "Information We Collect",

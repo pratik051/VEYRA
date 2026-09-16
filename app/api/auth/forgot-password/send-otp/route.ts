@@ -7,10 +7,10 @@ import { connectToDatabase } from "@/lib/db/mongodb";
 // Memory fallback store for OTPs if DB is offline during testing
 declare global {
   // eslint-disable-next-line no-var
-  var __linkova_mem_otps: Map<string, { otp: string; expiresAt: Date; email: string }> | undefined;
+  var __sajilomarts_mem_otps: Map<string, { otp: string; expiresAt: Date; email: string }> | undefined;
 }
-const memOtps = global.__linkova_mem_otps || new Map<string, { otp: string; expiresAt: Date; email: string }>();
-if (!global.__linkova_mem_otps) global.__linkova_mem_otps = memOtps;
+const memOtps = global.__sajilomarts_mem_otps || new Map<string, { otp: string; expiresAt: Date; email: string }>();
+if (!global.__sajilomarts_mem_otps) global.__sajilomarts_mem_otps = memOtps;
 
 export async function POST(req: NextRequest) {
   try {

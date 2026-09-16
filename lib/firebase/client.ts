@@ -26,23 +26,47 @@ export const isFirebaseEnabled = Boolean(
     firebaseConfig.appId
 );
 
-export const firebaseApp = isFirebaseEnabled ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
-export const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;
+let app: any = null;
+try {
+  if (isFirebaseEnabled) {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  }
+} catch (err) {
+  console.warn("Firebase Client App initialization warning:", err);
+}
+
+export const firebaseApp = app;
+
+let auth: any = null;
+try {
+  if (firebaseApp) {
+    auth = getAuth(firebaseApp);
+  }
+} catch (err) {
+  console.warn("Firebase Client Auth initialization warning:", err);
+}
+
+export const firebaseAuth = auth;
+
 export const googleProvider = firebaseAuth ? new GoogleAuthProvider() : null;
 
 if (googleProvider) {
-  googleProvider.setCustomParameters({ prompt: "select_account" });
+  try {
+    googleProvider.setCustomParameters({ prompt: "select_account" });
+  } catch {}
 }
 
 export const appleProvider = firebaseAuth ? new OAuthProvider("apple.com") : null;
 
 if (appleProvider) {
-  appleProvider.addScope("email");
-  appleProvider.addScope("name");
+  try {
+    appleProvider.addScope("email");
+    appleProvider.addScope("name");
+  } catch {}
 }
 
 export const firebaseAnalytics = firebaseApp && typeof window !== "undefined"
-  ? isSupported().then((supported) => (supported ? getAnalytics(firebaseApp) : null))
+  ? isSupported().then((supported) => (supported ? getAnalytics(firebaseApp) : null)).catch(() => null)
   : null;
 
 export { RecaptchaVerifier, signInWithPhoneNumber };

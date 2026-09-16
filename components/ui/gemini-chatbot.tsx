@@ -13,7 +13,7 @@ type ChatItem = {
 const INITIAL_GREETING: ChatItem = {
   id: "greeting",
   role: "model",
-  text: "Namaste! 🙏 I am **LINKOVA AI**, your personal sourcing assistant. I can help you calculate Nepal landed prices, explain how to order products from Indian marketplaces (Amazon India, Flipkart, Myntra, etc.), check delivery timelines across Nepal, and answer any questions! How can I assist you today?",
+  text: "Namaste! 🙏 I am **SAJILOMARTS AI**, your personal sourcing assistant. I can help you calculate Nepal landed prices, explain how to order products from Indian marketplaces (Amazon India, Flipkart, Myntra, etc.), check delivery timelines across Nepal, and answer any questions! How can I assist you today?",
   time: "Just now"
 };
 
@@ -176,7 +176,7 @@ export function GeminiChatbot() {
             className="hidden sm:flex items-center gap-2 bg-slate-900/90 text-white text-xs font-bold px-3.5 py-2 rounded-2xl shadow-xl backdrop-blur-md border border-slate-800 cursor-pointer hover:bg-slate-900 transition-all hover:scale-105"
           >
             <span className="text-sm">✨</span>
-            <span>Ask LINKOVA AI</span>
+            <span>Ask SAJILOMARTS AI</span>
           </div>
         )}
 
@@ -218,7 +218,7 @@ export function GeminiChatbot() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-sm text-white">LINKOVA AI</h3>
+                  <h3 className="font-extrabold text-sm text-white">SAJILOMARTS AI</h3>
                   <span className="bg-blue-500/30 text-cyan-300 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-cyan-400/30">
                     Gemini 3.6
                   </span>
@@ -281,7 +281,7 @@ export function GeminiChatbot() {
             {/* Typing Indicator */}
             {isLoading && (
               <div className="flex items-center gap-2 bg-white text-slate-500 border border-slate-200/80 rounded-2xl px-4 py-3 w-fit shadow-xs">
-                <span className="text-xs font-bold text-slate-600">LINKOVA AI is thinking</span>
+                <span className="text-xs font-bold text-slate-600">SAJILOMARTS AI is thinking</span>
                 <span className="flex gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-bounce" />
                   <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.2s]" />

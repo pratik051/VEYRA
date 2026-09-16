@@ -46,7 +46,7 @@ function loadEnv() {
 
 loadEnv();
 
-const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/linkova";
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/sajilomarts";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "pratikshah2056@gamil.com").trim().toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Ajit@777";
 
@@ -72,7 +72,7 @@ async function main() {
         { _id: existing._id },
         {
           $set: {
-            fullName: existing.fullName || "LINKOVA Admin",
+            fullName: existing.fullName || "SAJILOMARTS Admin",
             passwordHash,
             role: "admin",
             phone: existing.phone || "9800000000",
@@ -84,7 +84,7 @@ async function main() {
       console.log(`Updated admin user: ${email} with role 'admin' and new password.`);
     } else {
       await usersCollection.insertOne({
-        fullName: "LINKOVA Admin",
+        fullName: "SAJILOMARTS Admin",
         email,
         phone: "9800000000",
         passwordHash,

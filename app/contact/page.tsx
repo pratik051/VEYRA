@@ -23,7 +23,7 @@ export default function ContactPage() {
       {/* Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
         <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">Get In Touch</span>
-        <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">Contact LINKOVA Support</h1>
+        <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">Contact SAJILOMARTS Support</h1>
         <p className="text-xs sm:text-sm text-neutral-500">
           Have an inquiry regarding an order, India quotation, or partnership? We are here to help.
         </p>
@@ -108,7 +108,7 @@ export default function ContactPage() {
                   disabled={loading}
                   className="w-full rounded-xl bg-black py-3.5 text-xs font-bold text-white shadow-md hover:bg-neutral-800 disabled:opacity-60 transition"
                 >
-                  {loading ? "Sending..." : "Send Message to LINKOVA →"}
+                  {loading ? "Sending..." : "Send Message to SAJILOMARTS →"}
                 </button>
               </form>
             )}
@@ -126,7 +126,7 @@ export default function ContactPage() {
                 <div>
                   <strong className="text-neutral-900 block">WhatsApp Sourcing Concierge:</strong>
                   <a
-                    href="https://wa.me/9779767797748?text=Hi%20LINKOVA%2C%20I%20have%20an%20inquiry"
+                    href="https://wa.me/9779767797748?text=Hi%20SAJILOMARTS%2C%20I%20have%20an%20inquiry"
                     target="_blank"
                     rel="noreferrer"
                     className="font-bold text-emerald-700 hover:underline mt-0.5 inline-block"
@@ -140,7 +140,7 @@ export default function ContactPage() {
                 <span className="text-xl">📧</span>
                 <div>
                   <strong className="text-neutral-900 block">Business Email:</strong>
-                  <span className="text-neutral-600">hello@linkova.com.np / support@linkova.com.np</span>
+                  <span className="text-neutral-600">hello@sajilomarts.com.np / support@sajilomarts.com.np</span>
                 </div>
               </div>
 

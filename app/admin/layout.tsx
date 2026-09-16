@@ -27,7 +27,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-display font-black text-lg tracking-wider text-white group-hover:text-amber-400 transition">
-                  LINKOVA
+                  SAJILOMARTS
                 </span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-red-600 text-white shadow-2xs">
                   ADMIN

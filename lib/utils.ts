@@ -17,4 +17,4 @@ export const searchProducts = (items: Product[], query: string) => {
   );
 };
 
-export const generateId = (prefix: "REQ" | "ORD") => `LINKOVA-${prefix}-${Math.floor(10000 + Math.random() * 90000)}`;
+export const generateId = (prefix: "REQ" | "ORD") => `SAJILOMARTS-${prefix}-${Math.floor(10000 + Math.random() * 90000)}`;

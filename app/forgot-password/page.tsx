@@ -193,7 +193,7 @@ export default function ForgotPasswordPage() {
               L
             </div>
             <span className="font-display font-black text-2xl tracking-wider text-white">
-              LINKOVA
+              SAJILOMARTS
             </span>
           </Link>
           <h1 className="mt-4 text-2xl font-black tracking-tight text-white">
@@ -397,7 +397,7 @@ export default function ForgotPasswordPage() {
               <div>
                 <h3 className="text-lg font-black text-white">Password Reset Successfully!</h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  You can now log in to your LINKOVA account using your new credentials.
+                  You can now log in to your SAJILOMARTS account using your new credentials.
                 </p>
               </div>
 

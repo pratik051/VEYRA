@@ -6,7 +6,7 @@ export default function HowItWorksPage() {
     {
       number: "01",
       title: "Find Your Product",
-      desc: "Browse products listed on LINKOVA or explore external Indian marketplaces like Amazon India, Flipkart, Myntra, Meesho, Ajio, or Tata CLiQ.",
+      desc: "Browse products listed on SAJILOMARTS or explore external Indian marketplaces like Amazon India, Flipkart, Myntra, Meesho, Ajio, or Tata CLiQ.",
       detail: "Simply copy the product link / URL from your browser or shopping app."
     },
     {
@@ -18,13 +18,13 @@ export default function HowItWorksPage() {
     {
       number: "03",
       title: "Get Your Quote",
-      desc: "LINKOVA logistics team verifies seller authenticity, checks weight and computes international shipping, customs, and domestic delivery into a transparent all-inclusive NPR quotation.",
+      desc: "SAJILOMARTS logistics team verifies seller authenticity, checks weight and computes international shipping, customs, and domestic delivery into a transparent all-inclusive NPR quotation.",
       detail: "Review the quote directly in your account or via WhatsApp/Email."
     },
     {
       number: "04",
       title: "Confirm & Receive",
-      desc: "Once you approve the quotation and pay via eSewa, Khalti, or Bank Transfer, LINKOVA procures the item, handles customs clearance, and delivers it right to your doorstep anywhere in Nepal.",
+      desc: "Once you approve the quotation and pay via eSewa, Khalti, or Bank Transfer, SAJILOMARTS procures the item, handles customs clearance, and delivers it right to your doorstep anywhere in Nepal.",
       detail: "Track the shipment milestone by milestone until delivered."
     }
   ];
@@ -34,7 +34,7 @@ export default function HowItWorksPage() {
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <span className="text-xs font-bold uppercase tracking-wider text-veyra-gold font-bold">Process Walkthrough</span>
-        <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">How LINKOVA Works</h1>
+        <h1 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">How SAJILOMARTS Works</h1>
         <p className="text-xs sm:text-sm leading-relaxed text-neutral-600">
           We simplify cross-border shopping and lifestyle product discovery for customers throughout Nepal. Here is how your orders and custom requests are handled from start to finish.
         </p>

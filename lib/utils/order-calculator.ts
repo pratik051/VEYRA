@@ -19,7 +19,7 @@ export interface CalculationResult {
 // Built-in referral & promo codes
 const ACTIVE_REFERRALS: Record<string, { discountPercent?: number; discountFixed?: number; minSubtotal?: number }> = {
   REF10: { discountPercent: 10, minSubtotal: 500 },
-  LINKOVA500: { discountFixed: 500, minSubtotal: 2500 },
+  SAJILOMARTS500: { discountFixed: 500, minSubtotal: 2500 },
   WELCOME10: { discountPercent: 10, minSubtotal: 1000 },
   VEYRA500: { discountFixed: 500, minSubtotal: 2500 }
 };

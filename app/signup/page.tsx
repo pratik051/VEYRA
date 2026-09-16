@@ -11,7 +11,7 @@ import {
   isFirebaseEnabled
 } from "@/lib/firebase/client";
 import { useToast } from "@/components/providers/toast-provider";
-import { LinkovaBrandLogo } from "@/components/ui/linkova-brand-logo";
+import { SajiloMartsBrandLogo } from "@/components/ui/sajilomarts-brand-logo";
 
 function SignupContent() {
   const searchParams = useSearchParams();
@@ -52,7 +52,7 @@ function SignupContent() {
           throw new Error(data.error || `Google sign-up failed (${response.status}).`);
         }
 
-        pushToast("Welcome to LINKOVA! Account created with Google.", "success");
+        pushToast("Welcome to SAJILOMARTS! Account created with Google.", "success");
         router.push(redirectUrl);
         return;
       } catch (err: unknown) {
@@ -65,18 +65,17 @@ function SignupContent() {
           lower.includes("auth/popup");
 
         if (isPopupCancelled) {
-          pushToast("Opening Google Sign-In...", "info");
-          window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+          pushToast("Google Sign-In popup was closed or blocked. Please enable popups or sign up with your email.", "info");
           return;
         }
 
         setError(errMessage);
-        pushToast("Google sign-up failed. Redirecting...", "error");
-        window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+        pushToast(errMessage, "error");
       } finally {
         setIsSubmitting(false);
       }
     } else {
+      pushToast("Opening Google Sign-In...", "info");
       window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
     }
   };
@@ -106,7 +105,7 @@ function SignupContent() {
         throw new Error(data.error || `Apple sign-up failed (${response.status}).`);
       }
 
-      pushToast("Welcome to LINKOVA! Account created with Apple.", "success");
+      pushToast("Welcome to SAJILOMARTS! Account created with Apple.", "success");
       router.push(redirectUrl);
     } catch (err: unknown) {
       console.error("Apple signup error:", err);
@@ -151,7 +150,7 @@ function SignupContent() {
         throw new Error(data.error || "Failed to create account.");
       }
 
-      pushToast("Account created successfully! Welcome to LINKOVA.", "success");
+      pushToast("Account created successfully! Welcome to SAJILOMARTS.", "success");
       window.location.href = redirectUrl;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed.";
@@ -180,7 +179,7 @@ function SignupContent() {
           {/* Top Brand Hero */}
           <div className="relative z-10 flex flex-col items-center text-center space-y-3">
             <Link href="/" className="hover:scale-105 transition-transform duration-300">
-              <LinkovaBrandLogo size="lg" theme="dark" showTagline={true} showFlags={true} />
+              <SajiloMartsBrandLogo size="lg" theme="dark" showTagline={true} showFlags={true} />
             </Link>
           </div>
 
@@ -386,7 +385,7 @@ function SignupContent() {
               </div>
 
               <div className="text-[11px] text-slate-400 leading-relaxed">
-                By creating an account, you agree to LINKOVA&apos;s{" "}
+                By creating an account, you agree to SAJILOMARTS&apos;s{" "}
                 <Link href="/terms-and-conditions" className="text-cyan-400 font-bold underline">
                   Terms of Service
                 </Link>{" "}
