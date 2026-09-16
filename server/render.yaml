@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sajilomarts-server
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: MONGODB_URI
+        value: mongodb+srv://pratikshah2056_db_user:Ajita_777@cluster0.hvnskf.mongodb.net/sajilomarts?retryWrites=true&w=majority&appName=Cluster0
+      - key: NODE_ENV
+        value: production
