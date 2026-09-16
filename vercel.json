@@ -1,0 +1,18 @@
+{
+  "services": {
+    "veyra-backend": {
+      "root": ".",
+      "framework": "nextjs",
+      "buildCommand": "npm install && npm run build"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "veyra-backend"
+      }
+    }
+  ]
+}
