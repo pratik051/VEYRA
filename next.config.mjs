@@ -5,6 +5,19 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" }
     ]
+  },
+  async rewrites() {
+    const backendUrl = process.env.RENDER_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL;
+    if (backendUrl && !backendUrl.includes("localhost")) {
+      const cleanUrl = backendUrl.replace(/\/$/, "");
+      return [
+        {
+          source: "/api/:path*",
+          destination: `${cleanUrl}/api/:path*`
+        }
+      ];
+    }
+    return [];
   }
 };
 

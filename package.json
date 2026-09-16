@@ -5,12 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
     "migrate:user-model": "node scripts/migrations/user-model-migration.js",
     "set-admin": "node scripts/set-admin.js",
     "test:node": "node tests/run-quote-utils-test.js",
     "test": "vitest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@google/genai": "^2.22.0",

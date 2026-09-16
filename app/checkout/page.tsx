@@ -40,8 +40,6 @@ export default function CheckoutPage() {
   const [appliedReferral, setAppliedReferral] = useState<string>("");
   const [referralResult, setReferralResult] = useState<{ applied: boolean; message: string; discount: number } | null>(null);
   const [calculatingBreakdown, setCalculatingBreakdown] = useState(false);
-  const [qrError, setQrError] = useState(false);
-  const [qrKey, setQrKey] = useState(0);
 
   const [breakdown, setBreakdown] = useState<{
     subtotal: number;
@@ -65,6 +63,11 @@ export default function CheckoutPage() {
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState("");
   const { pushToast } = useToast();
+
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState<boolean>(false);
+  const [qrError, setQrError] = useState<boolean>(false);
+  const [qrKey, setQrKey] = useState<number>(0);
 
   // Saved Addresses State
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -195,6 +198,53 @@ export default function CheckoutPage() {
       isSubscribed = false;
     };
   }, [items.length, subtotal, paymentMode, appliedReferral]);
+
+  useEffect(() => {
+    if (!items.length) return;
+    let isSubscribed = true;
+
+    async function fetchPaymentQr() {
+      setQrLoading(true);
+      setQrError(false);
+      try {
+        const delFee = subtotal >= 3000 ? 0 : 200;
+        const res = await fetch("/api/payments/create-qr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: selectedPayment,
+            paymentMode: paymentMode,
+            subtotal,
+            deliveryFee: delFee,
+            referralCode: appliedReferral
+          })
+        });
+
+        const data = await res.json();
+        if (isSubscribed) {
+          if (res.ok && data.success && data.qrCode) {
+            setQrCodeUrl(data.qrCode);
+          } else {
+            setQrError(true);
+            setQrCodeUrl(null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch payment QR:", err);
+        if (isSubscribed) {
+          setQrError(true);
+          setQrCodeUrl(null);
+        }
+      } finally {
+        if (isSubscribed) setQrLoading(false);
+      }
+    }
+
+    void fetchPaymentQr();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [items.length, subtotal, selectedPayment, paymentMode, appliedReferral, qrKey]);
 
   const handleApplyReferral = async (e: FormEvent) => {
     e.preventDefault();
@@ -425,55 +475,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [qrLoading, setQrLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!items.length) return;
-    let isSubscribed = true;
-
-    async function fetchPaymentQr() {
-      setQrLoading(true);
-      setQrError(false);
-      try {
-        const delFee = subtotal >= 3000 ? 0 : 200;
-        const res = await fetch("/api/payments/create-qr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            provider: selectedPayment,
-            paymentMode: paymentMode,
-            subtotal,
-            deliveryFee: delFee,
-            referralCode: appliedReferral
-          })
-        });
-
-        const data = await res.json();
-        if (isSubscribed) {
-          if (res.ok && data.success && data.qrCode) {
-            setQrCodeUrl(data.qrCode);
-          } else {
-            setQrError(true);
-            setQrCodeUrl(null);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch payment QR:", err);
-        if (isSubscribed) {
-          setQrError(true);
-          setQrCodeUrl(null);
-        }
-      } finally {
-        if (isSubscribed) setQrLoading(false);
-      }
-    }
-
-    void fetchPaymentQr();
-    return () => {
-      isSubscribed = false;
-    };
-  }, [items.length, subtotal, selectedPayment, paymentMode, appliedReferral, qrKey]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

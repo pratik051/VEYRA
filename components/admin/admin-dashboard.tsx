@@ -2783,7 +2783,7 @@ export function AdminDashboard() {
                     className="w-full rounded-xl border border-purple-300 bg-white p-2 font-mono text-[11px] focus:border-purple-600 focus:outline-none"
                   />
                   <p className="text-[10px] text-purple-800">
-                    Both the customer's original link and this alternative link will be preserved on the order.
+                    Both the customer&apos;s original link and this alternative link will be preserved on the order.
                   </p>
                 </div>
               )}
