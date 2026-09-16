@@ -190,8 +190,19 @@ function InfoRow({
   );
 }
 
+type AdminUserItem = {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  role: "admin" | "user";
+  authProvider?: string;
+  createdAt?: string;
+};
+
 const adminTabs = [
   "Overview",
+  "👑 Master Control Panel",
   "India Orders & Invoices",
   "Product Requests",
   "User Problems",
@@ -257,6 +268,20 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState("");
 
+  // Master Control Panel State
+  const [usersList, setUsersList] = useState<AdminUserItem[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPhone, setNewUserPhone] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"user" | "admin">("user");
+  const [addingUser, setAddingUser] = useState(false);
+
   // Full order detail panel (fetches fresh from API, not stale table row)
   const [selectedOrderDetail, setSelectedOrderDetail] = useState<AdminIndiaOrder | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -272,6 +297,128 @@ export function AdminDashboard() {
   const [alternativeSourceUrl, setAlternativeSourceUrl] = useState<string>("");
   const [adminNote, setAdminNote] = useState<string>("");
   const [savingVerification, setSavingVerification] = useState(false);
+
+  const loadUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const res = await fetch("/api/admin/users");
+      if (res.ok) {
+        const data = await res.json();
+        setUsersList(data.users || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  const handleToggleUserRole = async (userId: string, currentRole: "user" | "admin") => {
+    const nextRole = currentRole === "admin" ? "user" : "admin";
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: nextRole })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`User role updated to ${nextRole.toUpperCase()}`, "success");
+        setUsersList((prev) => prev.map((u) => (u._id === userId ? { ...u, role: nextRole } : u)));
+      } else {
+        pushToast(data.error || "Failed to update user role", "error");
+      }
+    } catch {
+      pushToast("Network error updating user role", "error");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete user account "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`Deleted user account ${name}`, "info");
+        setUsersList((prev) => prev.filter((u) => u._id !== userId));
+      } else {
+        pushToast(data.error || "Failed to delete user", "error");
+      }
+    } catch {
+      pushToast("Network error deleting user", "error");
+    }
+  };
+
+  const handleSaveAdminPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newAdminPassword || newAdminPassword.length < 6) {
+      pushToast("Password must be at least 6 characters long.", "error");
+      return;
+    }
+    if (newAdminPassword !== confirmAdminPassword) {
+      pushToast("Passwords do not match.", "error");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const res = await fetch("/api/admin/settings/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newAdminPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast("Admin password updated successfully!", "success");
+        setNewAdminPassword("");
+        setConfirmAdminPassword("");
+      } else {
+        pushToast(data.error || "Failed to update password", "error");
+      }
+    } catch {
+      pushToast("Network error updating password", "error");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  const handleAddUserSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newUserName || !newUserEmail || !newUserPassword) {
+      pushToast("Name, email and password are required.", "error");
+      return;
+    }
+    setAddingUser(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: newUserName,
+          email: newUserEmail,
+          phone: newUserPhone,
+          password: newUserPassword,
+          role: newUserRole
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        pushToast(`User ${newUserName} created successfully!`, "success");
+        setAddUserModalOpen(false);
+        setNewUserName("");
+        setNewUserEmail("");
+        setNewUserPhone("");
+        setNewUserPassword("");
+        setNewUserRole("user");
+        await loadUsers();
+      } else {
+        pushToast(data.error || "Failed to create user", "error");
+      }
+    } catch {
+      pushToast("Network error creating user", "error");
+    } finally {
+      setAddingUser(false);
+    }
+  };
 
   const openOrderVerificationModal = (order: AdminIndiaOrder) => {
     setVerifyingOrder(order);
@@ -413,12 +560,13 @@ export function AdminDashboard() {
           setProductRequestCounts(reqData.counts);
         }
       }
+      await loadUsers();
     } catch (e) {
       console.error("Admin loadAll error:", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadUsers]);
 
   useEffect(() => {
     void loadAll();
@@ -1102,6 +1250,284 @@ export function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3.1.5 Master Control Panel Tab */}
+      {activeTab === "👑 Master Control Panel" && (
+        <div className="space-y-6">
+          {/* Admin Password Management & Quick Action Banner */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Admin Security Card */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Admin Security</span>
+                <h3 className="text-base font-black text-slate-900">Set Admin Account Password</h3>
+                <p className="text-xs text-slate-400">Update the primary admin login credentials for SajiloMarts portal</p>
+              </div>
+
+              <form onSubmit={handleSaveAdminPassword} className="space-y-4 text-xs">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">New Admin Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter new admin password..."
+                    value={newAdminPassword}
+                    onChange={(e) => setNewAdminPassword(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2.5 font-bold text-slate-900 focus:border-purple-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Confirm Admin Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Confirm new admin password..."
+                    value={confirmAdminPassword}
+                    onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2.5 font-bold text-slate-900 focus:border-purple-600 focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={savingPassword}
+                  className="px-6 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-black text-xs transition cursor-pointer shadow-sm disabled:opacity-50"
+                >
+                  {savingPassword ? "Updating..." : "🔐 Update Admin Password"}
+                </button>
+              </form>
+            </div>
+
+            {/* Platform Control & Global Sourcing Rules */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-700">System Parameters</span>
+                  <h3 className="text-base font-black text-slate-900">India ➔ Nepal Sourcing Rules</h3>
+                </div>
+                <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                  Live Active
+                </span>
+              </div>
+              <div className="space-y-3 text-xs text-slate-600">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center">
+                  <span><strong>Base Currency Rate:</strong> 1 INR</span>
+                  <span className="font-mono font-black text-slate-900">1.65 NPR</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center">
+                  <span><strong>Service &amp; Clearance Charge:</strong></span>
+                  <span className="font-mono font-black text-slate-900">+20%</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center">
+                  <span><strong>Nepal Flat Delivery:</strong></span>
+                  <span className="font-mono font-black text-slate-900">Rs. 200</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center">
+                  <span><strong>Default Payment Mode:</strong></span>
+                  <span className="font-mono font-black text-slate-900">COD (50% Advance) / Full Online</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* User & Admin Roles Control Table */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Master User &amp; Role Management</h3>
+                <p className="text-xs text-slate-400">View all registered accounts, grant/revoke Admin access, or manage accounts</p>
+              </div>
+              <button
+                onClick={() => setAddUserModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+              >
+                ➕ Add New User / Admin
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="pb-3">User</th>
+                    <th className="pb-3">Contact</th>
+                    <th className="pb-3">Auth Provider</th>
+                    <th className="pb-3">Current Role</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {usersLoading && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-bold">
+                        Loading users list...
+                      </td>
+                    </tr>
+                  )}
+                  {!usersLoading && usersList.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-bold">
+                        No registered users found.
+                      </td>
+                    </tr>
+                  )}
+                  {!usersLoading &&
+                    usersList.map((user) => (
+                      <tr key={user._id} className="hover:bg-slate-50/60">
+                        <td className="py-3.5">
+                          <span className="font-bold text-slate-900 block">{user.fullName || "Unnamed User"}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">{user._id}</span>
+                        </td>
+                        <td className="py-3.5">
+                          <span className="font-medium text-slate-800 block">{user.email}</span>
+                          <span className="text-[11px] text-slate-500">{user.phone || "No phone"}</span>
+                        </td>
+                        <td className="py-3.5">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
+                            {user.authProvider || "Local / Credentials"}
+                          </span>
+                        </td>
+                        <td className="py-3.5">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
+                              user.role === "admin"
+                                ? "bg-purple-100 text-purple-800 border-purple-200"
+                                : "bg-slate-100 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            {user.role === "admin" ? "👑 ADMIN" : "👤 USER"}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-right space-x-2">
+                          <button
+                            onClick={() => handleToggleUserRole(user._id, user.role)}
+                            className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                              user.role === "admin"
+                                ? "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                                : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                            }`}
+                          >
+                            {user.role === "admin" ? "Demote to User" : "Promote to Admin"}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user._id, user.fullName)}
+                            className="px-3 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs transition cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {addUserModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          onClick={() => setAddUserModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Master Control</span>
+                <h3 className="text-base font-black text-slate-900">Create New Account</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddUserModalOpen(false)}
+                className="rounded-full p-1 text-slate-400 hover:text-black hover:bg-slate-100 transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddUserSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Pratik Sharma"
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-bold focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="name@example.com"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-medium focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="+977 9800000000"
+                  value={newUserPhone}
+                  onChange={(e) => setNewUserPhone(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-medium focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Account Password *</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="At least 6 characters"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-bold focus:border-purple-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-600 block mb-1">Account Role *</label>
+                <select
+                  value={newUserRole}
+                  onChange={(e) => setNewUserRole(e.target.value as "user" | "admin")}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-bold focus:border-purple-600 focus:outline-none bg-white"
+                >
+                  <option value="user">👤 Regular User</option>
+                  <option value="admin">👑 Platform Administrator</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setAddUserModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addingUser}
+                  className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-black transition disabled:opacity-50 shadow-md cursor-pointer"
+                >
+                  {addingUser ? "Creating..." : "Create Account ➔"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

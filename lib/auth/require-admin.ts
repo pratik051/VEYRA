@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export async function requireAdminSession() {
@@ -6,4 +7,12 @@ export async function requireAdminSession() {
     return null;
   }
   return user;
+}
+
+export async function requireAdmin(_request?: Request) {
+  const user = await requireAdminSession();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized admin access." }, { status: 403 });
+  }
+  return null;
 }
