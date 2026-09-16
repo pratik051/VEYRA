@@ -3,6 +3,8 @@ import { getAllProviders } from "@/lib/marketplace";
 import { connectDB } from "@/lib/db/mongodb";
 import { MarketplaceProductModel } from "@/lib/models/marketplace-product-model";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     await connectDB();
