@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -39,6 +40,7 @@ export default function App() {
             </main>
             <Footer />
           </div>
+          <SpeedInsights />
         </WishlistProvider>
       </CartProvider>
     </AuthProvider>
