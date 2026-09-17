@@ -8,14 +8,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: MONGODB_URI
-        sync: false
+        value: mongodb+srv://pratikshah2056_db_user:Ajita_777@cluster0.hvnskf.mongodb.net/sajilomarts?retryWrites=true&w=majority&appName=Cluster0
+      - key: MONGO_URI
+        value: mongodb+srv://pratikshah2056_db_user:Ajita_777@cluster0.hvnskf.mongodb.net/sajilomarts?retryWrites=true&w=majority&appName=Cluster0
       - key: ADMIN_EMAIL
-        sync: false
+        value: pratikshah2990@gmail.com
       - key: ADMIN_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
+        value: Ajit@777
       - key: INDIA_NPR_CONVERSION_RATE
         value: "1.65"
       - key: SERVICE_CHARGE_PERCENT
