@@ -91,7 +91,7 @@ export function RequestProduct() {
       return null;
     }
 
-    // Exchange Rate = 1.65, Service = 20%, Delivery = NPR 200
+    // Internal calculation (never exposed in UI)
     const exchangeRate = 1.65;
     const servicePercent = 0.20;
     const deliveryFee = 200;
@@ -102,13 +102,11 @@ export function RequestProduct() {
     const deliveryCharge = deliveryFee;
     const finalAmount = Math.round(conversionAmount + serviceCharge + deliveryCharge);
 
+    // Only store customer-facing fields in quote state
     const calculatedQuote = {
       unitPriceINR: inr,
       indianPriceINR: baseInrTotal,
       quantity: qty,
-      conversionAmount,
-      serviceCharge,
-      deliveryCharge,
       finalAmountNPR: finalAmount
     };
 
@@ -181,13 +179,11 @@ export function RequestProduct() {
         quantity
       });
       if (res.data?.success && res.data?.finalAmountNPR > 0) {
+        // Only store customer-facing fields — internal breakdown not exposed
         setQuote({
           unitPriceINR: numericInr,
           indianPriceINR: numericInr * quantity,
           quantity,
-          conversionAmount: Math.round(numericInr * quantity * 1.65 * 100) / 100,
-          serviceCharge: Math.round(numericInr * quantity * 1.65 * 0.20 * 100) / 100,
-          deliveryCharge: 200,
           finalAmountNPR: res.data.finalAmountNPR
         });
       } else {
@@ -502,38 +498,7 @@ export function RequestProduct() {
                 </div>
               </div>
 
-              {/* Transparent Breakdown */}
-              <div className="space-y-2 text-xs">
-                <span className="font-bold text-neutral-700 dark:text-neutral-300 text-[11px] uppercase tracking-wider block">
-                  Transparent Cost Breakdown:
-                </span>
-                <div className="space-y-1.5 bg-white/60 dark:bg-[#0b1437]/60 p-3.5 rounded-2xl border border-amber-100 dark:border-white/5">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600 dark:text-neutral-300">
-                      INR to NPR Conversion (Rate: 1.65):
-                    </span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      NPR {quote.conversionAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600 dark:text-neutral-300">
-                      SajiloMarts Sourcing & Logistics Fee (20%):
-                    </span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      NPR {quote.serviceCharge.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600 dark:text-neutral-300">
-                      Doorstep Courier in Nepal:
-                    </span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      NPR {quote.deliveryCharge.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Internal cost breakdown intentionally omitted from customer view */}
 
               <div className="flex justify-end pt-2">
                 <button
