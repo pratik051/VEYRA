@@ -59,6 +59,20 @@ export function Checkout() {
   const [completedOrder, setCompletedOrder] = useState(null);
   const [error, setError] = useState('');
 
+  React.useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.fullName || '',
+        phone: prev.phone || user.phone || '',
+        email: prev.email || user.email || '',
+        province: prev.province || user.province || 'Bagmati Province (Province 3)',
+        city: prev.city || user.city || 'Kathmandu',
+        street: prev.street || user.fullAddress || user.street || ''
+      }));
+    }
+  }, [user]);
+
   const handleScreenshotChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -132,12 +146,18 @@ export function Checkout() {
 
     try {
       const orderPayload = {
+        userId: user?.id || user?._id || '',
+        customerId: user?.id || user?._id || '',
+        fullName: formData.fullName,
+        customerName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
         items: items.map((i) => ({
-          productId: i._id || i.id,
+          productId: String(i._id || i.id || ''),
           name: i.name,
-          price: i.price,
-          quantity: i.quantity || 1,
-          image: i.image,
+          price: Number(i.price) || 0,
+          quantity: Math.max(1, Number(i.quantity) || 1),
+          image: i.image || '',
           source: i.source || 'SajiloMarts'
         })),
         shippingAddress: {
@@ -169,28 +189,18 @@ export function Checkout() {
         notes: formData.notes
       };
 
-      let orderRes;
-      try {
-        orderRes = await api.post('/api/checkout', orderPayload);
-      } catch (e) {
-        // Fallback simulated order creation if backend offline
-        orderRes = {
-          data: {
-            success: true,
-            order: {
-              _id: `ORD-${Date.now().toString().slice(-6)}`,
-              ...orderPayload,
-              createdAt: new Date().toISOString()
-            }
-          }
-        };
+      const orderRes = await api.post('/api/checkout', orderPayload);
+      const createdOrder = orderRes.data?.order;
+      if (!createdOrder) {
+        throw new Error(orderRes.data?.error || 'Failed to receive order confirmation from server.');
       }
 
-      setCompletedOrder(orderRes.data?.order || orderPayload);
+      setCompletedOrder(createdOrder);
       clearCart();
       setCurrentStep(6);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order. Please check connection.');
+      console.error('Order creation error:', err);
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to place order. Please check your connection.');
     } finally {
       setLoading(false);
     }

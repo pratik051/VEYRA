@@ -13,9 +13,19 @@ import {
 export function Login() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { login, loginWithFirebase } = useAuth();
+  const { login, loginWithFirebase, user, loading } = useAuth();
 
   const redirectUrl = searchParams.get('redirect') || '/account';
+
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate(redirectUrl);
+      }
+    }
+  }, [user, loading, navigate, redirectUrl]);
 
   const [isForgot, setIsForgot] = useState(false);
   const [forgotStep, setForgotStep] = useState('email');

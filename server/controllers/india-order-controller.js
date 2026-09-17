@@ -68,7 +68,7 @@ export async function createIndiaOrder(req, res) {
 
     let paymentStatus = "Pending Verification";
 
-    const userId = req.user ? String(req.user._id) : (body.userId ? String(body.userId) : "");
+    const userId = req.user ? String(req.user._id) : String(body.userId || body.customerId || "").trim();
 
     const shippingAddress = {
       fullName: customerName,

@@ -59,6 +59,23 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static("uploads"));
+
+// Built-in Cookie Parser for reliable auth cookie reading across cross-origin/proxies
+app.use((req, res, next) => {
+  if (req.headers.cookie && !req.cookies) {
+    req.cookies = {};
+    req.headers.cookie.split(";").forEach((cookieStr) => {
+      const parts = cookieStr.split("=");
+      if (parts.length >= 2) {
+        req.cookies[parts[0].trim()] = decodeURIComponent(parts.slice(1).join("=").trim());
+      }
+    });
+  } else if (!req.cookies) {
+    req.cookies = {};
+  }
+  next();
+});
+
 app.use(authenticateUser);
 
 // Health check endpoint

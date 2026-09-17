@@ -15,6 +15,7 @@ export async function getUserOrders(req, res) {
     const userId = String(req.user._id);
     const userPhone = req.user.phone ? req.user.phone.trim() : null;
     const userEmail = req.user.email ? req.user.email.trim().toLowerCase() : null;
+    const userName = req.user.fullName ? req.user.fullName.trim() : null;
 
     let indiaOrders = [];
     let standardOrders = [];
@@ -22,8 +23,18 @@ export async function getUserOrders(req, res) {
     // 1. Fetch India-to-Nepal orders
     try {
       const indiaConditions = [{ userId }, { customerId: userId }];
-      if (userPhone) indiaConditions.push({ phone: userPhone });
-      if (userEmail) indiaConditions.push({ email: userEmail });
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        indiaConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
+      }
+      if (userPhone) {
+        indiaConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
+      }
+      if (userEmail) {
+        indiaConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
+      }
+      if (userName) {
+        indiaConditions.push({ customerName: userName }, { fullName: userName });
+      }
 
       indiaOrders = await IndiaOrderModel.find({ $or: indiaConditions })
         .sort({ createdAt: -1 })
@@ -38,10 +49,14 @@ export async function getUserOrders(req, res) {
       if (mongoose.Types.ObjectId.isValid(userId)) {
         standardConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
       }
-      if (userPhone) standardConditions.push({ phone: userPhone });
-      if (userEmail) standardConditions.push({ email: userEmail });
-      if (req.user.fullName) {
-        standardConditions.push({ fullName: req.user.fullName }, { customerName: req.user.fullName });
+      if (userPhone) {
+        standardConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
+      }
+      if (userEmail) {
+        standardConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
+      }
+      if (userName) {
+        standardConditions.push({ fullName: userName }, { customerName: userName });
       }
 
       standardOrders = await OrderModel.find({ $or: standardConditions })
@@ -256,6 +271,9 @@ export async function getUserProductRequests(req, res) {
     }
     const userId = String(req.user._id);
     const queryConditions = [{ userId }, { customerId: userId }];
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      queryConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
+    }
     if (req.user.phone) queryConditions.push({ phone: req.user.phone });
     if (req.user.email) queryConditions.push({ email: req.user.email });
 

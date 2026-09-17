@@ -6,14 +6,18 @@ import { useAuth } from '../context/AuthContext';
 
 export function MobileNav() {
   const { totalItems } = useCart();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/shop', label: 'Shop', icon: Compass },
     { to: '/request-product', label: 'Request', icon: PlusCircle, highlight: true },
     { to: '/cart', label: 'Cart', icon: ShoppingBag, badge: totalItems },
-    { to: user ? '/account' : '/login', label: user ? 'Account' : 'Login', icon: User }
+    {
+      to: user ? (user.role === 'admin' ? '/admin' : '/account') : (loading ? '#' : '/login'),
+      label: user ? (user.role === 'admin' ? 'Admin' : 'Account') : (loading ? '...' : 'Login'),
+      icon: User
+    }
   ];
 
   return (

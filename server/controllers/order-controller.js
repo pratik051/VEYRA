@@ -58,7 +58,8 @@ export async function createCheckoutOrder(req, res) {
     const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     const orderId = `ORD-NP-${randomSuffix}`;
 
-    const userId = req.user ? String(req.user._id) : (body.userId || "");
+    const rawUserId = req.user ? String(req.user._id) : String(body.userId || body.customerId || "").trim();
+    const userId = rawUserId || undefined;
 
     const normalizedItems = items.map((i) => ({
       productId: String(i.productId || i._id || i.id || ""),
@@ -73,7 +74,7 @@ export async function createCheckoutOrder(req, res) {
     const orderDoc = {
       orderId,
       userId: userId || undefined,
-      customerId: userId,
+      customerId: rawUserId || "",
       fullName,
       customerName: fullName,
       phone,

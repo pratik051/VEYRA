@@ -13,7 +13,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems } = useCart();
   const { wishlistCount } = useWishlist();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const location = useLocation();
 
@@ -147,25 +147,32 @@ export function Header() {
             </Link>
 
             {/* Account / Admin Button */}
-            <Link
-              to={user ? (user.role === 'admin' ? '/admin' : '/account') : '/login'}
-              className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 rounded-full bg-neutral-900 dark:bg-amber-400 hover:bg-neutral-800 dark:hover:bg-amber-300 text-white dark:text-neutral-950 text-xs font-bold transition shadow-2xs shrink-0"
-              title={user ? user.fullName : 'Login'}
-            >
-              {user && user.role === 'admin' ? (
-                <>
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden md:inline">Admin</span>
-                </>
-              ) : (
-                <>
-                  <User className="h-4 w-4" />
-                  <span className="hidden md:inline">
-                    {user ? user.fullName?.split(' ')[0] || 'Account' : 'Login'}
-                  </span>
-                </>
-              )}
-            </Link>
+            {loading && !user ? (
+              <div
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-neutral-200 dark:bg-[#1b254b] animate-pulse text-xs font-bold shrink-0 w-20 h-8 sm:h-9"
+                aria-label="Checking session..."
+              />
+            ) : (
+              <Link
+                to={user ? (user.role === 'admin' ? '/admin' : '/account') : '/login'}
+                className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 rounded-full bg-neutral-900 dark:bg-amber-400 hover:bg-neutral-800 dark:hover:bg-amber-300 text-white dark:text-neutral-950 text-xs font-bold transition shadow-2xs shrink-0"
+                title={user ? user.fullName : 'Login'}
+              >
+                {user && user.role === 'admin' ? (
+                  <>
+                    <Shield className="h-4 w-4" />
+                    <span className="hidden md:inline">Admin</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="h-4 w-4" />
+                    <span className="hidden md:inline">
+                      {user ? user.fullName?.split(' ')[0] || 'Account' : 'Login'}
+                    </span>
+                  </>
+                )}
+              </Link>
+            )}
           </div>
         </div>
 

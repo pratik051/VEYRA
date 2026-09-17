@@ -25,7 +25,7 @@ import { AISupportAssistant } from '../components/AISupportAssistant';
 import api from '../services/api';
 
 export function Account() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const { wishlist } = useWishlist();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,13 +57,14 @@ export function Account() {
   const [ticketMessage, setTicketMessage] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       navigate('/login');
       return;
     }
 
     loadAccountData();
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadAccountData = async () => {
     setLoading(true);
@@ -75,17 +76,21 @@ export function Account() {
         api.get('/api/user/tickets')
       ]);
 
-      if (ordersRes.status === 'fulfilled' && ordersRes.value.data?.orders) {
-        setOrders(ordersRes.value.data.orders);
+      if (ordersRes.status === 'fulfilled') {
+        const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
+        setOrders(Array.isArray(rawOrders) ? rawOrders : []);
       }
-      if (addrRes.status === 'fulfilled' && addrRes.value.data?.addresses) {
-        setAddresses(addrRes.value.data.addresses);
+      if (addrRes.status === 'fulfilled') {
+        const rawAddrs = addrRes.value.data?.addresses || (Array.isArray(addrRes.value.data) ? addrRes.value.data : []);
+        setAddresses(Array.isArray(rawAddrs) ? rawAddrs : []);
       }
-      if (reqRes.status === 'fulfilled' && reqRes.value.data?.requests) {
-        setProductRequests(reqRes.value.data.requests);
+      if (reqRes.status === 'fulfilled') {
+        const rawReqs = reqRes.value.data?.requests || (Array.isArray(reqRes.value.data) ? reqRes.value.data : []);
+        setProductRequests(Array.isArray(rawReqs) ? rawReqs : []);
       }
-      if (ticketRes.status === 'fulfilled' && ticketRes.value.data?.tickets) {
-        setTickets(ticketRes.value.data.tickets);
+      if (ticketRes.status === 'fulfilled') {
+        const rawTickets = ticketRes.value.data?.tickets || (Array.isArray(ticketRes.value.data) ? ticketRes.value.data : []);
+        setTickets(Array.isArray(rawTickets) ? rawTickets : []);
       }
     } catch (e) {
       console.error("Error loading account data:", e);
@@ -162,6 +167,15 @@ export function Account() {
     searchParams.set('tab', t);
     setSearchParams(searchParams);
   };
+
+  if (authLoading && !user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+        <div className="h-8 w-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+        <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Loading your account...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16">

@@ -34,7 +34,7 @@ import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
 
 export function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
 
@@ -72,12 +72,13 @@ export function AdminDashboard() {
   });
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user || user.role !== 'admin') {
       navigate('/admin/login');
       return;
     }
     loadAdminData();
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -89,8 +90,9 @@ export function AdminDashboard() {
         api.get('/api/admin/tickets')
       ]);
 
-      if (ordersRes.status === 'fulfilled' && ordersRes.value.data?.orders) {
-        setOrders(ordersRes.value.data.orders);
+      if (ordersRes.status === 'fulfilled') {
+        const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
+        setOrders(Array.isArray(rawOrders) ? rawOrders : []);
       }
       if (reqRes.status === 'fulfilled' && reqRes.value.data?.requests) {
         setRequests(reqRes.value.data.requests);
@@ -182,6 +184,14 @@ export function AdminDashboard() {
       return matchFilter && matchSearch;
     });
   }, [orders, orderFilter, searchQuery]);
+  if (authLoading && (!user || user.role !== 'admin')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+        <div className="h-8 w-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+        <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Verifying administrator session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-16">

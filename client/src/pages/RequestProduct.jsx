@@ -263,18 +263,15 @@ export function RequestProduct() {
         paymentProvider: paymentMethod,
         paymentTransactionId: transactionId || `TXN-${Date.now().toString().slice(-6)}`,
         paymentScreenshot: screenshotPreview || '',
-        userId: user?._id || ''
+        userId: user?.id || user?._id || '',
+        customerId: user?.id || user?._id || ''
       };
 
-      let res = await api.post('/api/india-order/create', payload);
-
-      const createdOrder = res.data?.order || {
-        _id: `LNK-IN-${Date.now().toString().slice(-6)}`,
-        invoiceNumber: `INV-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`,
-        ...payload,
-        paymentStatus: 'Pending Verification',
-        createdAt: new Date().toISOString()
-      };
+      const res = await api.post('/api/india-order/create', payload);
+      const createdOrder = res.data?.order;
+      if (!createdOrder) {
+        throw new Error(res.data?.error || 'Failed to place India order on server.');
+      }
 
       // Also register payment proof with payment-controller
       if (screenshotPreview || transactionId) {
