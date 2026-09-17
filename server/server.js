@@ -1,15 +1,35 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from local or root .env if present
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config();
+
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import { seedAdmin } from "./services/auth-service.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 async function startServer() {
-  await connectDB();
-  await seedAdmin();
-  app.listen(PORT, () => {
-    console.log(`🚀 SajiloMarts Express Backend running on port ${PORT}`);
+  const server = app.listen(PORT, async () => {
+    console.log(`🚀 SajiloMarts Express Backend successfully listening on port ${PORT}`);
+    try {
+      const conn = await connectDB();
+      if (conn) {
+        await seedAdmin();
+      }
+    } catch (err) {
+      console.error("[Database Connection Warning]:", err?.message || err);
+    }
   });
+
+  return server;
 }
 
 startServer();
