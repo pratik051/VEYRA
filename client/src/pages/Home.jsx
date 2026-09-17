@@ -14,24 +14,24 @@ export function Home() {
   return (
     <div className="space-y-12 sm:space-y-16 pb-16">
 
-      {/* ── 1. TOP HERO (full-width carousel) ── */}
+      {/* ── 1. INSTANT INDIAN URL VERIFICATION & QUOTE ── */}
+      <LinkVerifier />
+
+      {/* ── 2. Hero Carousel (full-width) ── */}
       <HeroCarousel />
 
-      {/* ── 2. Services & Guarantees ── */}
+      {/* ── 3. Services & Guarantees ── */}
       <ServicesHighlight />
 
-      {/* ── 3. Flash Sales with Countdown ── */}
+      {/* ── 4. Today's Flash Sales ── */}
       <FlashSalesSection
         products={sampleProducts}
         onQuickView={(product) => setQuickViewProduct(product)}
       />
 
-      {/* ── 4. Instant Indian URL Verification & Quote (full width) ── */}
-      <LinkVerifier />
-
       {/* ── 5. India Sourcing Section:
                LEFT  = Category Sidebar
-               RIGHT = Static India Sourcing Hero ── */}
+               RIGHT = India Sourcing Hero ── */}
       <section className="flex flex-col lg:flex-row gap-6 items-stretch">
         <div className="w-full lg:w-64 shrink-0">
           <CategorySidebar />
