@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { categoriesList, supportedPlatforms } from '../data/mockData';
+import { categoriesList } from '../data/mockData';
 
 export function CategorySidebar() {
   return (
@@ -29,47 +29,6 @@ export function CategorySidebar() {
         </ul>
       </div>
 
-      <hr className="border-neutral-100 dark:border-[#1b2559]" />
-
-      {/* Indian Marketplace Stores */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-widest text-neutral-400 dark:text-[#a3aed0]">
-            India Sourcing
-          </h3>
-          <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-            DIRECT
-          </span>
-        </div>
-        <ul className="space-y-1">
-          {supportedPlatforms.slice(0, 6).map((plat) => (
-            <li key={plat.id}>
-              <Link
-                to={`/shop/${plat.id}`}
-                className="flex items-center justify-between p-2 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-[#1b254b] hover:text-neutral-950 dark:hover:text-white transition-colors group"
-              >
-                <span className="truncate">{plat.name}</span>
-                <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium group-hover:text-neutral-700 dark:group-hover:text-neutral-200">
-                  {plat.badge}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Sourcing Banner Callout */}
-      <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-[#1b254b] dark:to-[#111c44] p-3.5 border border-amber-200/60 dark:border-[#1b2559] text-center space-y-2">
-        <p className="text-[11px] font-bold text-amber-950 dark:text-amber-300">
-          Want a specific item from India?
-        </p>
-        <Link
-          to="/request-product"
-          className="inline-block w-full py-2 px-3 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-[11px] font-black hover:bg-amber-500 hover:text-neutral-950 dark:hover:bg-amber-300 transition-colors shadow-xs"
-        >
-          Request Product ➔
-        </Link>
-      </div>
     </div>
   );
 }
