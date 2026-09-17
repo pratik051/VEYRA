@@ -10,7 +10,7 @@ export function CartProvider({ children }) {
       const saved = JSON.parse(localStorage.getItem('sajilomarts_cart') || '[]');
       if (Array.isArray(saved)) setItems(saved);
     } catch (e) {
-      console.error(e);
+      console.error("Failed to load cart:", e);
     }
   }, []);
 
@@ -19,29 +19,34 @@ export function CartProvider({ children }) {
     try {
       localStorage.setItem('sajilomarts_cart', JSON.stringify(newItems));
     } catch (e) {
-      console.error(e);
+      console.error("Failed to save cart:", e);
     }
   };
 
   const addToCart = (product, quantity = 1) => {
-    const existing = items.find((i) => i.id === product.id);
+    const qty = product.quantity || quantity || 1;
+    const prodId = product._id || product.id || product.slug;
+
+    const existingIndex = items.findIndex((i) => (i._id || i.id || i.slug) === prodId);
     let next;
-    if (existing) {
-      next = items.map((i) => (i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i));
+    if (existingIndex > -1) {
+      next = items.map((item, idx) =>
+        idx === existingIndex ? { ...item, quantity: item.quantity + qty } : item
+      );
     } else {
-      next = [...items, { ...product, quantity }];
+      next = [...items, { ...product, id: prodId, quantity: qty }];
     }
     save(next);
   };
 
   const removeFromCart = (id) => {
-    const next = items.filter((i) => i.id !== id);
+    const next = items.filter((i) => (i._id || i.id || i.slug) !== id);
     save(next);
   };
 
   const updateQty = (id, qty) => {
     if (qty <= 0) return removeFromCart(id);
-    const next = items.map((i) => (i.id === id ? { ...i, quantity: qty } : i));
+    const next = items.map((i) => ((i._id || i.id || i.slug) === id ? { ...i, quantity: qty } : i));
     save(next);
   };
 
@@ -49,10 +54,28 @@ export function CartProvider({ children }) {
     save([]);
   };
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0), [items]);
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0),
+    [items]
+  );
+
+  const totalItems = useMemo(
+    () => items.reduce((sum, item) => sum + (item.quantity || 1), 0),
+    [items]
+  );
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQty, clearCart, subtotal }}>
+    <CartContext.Provider
+      value={{
+        items,
+        totalItems,
+        subtotal,
+        addToCart,
+        removeFromCart,
+        updateQty,
+        clearCart
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

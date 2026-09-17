@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
 
-export function Login() {
+export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,24 +21,24 @@ export function Login() {
       if (res?.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/account');
+        setError('Access denied. Administrator privileges required.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+      setError(err.response?.data?.message || 'Invalid admin credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4 space-y-6">
+    <div className="max-w-md mx-auto py-16 px-4 space-y-6">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-neutral-100 mb-2">
-          <img src="/sajilomarts-logo.png" alt="SajiloMarts" className="h-10 w-auto" />
+        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-neutral-900 text-amber-400 mb-2 shadow-md">
+          <Shield className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-neutral-950">Welcome Back</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-neutral-950">Admin Control Panel</h1>
         <p className="text-xs text-neutral-500">
-          Sign in to access your orders, saved addresses, and wishlist.
+          Authorized staff and master administrator access portal.
         </p>
       </div>
 
@@ -52,14 +52,14 @@ export function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-800">Email Address</label>
+            <label className="text-xs font-bold text-neutral-800">Admin Email</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder="admin@sajilomarts.com"
                 required
                 className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-neutral-200 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-950"
               />
@@ -67,12 +67,7 @@ export function Login() {
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-bold text-neutral-800">Password</label>
-              <Link to="/forgot-password" className="text-[11px] font-semibold text-neutral-500 hover:text-neutral-900">
-                Forgot?
-              </Link>
-            </div>
+            <label className="text-xs font-bold text-neutral-800">Master Password</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
               <input
@@ -89,22 +84,15 @@ export function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In to Account'}</span>
+            <span>{loading ? 'Verifying...' : 'Access Admin Panel'}</span>
             <ArrowRight className="h-4 w-4" />
           </button>
         </form>
-
-        <div className="pt-2 text-center text-xs text-neutral-500">
-          Don't have an account?{' '}
-          <Link to="/signup" className="font-bold text-neutral-950 underline underline-offset-2">
-            Create Account
-          </Link>
-        </div>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default AdminLogin;

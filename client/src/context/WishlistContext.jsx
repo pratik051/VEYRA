@@ -3,38 +3,63 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
-  const [ids, setIds] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('sajilomarts_wishlist') || '[]');
-      if (Array.isArray(saved)) setIds(saved);
+      if (Array.isArray(saved)) setWishlist(saved);
     } catch (e) {
-      console.error(e);
+      console.error("Failed to load wishlist:", e);
     }
   }, []);
 
-  const save = (newIds) => {
-    setIds(newIds);
+  const save = (items) => {
+    setWishlist(items);
     try {
-      localStorage.setItem('sajilomarts_wishlist', JSON.stringify(newIds));
+      localStorage.setItem('sajilomarts_wishlist', JSON.stringify(items));
     } catch (e) {
-      console.error(e);
+      console.error("Failed to save wishlist:", e);
     }
   };
 
-  const toggleWishlist = (id) => {
-    if (ids.includes(id)) {
-      save(ids.filter((item) => item !== id));
+  const toggleWishlist = (productOrId) => {
+    const targetId = typeof productOrId === 'object'
+      ? (productOrId._id || productOrId.id || productOrId.slug)
+      : productOrId;
+
+    const exists = wishlist.some((item) => {
+      const itemId = typeof item === 'object' ? (item._id || item.id || item.slug) : item;
+      return itemId === targetId;
+    });
+
+    if (exists) {
+      save(wishlist.filter((item) => {
+        const itemId = typeof item === 'object' ? (item._id || item.id || item.slug) : item;
+        return itemId !== targetId;
+      }));
     } else {
-      save([...ids, id]);
+      save([...wishlist, productOrId]);
     }
   };
 
-  const isInWishlist = (id) => ids.includes(id);
+  const isInWishlist = (id) => {
+    return wishlist.some((item) => {
+      const itemId = typeof item === 'object' ? (item._id || item.id || item.slug) : item;
+      return itemId === id;
+    });
+  };
 
   return (
-    <WishlistContext.Provider value={{ ids, toggleWishlist, isInWishlist }}>
+    <WishlistContext.Provider
+      value={{
+        wishlist,
+        wishlistCount: wishlist.length,
+        ids: wishlist.map((item) => (typeof item === 'object' ? item._id || item.id || item.slug : item)),
+        toggleWishlist,
+        isInWishlist
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );
