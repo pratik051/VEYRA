@@ -15,21 +15,23 @@ export async function getUserOrders(req, res) {
       { userId },
       { customerId: userId }
     ];
-    if (req.user.phone) {
-      queryConditions.push({ phone: req.user.phone });
+    if (req.user.phone && req.user.phone.trim()) {
+      queryConditions.push({ phone: req.user.phone.trim() });
     }
-    if (req.user.email) {
-      queryConditions.push({ email: req.user.email });
+    if (req.user.email && req.user.email.trim()) {
+      queryConditions.push({ email: req.user.email.trim().toLowerCase() });
     }
 
-    const orders = await IndiaOrderModel.find({ $or: queryConditions })
+    const orders = await IndiaOrderModel.find(
+      queryConditions.length > 0 ? { $or: queryConditions } : { userId }
+    )
       .sort({ createdAt: -1 })
       .lean();
 
     return res.json({ success: true, orders: orders || [] });
   } catch (error) {
-    console.error("[GET /api/user/orders Error]:", error);
-    return res.status(500).json({ error: error.message || "Failed to fetch user orders." });
+    console.error("[GET /api/user/orders Error]:", error?.message || error);
+    return res.status(500).json({ error: "Failed to fetch user orders." });
   }
 }
 

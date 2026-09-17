@@ -6,14 +6,18 @@ export async function authenticateUser(req, res, next) {
     let token = null;
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
-    } else if (req.cookies && req.cookies.sajilomarts_session) {
-      token = req.cookies.sajilomarts_session;
     } else if (req.headers["x-session-token"]) {
       token = req.headers["x-session-token"];
+    } else if (req.cookies && req.cookies.sajilomarts_session) {
+      token = req.cookies.sajilomarts_session;
+    } else if (req.headers.cookie) {
+      const match = req.headers.cookie.match(/sajilomarts_session=([^;]+)/);
+      if (match) token = decodeURIComponent(match[1]);
     }
 
-    if (!token) {
+    if (!token || token === "null" || token === "undefined") {
       req.user = null;
+      req.sessionToken = null;
       return next();
     }
 
@@ -23,6 +27,7 @@ export async function authenticateUser(req, res, next) {
     next();
   } catch (error) {
     req.user = null;
+    req.sessionToken = null;
     next();
   }
 }
