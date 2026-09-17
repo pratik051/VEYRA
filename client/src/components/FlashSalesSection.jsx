@@ -49,7 +49,7 @@ export function FlashSalesSection({ products = [], onQuickView }) {
           </div>
 
           <div className="flex flex-wrap items-baseline gap-4 sm:gap-8">
-            <h2 className="text-3xl sm:text-4xl font-black text-neutral-950 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
               Today's Flash Sales
             </h2>
 
@@ -83,14 +83,14 @@ export function FlashSalesSection({ products = [], onQuickView }) {
           <button
             onClick={() => handleScroll("left")}
             aria-label="Previous Slide"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all duration-200 shadow-2xs"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-900 hover:text-white dark:hover:bg-amber-400 dark:hover:text-neutral-950 transition-all duration-200 shadow-2xs"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             onClick={() => handleScroll("right")}
             aria-label="Next Slide"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all duration-200 shadow-2xs"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-900 hover:text-white dark:hover:bg-amber-400 dark:hover:text-neutral-950 transition-all duration-200 shadow-2xs"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -113,14 +113,14 @@ export function FlashSalesSection({ products = [], onQuickView }) {
       <div className="text-center pt-2">
         <Link
           to="/shop"
-          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-8 py-3.5 text-xs sm:text-sm font-black text-white hover:bg-red-600 transition-all duration-200 shadow-md hover:scale-105"
+          className="inline-flex items-center gap-2 rounded-full bg-neutral-950 dark:bg-amber-400 px-8 py-3.5 text-xs sm:text-sm font-black text-white dark:text-neutral-950 hover:bg-red-600 dark:hover:bg-amber-300 transition-all duration-200 shadow-md hover:scale-105"
         >
           <span>View All Flash Products</span>
           <span>→</span>
         </Link>
       </div>
 
-      <div className="border-b border-neutral-100 pt-8" />
+      <div className="border-b border-neutral-200 dark:border-[#1b2559] pt-8" />
     </section>
   );
 }

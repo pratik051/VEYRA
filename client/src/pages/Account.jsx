@@ -173,7 +173,7 @@ export function Account() {
           </div>
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-2">
-              <h1 className="text-xl sm:text-2xl font-black">{user?.fullName || 'Valued Customer'}</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-white">{user?.fullName || 'Valued Customer'}</h1>
               {user?.role === 'admin' && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-400 text-neutral-950 text-[10px] font-black uppercase">
                   Admin
@@ -204,7 +204,7 @@ export function Account() {
       </div>
 
       {/* Account Navigation Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200 dark:border-[#1b2559]">
         {[
           { id: 'orders', label: 'My Orders', icon: Package, count: orders.length },
           { id: 'requests', label: 'India Requests', icon: FileText, count: productRequests.length },
@@ -220,14 +220,14 @@ export function Account() {
               onClick={() => setTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs whitespace-nowrap transition-all ${
                 isActive
-                  ? 'border-neutral-950 text-neutral-950'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-800'
+                  ? 'border-neutral-950 dark:border-amber-400 text-neutral-950 dark:text-amber-400'
+                  : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
               }`}
             >
               <Icon className="h-4 w-4" />
               <span>{tab.label}</span>
               {tab.count > 0 && (
-                <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-600">
+                <span className="rounded-full bg-neutral-100 dark:bg-[#1b254b] px-1.5 py-0.5 text-[10px] font-bold text-neutral-600 dark:text-neutral-300">
                   {tab.count}
                 </span>
               )}
@@ -242,30 +242,30 @@ export function Account() {
       {activeTab === 'orders' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950">Order History</h3>
-            <Link to="/shop" className="text-xs font-bold text-red-600 underline">
+            <h3 className="text-lg font-black text-neutral-950 dark:text-white">Order History</h3>
+            <Link to="/shop" className="text-xs font-bold text-red-600 dark:text-amber-400 underline">
               Browse More Products
             </Link>
           </div>
 
           {orders.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 bg-white p-12 text-center space-y-3">
-              <Package className="h-8 w-8 text-neutral-300 mx-auto" />
-              <h4 className="text-sm font-bold text-neutral-900">No Orders Found</h4>
-              <p className="text-xs text-neutral-500">
+            <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
+              <Package className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Orders Found</h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 You haven't placed any orders yet. Browse our catalog to get started!
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {orders.map((ord) => (
-                <div key={ord._id} className="p-5 rounded-2xl bg-white border border-neutral-200 shadow-2xs space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-100 text-xs">
+                <div key={ord._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-100 dark:border-[#1b2559] text-xs">
                     <div>
                       <span className="font-bold text-neutral-400">Order ID: </span>
-                      <span className="font-black text-neutral-950">{ord._id}</span>
+                      <span className="font-black text-neutral-950 dark:text-amber-400">{ord._id}</span>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-[11px] self-start sm:self-auto">
+                    <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bold text-[11px] self-start sm:self-auto">
                       {ord.payment?.status || 'Processing'}
                     </span>
                   </div>
@@ -273,19 +273,19 @@ export function Account() {
                   <div className="space-y-2">
                     {ord.items?.map((item, i) => (
                       <div key={i} className="flex justify-between items-center text-xs">
-                        <span className="text-neutral-800 font-medium">
+                        <span className="text-neutral-800 dark:text-neutral-200 font-medium">
                           {item.name} × {item.quantity}
                         </span>
-                        <span className="font-bold text-neutral-950">
+                        <span className="font-bold text-neutral-950 dark:text-white">
                           NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex justify-between pt-2 border-t border-neutral-100 text-xs font-black">
+                  <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559] text-xs font-black text-neutral-950 dark:text-white">
                     <span>Total Amount:</span>
-                    <span>NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}</span>
+                    <span className="text-emerald-600 dark:text-emerald-400">NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}</span>
                   </div>
                 </div>
               ))}
@@ -298,35 +298,35 @@ export function Account() {
       {activeTab === 'requests' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950">India Sourcing Requests</h3>
+            <h3 className="text-lg font-black text-neutral-950 dark:text-white">India Sourcing Requests</h3>
             <Link
               to="/request-product"
-              className="px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs font-bold hover:bg-neutral-800"
+              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
             >
               + New Sourcing Link
             </Link>
           </div>
 
           {productRequests.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 bg-white p-12 text-center space-y-3">
-              <FileText className="h-8 w-8 text-neutral-300 mx-auto" />
-              <h4 className="text-sm font-bold text-neutral-900">No Sourcing Requests Yet</h4>
-              <p className="text-xs text-neutral-500">
+            <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
+              <FileText className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Sourcing Requests Yet</h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Found a product on Amazon, Flipkart or Myntra? Paste its URL to request delivery!
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {productRequests.map((req) => (
-                <div key={req._id} className="p-5 rounded-2xl bg-white border border-neutral-200 space-y-2 text-xs">
+                <div key={req._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 text-xs">
                   <div className="flex justify-between font-bold">
-                    <span className="text-neutral-900">{req.productName || 'Sourced Item'}</span>
-                    <span className="text-amber-600">{req.status || 'Pending Review'}</span>
+                    <span className="text-neutral-900 dark:text-white">{req.productName || 'Sourced Item'}</span>
+                    <span className="text-amber-600 dark:text-amber-400">{req.status || 'Pending Review'}</span>
                   </div>
                   <p className="text-neutral-400 truncate">{req.productUrl}</p>
-                  <div className="flex justify-between pt-2 border-t border-neutral-100">
-                    <span className="text-neutral-500">Source: ₹{req.indianPriceINR} INR</span>
-                    <span className="font-black text-neutral-950">NPR {(req.finalAmountNPR || 0).toLocaleString()}</span>
+                  <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559]">
+                    <span className="text-neutral-500 dark:text-neutral-400">Source: ₹{req.indianPriceINR} INR</span>
+                    <span className="font-black text-neutral-950 dark:text-amber-400">NPR {(req.finalAmountNPR || 0).toLocaleString()}</span>
                   </div>
                 </div>
               ))}
@@ -339,25 +339,25 @@ export function Account() {
       {activeTab === 'addresses' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950">Saved Delivery Addresses</h3>
+            <h3 className="text-lg font-black text-neutral-950 dark:text-white">Saved Delivery Addresses</h3>
             <button
               onClick={() => setShowAddAddress(!showAddAddress)}
-              className="px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs font-bold hover:bg-neutral-800"
+              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
             >
               + Add Address
             </button>
           </div>
 
           {showAddAddress && (
-            <form onSubmit={handleAddAddress} className="p-6 rounded-3xl bg-neutral-50 border border-neutral-200 space-y-4">
-              <h4 className="text-xs font-black uppercase text-neutral-700">New Address Details</h4>
+            <form onSubmit={handleAddAddress} className="p-6 rounded-3xl bg-neutral-50 dark:bg-[#0b1437] border border-neutral-200 dark:border-[#1b2559] space-y-4">
+              <h4 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-200">New Address Details</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   type="text"
                   placeholder="Full Recipient Name"
                   value={newAddr.fullName}
                   onChange={(e) => setNewAddr({ ...newAddr, fullName: e.target.value })}
-                  className="rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
                 <input
@@ -365,16 +365,16 @@ export function Account() {
                   placeholder="Phone Number"
                   value={newAddr.phone}
                   onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
-                  className="rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
                 <select
                   value={newAddr.province}
                   onChange={(e) => setNewAddr({ ...newAddr, province: e.target.value })}
-                  className="rounded-xl border border-neutral-200 px-3 py-2 text-xs sm:col-span-2"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   {nepalProvinces.map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <option key={p} value={p} className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">{p}</option>
                   ))}
                 </select>
                 <input
@@ -382,7 +382,7 @@ export function Account() {
                   placeholder="City (e.g. Kathmandu)"
                   value={newAddr.city}
                   onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                  className="rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
                 <input
@@ -390,7 +390,7 @@ export function Account() {
                   placeholder="Street / Landmark"
                   value={newAddr.street}
                   onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
-                  className="rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
               </div>
@@ -398,13 +398,13 @@ export function Account() {
                 <button
                   type="button"
                   onClick={() => setShowAddAddress(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl border border-neutral-300 dark:border-[#1b2559] text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-[#1b254b] transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-neutral-950 text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
                 >
                   Save Address
                 </button>
@@ -414,19 +414,19 @@ export function Account() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {addresses.map((addr) => (
-              <div key={addr._id} className="p-5 rounded-2xl bg-white border border-neutral-200 space-y-2 text-xs">
+              <div key={addr._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-neutral-900">{addr.fullName}</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{addr.fullName}</span>
                   <button
                     onClick={() => handleDeleteAddress(addr._id)}
-                    className="text-neutral-400 hover:text-red-600"
+                    className="text-neutral-400 hover:text-red-600 transition"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-neutral-600">{addr.street}, {addr.city}</p>
+                <p className="text-neutral-600 dark:text-neutral-300">{addr.street}, {addr.city}</p>
                 <p className="text-neutral-400">{addr.province}</p>
-                <span className="text-neutral-700 font-semibold block pt-1">Phone: {addr.phone}</span>
+                <span className="text-neutral-700 dark:text-neutral-300 font-semibold block pt-1">Phone: {addr.phone}</span>
               </div>
             ))}
           </div>
@@ -451,40 +451,40 @@ export function Account() {
             </div>
             <button
               onClick={() => setShowNewTicket(!showNewTicket)}
-              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 transition"
+              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
             >
               + Open New Ticket
             </button>
           </div>
 
           {showNewTicket && (
-            <form onSubmit={handleCreateTicket} className="p-6 rounded-3xl bg-neutral-50 border border-neutral-200 space-y-4">
-              <h4 className="text-xs font-black uppercase text-neutral-700">Submit Support Inquiry</h4>
+            <form onSubmit={handleCreateTicket} className="p-6 rounded-3xl bg-neutral-50 dark:bg-[#0b1437] border border-neutral-200 dark:border-[#1b2559] space-y-4">
+              <h4 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-200">Submit Support Inquiry</h4>
               <div className="space-y-3">
                 <input
                   type="text"
                   placeholder="Ticket Subject / Order ID"
                   value={ticketSubject}
                   onChange={(e) => setTicketSubject(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
                 <select
                   value={ticketCategory}
                   onChange={(e) => setTicketCategory(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
-                  <option value="Order Delivery">Order & Delivery Status</option>
-                  <option value="Payment Verification">Payment & QR Verification</option>
-                  <option value="India Sourcing Quote">India Sourcing & Customs Inquiry</option>
-                  <option value="Product Return / Exchange">Return / Exchange Request</option>
+                  <option value="Order Delivery" className="bg-white dark:bg-[#0b1437]">Order & Delivery Status</option>
+                  <option value="Payment Verification" className="bg-white dark:bg-[#0b1437]">Payment & QR Verification</option>
+                  <option value="India Sourcing Quote" className="bg-white dark:bg-[#0b1437]">India Sourcing & Customs Inquiry</option>
+                  <option value="Product Return / Exchange" className="bg-white dark:bg-[#0b1437]">Return / Exchange Request</option>
                 </select>
                 <textarea
                   placeholder="Describe your issue or query..."
                   rows={3}
                   value={ticketMessage}
                   onChange={(e) => setTicketMessage(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-xs"
+                  className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                   required
                 />
               </div>
@@ -492,13 +492,13 @@ export function Account() {
                 <button
                   type="button"
                   onClick={() => setShowNewTicket(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl border border-neutral-300 dark:border-[#1b2559] text-neutral-700 dark:text-neutral-300 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-[#1b254b] transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-black hover:bg-red-700"
+                  className="px-5 py-2 rounded-xl bg-amber-400 text-neutral-950 font-black hover:bg-amber-300 text-xs transition"
                 >
                   Submit Ticket ➔
                 </button>
@@ -507,18 +507,18 @@ export function Account() {
           )}
 
           {tickets.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 bg-white p-12 text-center space-y-3">
-              <HelpCircle className="h-8 w-8 text-neutral-300 mx-auto" />
-              <h4 className="text-sm font-bold text-neutral-900">No Support Tickets</h4>
-              <p className="text-xs text-neutral-500">Need help with an order? Open a ticket above!</p>
+            <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
+              <HelpCircle className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Support Tickets</h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Need help with an order? Open a ticket above!</p>
             </div>
           ) : (
             <div className="space-y-3">
               {tickets.map((t) => (
-                <div key={t._id} className="p-5 rounded-2xl bg-white border border-neutral-200 space-y-2 text-xs">
+                <div key={t._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 text-xs">
                   <div className="flex justify-between font-bold">
-                    <span className="text-neutral-900">{t.subject}</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[10px]">
+                    <span className="text-neutral-900 dark:text-white">{t.subject}</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 dark:bg-[#1b254b] text-neutral-700 dark:text-neutral-300 text-[10px]">
                       {t.status || 'Open'}
                     </span>
                   </div>
@@ -533,12 +533,12 @@ export function Account() {
       {/* 5. WISHLIST */}
       {activeTab === 'wishlist' && (
         <div className="space-y-4">
-          <h3 className="text-lg font-black text-neutral-950">Saved Wishlist Items</h3>
+          <h3 className="text-lg font-black text-neutral-950 dark:text-white">Saved Wishlist Items</h3>
           {wishlist.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 bg-white p-12 text-center space-y-3">
-              <Heart className="h-8 w-8 text-neutral-300 mx-auto" />
-              <h4 className="text-sm font-bold text-neutral-900">Your Wishlist is Empty</h4>
-              <p className="text-xs text-neutral-500">Save products you love while browsing our store.</p>
+            <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
+              <Heart className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Your Wishlist is Empty</h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Save products you love while browsing our store.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

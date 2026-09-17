@@ -81,15 +81,15 @@ export function GeminiChatbot() {
 
       {/* Chat Window Modal */}
       {isOpen && (
-        <div className="flex flex-col w-[350px] sm:w-[400px] h-[520px] rounded-3xl bg-white shadow-2xl border border-neutral-200 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="flex flex-col w-[350px] sm:w-[400px] h-[520px] rounded-3xl bg-white dark:bg-[#111c44] shadow-2xl border border-neutral-200 dark:border-[#1b2559] overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between bg-neutral-950 text-white p-4">
+          <div className="flex items-center justify-between bg-neutral-950 dark:bg-[#0b1437] text-white p-4 border-b border-neutral-800 dark:border-[#1b2559]">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-amber-400 text-neutral-950 shadow-xs">
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-xs font-black">SajiloMarts AI Concierge</h4>
+                <h4 className="text-xs font-black text-white">SajiloMarts AI Concierge</h4>
                 <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
                   <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>Online • Ready to assist</span>
@@ -107,28 +107,28 @@ export function GeminiChatbot() {
           </div>
 
           {/* Messages Area */}
-          <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-neutral-50/50">
+          <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto space-y-3 bg-neutral-50/50 dark:bg-[#0b1437]">
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.role === 'assistant' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-neutral-950 mt-1">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-800" />
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-400/20 text-neutral-950 dark:text-amber-400 mt-1">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-800 dark:text-amber-400" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-2xl p-3 text-xs leading-relaxed ${
                     m.role === 'user'
-                      ? 'bg-neutral-950 text-white rounded-br-xs'
-                      : 'bg-white text-neutral-800 border border-neutral-200 shadow-2xs rounded-bl-xs'
+                      ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 rounded-br-xs'
+                      : 'bg-white dark:bg-[#111c44] text-neutral-800 dark:text-white border border-neutral-200 dark:border-[#1b2559] shadow-2xs rounded-bl-xs'
                   }`}
                 >
                   {m.text}
                 </div>
                 {m.role === 'user' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-neutral-200 text-neutral-700 mt-1">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-neutral-200 dark:bg-[#1b2559] text-neutral-700 dark:text-neutral-200 mt-1">
                     <User className="h-3.5 w-3.5" />
                   </div>
                 )}
@@ -144,18 +144,18 @@ export function GeminiChatbot() {
           </div>
 
           {/* Input Footer */}
-          <form onSubmit={handleSend} className="p-3 bg-white border-t border-neutral-100 flex items-center gap-2">
+          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-[#111c44] border-t border-neutral-100 dark:border-[#1b2559] flex items-center gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything about shopping, links, or orders..."
-              className="flex-1 bg-neutral-100 rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-950"
+              className="flex-1 bg-neutral-100 dark:bg-[#0b1437] rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-[#a3aed0] border border-transparent dark:border-[#1b2559] focus:outline-none focus:ring-2 focus:ring-neutral-950 dark:focus:ring-amber-400"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 text-white hover:bg-red-600 disabled:opacity-40 transition-colors shrink-0"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-amber-300 disabled:opacity-40 transition-colors shrink-0"
               aria-label="Send Message"
             >
               <Send className="h-4 w-4" />

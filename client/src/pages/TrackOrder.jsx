@@ -52,37 +52,37 @@ export function TrackOrder() {
         <span className="text-xs font-black uppercase text-amber-500 tracking-wider">
           Real-time Nepal Fulfillment
         </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
           Track Your Order
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
           Enter your Order Reference Number to view live cross-border transit and doorstep delivery status.
         </p>
       </div>
 
       {/* Track Form Card */}
-      <div className="rounded-3xl bg-white border border-neutral-200 p-6 sm:p-8 shadow-2xs space-y-4">
+      <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 sm:p-8 shadow-2xs space-y-4">
         <form onSubmit={handleTrack} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-neutral-800">Order ID *</label>
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Order ID *</label>
               <input
                 type="text"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 placeholder="e.g. ORD-10293 or IN-ORD-492"
-                className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-neutral-950"
+                className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3.5 py-2.5 text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-neutral-800">Phone Number (Optional)</label>
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Phone Number (Optional)</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 9841XXXXXX"
-                className="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-950"
+                className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
           </div>
@@ -90,7 +90,7 @@ export function TrackOrder() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition flex items-center justify-center gap-2 shadow-sm"
           >
             <Search className="h-4 w-4" />
             <span>{loading ? 'Locating Package...' : 'Track Package Status ➔'}</span>
@@ -104,15 +104,15 @@ export function TrackOrder() {
 
       {/* Tracking Results Card */}
       {orderData && (
-        <div className="rounded-3xl bg-white border border-neutral-200 p-6 sm:p-8 space-y-6 shadow-xl animate-in fade-in duration-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100">
+        <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 sm:p-8 space-y-6 shadow-xl animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-[#1b2559]">
             <div>
               <span className="text-[10px] font-bold text-neutral-400 uppercase">Package ID</span>
-              <h3 className="text-lg font-black text-neutral-950">{orderData.orderId}</h3>
+              <h3 className="text-lg font-black text-neutral-950 dark:text-white">{orderData.orderId}</h3>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black">
+              <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black">
                 {orderData.status || 'In Transit'}
               </span>
             </div>
@@ -120,23 +120,23 @@ export function TrackOrder() {
 
           {/* Details Overview */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-            <div className="p-3.5 rounded-2xl bg-neutral-50">
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-[#0b1437]">
               <span className="text-neutral-400 block text-[10px] font-bold uppercase">Order Placed</span>
-              <span className="font-bold text-neutral-900">{orderData.createdAt}</span>
+              <span className="font-bold text-neutral-900 dark:text-white">{orderData.createdAt}</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-neutral-50">
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-[#0b1437]">
               <span className="text-neutral-400 block text-[10px] font-bold uppercase">Estimated Delivery</span>
-              <span className="font-bold text-emerald-600">{orderData.estimatedDelivery}</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">{orderData.estimatedDelivery}</span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-neutral-50 col-span-2 sm:col-span-1">
+            <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-[#0b1437] col-span-2 sm:col-span-1">
               <span className="text-neutral-400 block text-[10px] font-bold uppercase">Destination</span>
-              <span className="font-bold text-neutral-900">{orderData.destination}</span>
+              <span className="font-bold text-neutral-900 dark:text-white">{orderData.destination}</span>
             </div>
           </div>
 
           {/* Vertical Timeline */}
           <div className="space-y-4 pt-4">
-            <h4 className="text-xs font-black uppercase text-neutral-400 tracking-wider">
+            <h4 className="text-xs font-black uppercase text-neutral-400 dark:text-[#a3aed0] tracking-wider">
               Transit Progress Stages
             </h4>
 
@@ -151,10 +151,10 @@ export function TrackOrder() {
                     <div
                       className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 z-10 ${
                         isCurrent
-                          ? 'bg-amber-400 text-neutral-950 ring-4 ring-amber-100'
+                          ? 'bg-amber-400 text-neutral-950 ring-4 ring-amber-100 dark:ring-amber-900/40'
                           : isPassed
-                          ? 'bg-neutral-950 text-white'
-                          : 'bg-neutral-100 text-neutral-400'
+                          ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950'
+                          : 'bg-neutral-100 dark:bg-[#1b254b] text-neutral-400 dark:text-neutral-500'
                       }`}
                     >
                       {isPassed ? (
@@ -169,16 +169,16 @@ export function TrackOrder() {
                       <span
                         className={`text-xs font-bold block ${
                           isCurrent
-                            ? 'text-neutral-950 font-black'
+                            ? 'text-neutral-950 dark:text-white font-black'
                             : isPassed
-                            ? 'text-neutral-800'
-                            : 'text-neutral-400'
+                            ? 'text-neutral-800 dark:text-neutral-200'
+                            : 'text-neutral-400 dark:text-neutral-500'
                         }`}
                       >
                         {stage}
                       </span>
                       {isCurrent && (
-                        <span className="text-[10px] text-amber-600 font-semibold">
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
                           Active Stage — In movement
                         </span>
                       )}

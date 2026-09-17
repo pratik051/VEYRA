@@ -6,10 +6,10 @@ export function NewArrivalBento() {
   return (
     <section className="space-y-6">
       <div className="space-y-1">
-        <span className="text-xs font-black text-red-600 uppercase tracking-wider">
+        <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
           Featured Drops
         </span>
-        <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 tracking-tight">
+        <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
           New Arrivals & Trending Collections
         </h2>
       </div>
@@ -27,7 +27,7 @@ export function NewArrivalBento() {
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-neutral-950 text-[10px] font-black uppercase">
               <Sparkles className="h-3 w-3" /> Flagship Tech
             </span>
-            <h3 className="text-2xl sm:text-3xl font-black">
+            <h3 className="text-2xl sm:text-3xl font-black text-white">
               Direct Indian Tech Drops
             </h3>
             <p className="text-xs text-neutral-300 max-w-md">
@@ -55,7 +55,7 @@ export function NewArrivalBento() {
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase">
               Streetwear
             </span>
-            <h4 className="text-lg font-black">Minimal Footwear</h4>
+            <h4 className="text-lg font-black text-white">Minimal Footwear</h4>
             <Link
               to="/shop?category=Fashion"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white transition-colors"
@@ -78,7 +78,7 @@ export function NewArrivalBento() {
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-black uppercase">
               Smart Wearables
             </span>
-            <h4 className="text-lg font-black">AMOLED Watches</h4>
+            <h4 className="text-lg font-black text-white">AMOLED Watches</h4>
             <Link
               to="/shop?category=Tech+%26+Gadgets"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white transition-colors"
@@ -101,7 +101,7 @@ export function ExperienceBanner() {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-neutral-950 text-xs font-black uppercase">
             ⚡ Zero Hassle Cross-Border
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
             Order Any Product Across India in 3 Simple Steps
           </h2>
           <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
@@ -153,15 +153,15 @@ export function ServicesHighlight() {
   ];
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-6 border-y border-neutral-100">
+    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 py-6 border-y border-neutral-200 dark:border-[#1b2559]">
       {perks.map((perk, i) => (
-        <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-neutral-50/50">
-          <div className="p-3 rounded-2xl bg-white shadow-2xs shrink-0 border border-neutral-100">
+        <div key={i} className="flex items-start gap-3.5 p-4 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200/80 dark:border-[#1b2559] shadow-2xs">
+          <div className="p-2.5 rounded-2xl bg-neutral-50 dark:bg-[#0b1437] shadow-2xs shrink-0 border border-neutral-200 dark:border-[#1b2559]">
             {perk.icon}
           </div>
           <div className="space-y-1">
-            <h4 className="text-xs font-bold text-neutral-900">{perk.title}</h4>
-            <p className="text-[11px] text-neutral-500 leading-snug">{perk.desc}</p>
+            <h4 className="text-xs font-bold text-neutral-900 dark:text-white">{perk.title}</h4>
+            <p className="text-[11px] text-neutral-500 dark:text-[#a3aed0] leading-snug">{perk.desc}</p>
           </div>
         </div>
       ))}

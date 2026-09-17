@@ -62,21 +62,21 @@ export function Contact() {
         <div className="space-y-4">
           <div className="p-6 rounded-3xl bg-neutral-950 dark:bg-[#111c44] text-white border border-neutral-900 dark:border-[#1b2559] space-y-2 shadow-sm">
             <Mail className="h-5 w-5 text-amber-400" />
-            <h4 className="text-xs font-bold text-neutral-400 uppercase">Email Support</h4>
+            <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Email Support</h4>
             <p className="text-xs font-semibold">support@sajilomarts.com</p>
-            <p className="text-[10px] text-neutral-400">Average response within 2 hours</p>
+            <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0]">Average response within 2 hours</p>
           </div>
 
           <div className="p-6 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 shadow-2xs">
             <Phone className="h-5 w-5 text-red-600" />
-            <h4 className="text-xs font-bold text-neutral-400 uppercase">Helpline Desk</h4>
+            <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Helpline Desk</h4>
             <p className="text-xs font-bold text-neutral-900 dark:text-white">+977 9841-XXXXXX</p>
             <p className="text-[10px] text-neutral-500 dark:text-[#a3aed0]">9:00 AM – 8:00 PM (Everyday)</p>
           </div>
 
           <div className="p-6 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 shadow-2xs">
             <MapPin className="h-5 w-5 text-emerald-600" />
-            <h4 className="text-xs font-bold text-neutral-400 uppercase">Nepal Hub</h4>
+            <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Nepal Hub</h4>
             <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Kathmandu &amp; Birgunj Transit</p>
             <p className="text-[10px] text-neutral-500 dark:text-[#a3aed0]">Cross-Border Logistics Center</p>
           </div>

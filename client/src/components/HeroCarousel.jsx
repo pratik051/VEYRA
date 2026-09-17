@@ -88,7 +88,7 @@ export function HeroCarousel() {
         <div className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-4">
           <Link
             to={slide.buttonLink}
-            className="inline-flex items-center gap-2 rounded-full bg-white text-neutral-950 px-5 py-2.5 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-extrabold shadow-lg hover:bg-amber-300 transition-all duration-200 hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-amber-400 text-neutral-950 dark:text-neutral-950 px-5 py-2.5 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-extrabold shadow-lg hover:bg-amber-300 dark:hover:bg-amber-300 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             <span>{slide.buttonText}</span>
             <ArrowRight className="h-4 w-4" />

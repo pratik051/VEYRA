@@ -266,24 +266,24 @@ export function Shop() {
     <div className="space-y-6 pb-20 font-sans">
       {/* 1. Breadcrumb & Figma Minimalist Title Area */}
       <div className="space-y-2 pt-2">
-        <nav className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400">
-          <Link to="/" className="hover:text-neutral-900 transition-colors">Home</Link>
+        <nav className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 dark:text-[#a3aed0]">
+          <Link to="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Home</Link>
           <span>/</span>
-          <span className="text-neutral-900 font-bold">Products</span>
+          <span className="text-neutral-900 dark:text-white font-bold">Products</span>
         </nav>
 
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-neutral-200/80 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-neutral-200/80 dark:border-[#1b2559] pb-4">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 tracking-tight uppercase">
+            <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight uppercase">
               Products
             </h1>
-            <span className="text-xs font-bold text-neutral-400">
+            <span className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0]">
               ({filteredProducts.length} items)
             </span>
           </div>
 
           {/* Slogan / Sourcing Note */}
-          <p className="text-xs font-medium text-neutral-500 max-w-md">
+          <p className="text-xs font-medium text-neutral-500 dark:text-[#a3aed0] max-w-md">
             Direct marketplace catalog &amp; curated fashion essentials delivered across Nepal.
           </p>
         </div>
@@ -294,18 +294,18 @@ export function Shop() {
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400 dark:text-[#a3aed0]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by product name, fabric, style..."
-              className="w-full pl-10 pr-9 py-2.5 rounded-2xl border border-neutral-200 bg-white text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 shadow-2xs"
+              className="w-full pl-10 pr-9 py-2.5 rounded-2xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-xs font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-[#a3aed0] focus:outline-none focus:border-neutral-950 dark:focus:border-amber-400 focus:ring-1 focus:ring-neutral-950 dark:focus:ring-amber-400 shadow-2xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-neutral-400 hover:text-neutral-800"
+                className="absolute right-3 top-2.5 text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -316,7 +316,7 @@ export function Shop() {
           <div className="flex items-center gap-2.5 shrink-0 justify-between md:justify-end">
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-neutral-950 text-white text-xs font-bold shadow-sm"
+              className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold shadow-sm"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               <span>Filters</span>
@@ -328,13 +328,13 @@ export function Shop() {
             </button>
 
             {/* Desktop Grid Layout Density Switcher (3 cols vs 4 cols) */}
-            <div className="hidden lg:flex items-center border border-neutral-200 rounded-xl p-1 bg-white shadow-2xs">
+            <div className="hidden lg:flex items-center border border-neutral-200 dark:border-[#1b2559] rounded-xl p-1 bg-white dark:bg-[#0b1437] shadow-2xs">
               <button
                 onClick={() => setGridCols(3)}
                 className={`p-1.5 rounded-lg transition ${
                   gridCols === 3
-                    ? 'bg-neutral-950 text-white'
-                    : 'text-neutral-400 hover:text-neutral-800'
+                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950'
+                    : 'text-neutral-400 dark:text-[#a3aed0] hover:text-neutral-800 dark:hover:text-white'
                 }`}
                 title="3 Columns (Spacious Fashion View)"
               >
@@ -344,8 +344,8 @@ export function Shop() {
                 onClick={() => setGridCols(4)}
                 className={`p-1.5 rounded-lg transition ${
                   gridCols === 4
-                    ? 'bg-neutral-950 text-white'
-                    : 'text-neutral-400 hover:text-neutral-800'
+                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950'
+                    : 'text-neutral-400 dark:text-[#a3aed0] hover:text-neutral-800 dark:hover:text-white'
                 }`}
                 title="4 Columns (Compact Grid)"
               >
@@ -354,21 +354,21 @@ export function Shop() {
             </div>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-2xl border border-neutral-200 shadow-2xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 hidden sm:inline">
+            <div className="flex items-center gap-2 bg-white dark:bg-[#0b1437] px-3 py-2 rounded-2xl border border-neutral-200 dark:border-[#1b2559] shadow-2xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-[#a3aed0] hidden sm:inline">
                 Sort:
               </span>
               <select
                 value={activeSort}
                 onChange={handleSortChange}
                 aria-label="Sort products"
-                className="bg-transparent text-xs font-bold text-neutral-900 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-bold text-neutral-900 dark:text-white focus:outline-none cursor-pointer"
               >
-                <option value="featured">Featured First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-                <option value="newest">New Arrivals</option>
+                <option value="featured" className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">Featured First</option>
+                <option value="price-low" className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">Price: Low to High</option>
+                <option value="price-high" className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">Price: High to Low</option>
+                <option value="rating" className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">Top Rated</option>
+                <option value="newest" className="bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white">New Arrivals</option>
               </select>
             </div>
           </div>
@@ -387,8 +387,8 @@ export function Shop() {
                 onClick={() => handleCategoryClick(cat)}
                 className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 shrink-0 cursor-pointer ${
                   isSelected
-                    ? 'bg-neutral-950 text-white shadow-sm scale-102'
-                    : 'bg-white border border-neutral-200/80 text-neutral-600 hover:text-neutral-950 hover:border-neutral-950'
+                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 shadow-sm scale-102'
+                    : 'bg-white dark:bg-[#111c44] border border-neutral-200/80 dark:border-[#1b2559] text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-950 dark:hover:border-amber-400'
                 }`}
               >
                 {cat}
@@ -400,45 +400,45 @@ export function Shop() {
         {/* Active Filters Removable Chips */}
         {activeFilterCount > 0 && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-xs font-bold text-neutral-400 mr-1">Active:</span>
+            <span className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] mr-1">Active:</span>
 
             {activeCategory !== 'All' && activeCategory !== 'All Products' && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-950 text-white text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-[11px] font-bold">
                 Category: {activeCategory}
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => handleCategoryClick('All')} />
               </span>
             )}
 
             {searchQuery && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-[#1b254b] border border-neutral-300 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold">
                 Query: &quot;{searchQuery}&quot;
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => setSearchQuery('')} />
               </span>
             )}
 
             {selectedSizes.map((sz) => (
-              <span key={sz} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+              <span key={sz} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-[#1b254b] border border-neutral-300 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold">
                 Size: {sz}
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => toggleSize(sz)} />
               </span>
             ))}
 
             {selectedColors.map((col) => (
-              <span key={col} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+              <span key={col} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-[#1b254b] border border-neutral-300 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold">
                 Color: {col}
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => toggleColor(col)} />
               </span>
             ))}
 
             {selectedFits.map((fit) => (
-              <span key={fit} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+              <span key={fit} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-[#1b254b] border border-neutral-300 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold">
                 Fit: {fit}
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => toggleFit(fit)} />
               </span>
             ))}
 
             {selectedRating > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-800 text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-[#1b254b] border border-neutral-300 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold">
                 Rating: {selectedRating}★+
                 <X className="h-3 w-3 cursor-pointer hover:opacity-75" onClick={() => setSelectedRating(0)} />
               </span>
@@ -457,19 +457,19 @@ export function Shop() {
       {/* 3. Main Catalog Section: Sidebar (Desktop) + Product Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* LEFT SIDEBAR FILTERS (Desktop) */}
-        <aside className="hidden md:block md:col-span-3 lg:col-span-3 bg-white p-5 rounded-3xl border border-neutral-200/80 shadow-2xs space-y-6 sticky top-24">
+        <aside className="hidden md:block md:col-span-3 lg:col-span-3 bg-white dark:bg-[#111c44] p-5 rounded-3xl border border-neutral-200/80 dark:border-[#1b2559] shadow-2xs space-y-6 sticky top-24">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between border-b border-neutral-100 pb-3.5">
+          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1b2559] pb-3.5">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-neutral-900" />
-              <h2 className="text-sm font-black uppercase tracking-wider text-neutral-950">
+              <SlidersHorizontal className="h-4 w-4 text-neutral-900 dark:text-amber-400" />
+              <h2 className="text-sm font-black uppercase tracking-wider text-neutral-950 dark:text-white">
                 Filters
               </h2>
             </div>
             {activeFilterCount > 0 && (
               <button
                 onClick={handleClearAllFilters}
-                className="text-[11px] font-bold text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-bold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="h-3 w-3" />
                 <span>Reset</span>
@@ -478,18 +478,18 @@ export function Shop() {
           </div>
 
           {/* Section 1: Size Selector (Square Buttons matching Figma) */}
-          <div className="space-y-3 border-b border-neutral-100 pb-5">
+          <div className="space-y-3 border-b border-neutral-100 dark:border-[#1b2559] pb-5">
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('size')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Size
               </h3>
               {openSections.size ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -504,8 +504,8 @@ export function Shop() {
                       onClick={() => toggleSize(sz)}
                       className={`h-10 rounded-xl font-black text-xs transition-all duration-150 flex items-center justify-center cursor-pointer ${
                         isSelected
-                          ? 'bg-neutral-950 text-white shadow-xs scale-102'
-                          : 'bg-white border border-neutral-200 text-neutral-800 hover:border-neutral-950 hover:bg-neutral-50'
+                          ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 shadow-xs scale-102'
+                          : 'bg-white dark:bg-[#0b1437] border border-neutral-200 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 hover:border-neutral-950 dark:hover:border-amber-400 hover:bg-neutral-50 dark:hover:bg-[#1b254b]'
                       }`}
                     >
                       {sz}
@@ -517,18 +517,18 @@ export function Shop() {
           </div>
 
           {/* Section 2: Availability (Checkboxes matching Figma) */}
-          <div className="space-y-3 border-b border-neutral-100 pb-5">
+          <div className="space-y-3 border-b border-neutral-100 dark:border-[#1b2559] pb-5">
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('availability')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Availability
               </h3>
               {openSections.availability ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -542,13 +542,13 @@ export function Shop() {
                       onChange={(e) =>
                         setAvailability((prev) => ({ ...prev, inStock: e.target.checked }))
                       }
-                      className="h-4 w-4 rounded text-neutral-950 focus:ring-neutral-950 border-neutral-300"
+                      className="h-4 w-4 rounded text-neutral-950 dark:text-amber-400 focus:ring-neutral-950 dark:focus:ring-amber-400 border-neutral-300 dark:border-[#1b2559]"
                     />
-                    <span className="font-semibold text-neutral-800 group-hover:text-black">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white">
                       Available (In Stock)
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-[#a3aed0] bg-neutral-100 dark:bg-[#0b1437] px-1.5 py-0.5 rounded">
                     {sampleProducts.filter((p) => (p.stock || 0) > 0).length}
                   </span>
                 </label>
@@ -561,13 +561,13 @@ export function Shop() {
                       onChange={(e) =>
                         setAvailability((prev) => ({ ...prev, outOfStock: e.target.checked }))
                       }
-                      className="h-4 w-4 rounded text-neutral-950 focus:ring-neutral-950 border-neutral-300"
+                      className="h-4 w-4 rounded text-neutral-950 dark:text-amber-400 focus:ring-neutral-950 dark:focus:ring-amber-400 border-neutral-300 dark:border-[#1b2559]"
                     />
-                    <span className="font-semibold text-neutral-800 group-hover:text-black">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white">
                       Out of Stock
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-[#a3aed0] bg-neutral-100 dark:bg-[#0b1437] px-1.5 py-0.5 rounded">
                     {sampleProducts.filter((p) => (p.stock || 0) === 0).length}
                   </span>
                 </label>
@@ -576,18 +576,18 @@ export function Shop() {
           </div>
 
           {/* Section 3: Colors (Swatches matching Figma) */}
-          <div className="space-y-3 border-b border-neutral-100 pb-5">
+          <div className="space-y-3 border-b border-neutral-100 dark:border-[#1b2559] pb-5">
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('colors')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Colors
               </h3>
               {openSections.colors ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -603,8 +603,8 @@ export function Shop() {
                       title={swatch.name}
                       className={`h-7 w-7 rounded-full border flex items-center justify-center transition-all cursor-pointer relative ${
                         isSelected
-                          ? 'ring-2 ring-neutral-950 ring-offset-2 scale-110'
-                          : 'hover:scale-110 border-neutral-300'
+                          ? 'ring-2 ring-neutral-950 dark:ring-amber-400 ring-offset-2 scale-110'
+                          : 'hover:scale-110 border-neutral-300 dark:border-neutral-600'
                       }`}
                       style={{ backgroundColor: swatch.hex }}
                     >
@@ -625,18 +625,18 @@ export function Shop() {
           </div>
 
           {/* Section 4: Price Range (NPR) */}
-          <div className="space-y-3 border-b border-neutral-100 pb-5">
+          <div className="space-y-3 border-b border-neutral-100 dark:border-[#1b2559] pb-5">
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('price')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Price Range (NPR)
               </h3>
               {openSections.price ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -644,7 +644,7 @@ export function Shop() {
               <div className="space-y-3 pt-1">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[10px] font-bold text-neutral-400 uppercase">Min NPR</label>
+                    <label className="text-[10px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Min NPR</label>
                     <input
                       type="number"
                       placeholder="0"
@@ -652,11 +652,11 @@ export function Shop() {
                       onChange={(e) =>
                         setPriceRange((prev) => ({ ...prev, min: e.target.value }))
                       }
-                      className="w-full p-2 text-xs rounded-xl border border-neutral-200 focus:outline-none focus:border-black"
+                      className="w-full p-2 text-xs rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-amber-400"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-neutral-400 uppercase">Max NPR</label>
+                    <label className="text-[10px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Max NPR</label>
                     <input
                       type="number"
                       placeholder="10,000"
@@ -664,7 +664,7 @@ export function Shop() {
                       onChange={(e) =>
                         setPriceRange((prev) => ({ ...prev, max: e.target.value }))
                       }
-                      className="w-full p-2 text-xs rounded-xl border border-neutral-200 focus:outline-none focus:border-black"
+                      className="w-full p-2 text-xs rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -673,19 +673,19 @@ export function Shop() {
                 <div className="flex flex-wrap gap-1.5 text-[10px] font-bold">
                   <button
                     onClick={() => setPriceRange({ min: '', max: '2000' })}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
+                    className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-neutral-200 border border-transparent dark:border-[#1b2559]"
                   >
                     &lt; 2,000
                   </button>
                   <button
                     onClick={() => setPriceRange({ min: '2000', max: '4000' })}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
+                    className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-neutral-200 border border-transparent dark:border-[#1b2559]"
                   >
                     2k - 4k
                   </button>
                   <button
                     onClick={() => setPriceRange({ min: '4000', max: '' })}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
+                    className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-neutral-200 border border-transparent dark:border-[#1b2559]"
                   >
                     &gt; 4,000
                   </button>
@@ -695,18 +695,18 @@ export function Shop() {
           </div>
 
           {/* Section 5: Fit / Style */}
-          <div className="space-y-3 border-b border-neutral-100 pb-5">
+          <div className="space-y-3 border-b border-neutral-100 dark:border-[#1b2559] pb-5">
             <div
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('fits')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Fit &amp; Cut
               </h3>
               {openSections.fits ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -720,9 +720,9 @@ export function Shop() {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleFit(fit)}
-                        className="h-4 w-4 rounded text-neutral-950 focus:ring-neutral-950 border-neutral-300"
+                        className="h-4 w-4 rounded text-neutral-950 dark:text-amber-400 focus:ring-neutral-950 dark:focus:ring-amber-400 border-neutral-300 dark:border-[#1b2559]"
                       />
-                      <span className="font-semibold text-neutral-800 group-hover:text-black">
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white">
                         {fit}
                       </span>
                     </label>
@@ -738,13 +738,13 @@ export function Shop() {
               className="flex items-center justify-between cursor-pointer"
               onClick={() => toggleSection('ratings')}
             >
-              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900">
+              <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
                 Ratings
               </h3>
               {openSections.ratings ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 dark:text-[#a3aed0]" />
               )}
             </div>
 
@@ -756,8 +756,8 @@ export function Shop() {
                     onClick={() => setSelectedRating(selectedRating === starCount ? 0 : starCount)}
                     className={`w-full flex items-center justify-between p-2 rounded-xl border transition ${
                       selectedRating === starCount
-                        ? 'bg-neutral-950 text-white border-black'
-                        : 'bg-white border-neutral-200 text-neutral-800 hover:border-black'
+                        ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 border-black dark:border-amber-400'
+                        : 'bg-white dark:bg-[#0b1437] border-neutral-200 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 hover:border-black dark:hover:border-amber-400'
                     }`}
                   >
                     <div className="flex items-center gap-1">
@@ -777,21 +777,21 @@ export function Shop() {
         {/* RIGHT MAIN CATALOG: Product Cards Grid */}
         <main className="col-span-1 md:col-span-9 lg:col-span-9 space-y-6">
           {filteredProducts.length === 0 ? (
-            <div className="py-20 text-center space-y-4 rounded-3xl border border-dashed border-neutral-300 bg-white p-8">
-              <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center mx-auto text-xl">
+            <div className="py-20 text-center space-y-4 rounded-3xl border border-dashed border-neutral-300 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-8">
+              <div className="h-12 w-12 rounded-full bg-neutral-100 dark:bg-[#0b1437] flex items-center justify-center mx-auto text-xl">
                 🔍
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-neutral-900">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                   No products match your selected filters
                 </h3>
-                <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                <p className="text-xs text-neutral-500 dark:text-[#a3aed0] max-w-sm mx-auto">
                   Try adjusting your size, category, price range or color filters to discover available products.
                 </p>
               </div>
               <button
                 onClick={handleClearAllFilters}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-950 text-white text-xs font-bold hover:bg-neutral-800 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition shadow-sm"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>Reset All Filters</span>
@@ -825,17 +825,17 @@ export function Shop() {
           />
 
           {/* Drawer content */}
-          <div className="relative w-full max-w-xs bg-white h-full overflow-y-auto shadow-2xl p-6 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-w-xs bg-white dark:bg-[#111c44] h-full overflow-y-auto shadow-2xl p-6 flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200 border-l border-neutral-200 dark:border-[#1b2559]">
             <div className="space-y-6">
               {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+              <div className="flex items-center justify-between border-b border-neutral-200 dark:border-[#1b2559] pb-4">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <h2 className="text-base font-black uppercase tracking-tight">Filter Products</h2>
+                  <SlidersHorizontal className="h-4 w-4 text-neutral-900 dark:text-amber-400" />
+                  <h2 className="text-base font-black uppercase tracking-tight text-neutral-950 dark:text-white">Filter Products</h2>
                 </div>
                 <button
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="p-1 rounded-full hover:bg-neutral-100"
+                  className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-[#0b1437] text-neutral-700 dark:text-neutral-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -843,7 +843,7 @@ export function Shop() {
 
               {/* Sizes in Drawer */}
               <div className="space-y-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800">Sizes</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-white">Sizes</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {SIZES.map((sz) => {
                     const isSelected = selectedSizes.includes(sz);
@@ -854,8 +854,8 @@ export function Shop() {
                         onClick={() => toggleSize(sz)}
                         className={`h-9 rounded-xl font-bold text-xs flex items-center justify-center ${
                           isSelected
-                            ? 'bg-neutral-950 text-white'
-                            : 'border border-neutral-200 text-neutral-800 bg-white'
+                            ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950'
+                            : 'border border-neutral-200 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#0b1437]'
                         }`}
                       >
                         {sz}
@@ -867,7 +867,7 @@ export function Shop() {
 
               {/* Colors in Drawer */}
               <div className="space-y-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800">Colors</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-white">Colors</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {COLOR_SWATCHES.map((swatch) => {
                     const isSelected = selectedColors.includes(swatch.name);
@@ -876,7 +876,7 @@ export function Shop() {
                         key={swatch.name}
                         onClick={() => toggleColor(swatch.name)}
                         className={`h-7 w-7 rounded-full border flex items-center justify-center ${
-                          isSelected ? 'ring-2 ring-black ring-offset-2' : 'border-neutral-300'
+                          isSelected ? 'ring-2 ring-black dark:ring-amber-400 ring-offset-2' : 'border-neutral-300 dark:border-neutral-600'
                         }`}
                         style={{ backgroundColor: swatch.hex }}
                       >
@@ -897,38 +897,38 @@ export function Shop() {
 
               {/* Price Range */}
               <div className="space-y-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800">Price (NPR)</h3>
+                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-white">Price (NPR)</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={priceRange.min}
                     onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
-                    className="p-2 text-xs rounded-xl border border-neutral-200"
+                    className="p-2 text-xs rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-950 dark:focus:border-amber-400"
                   />
                   <input
                     type="number"
                     placeholder="Max"
                     value={priceRange.max}
                     onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
-                    className="p-2 text-xs rounded-xl border border-neutral-200"
+                    className="p-2 text-xs rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-950 dark:focus:border-amber-400"
                   />
                 </div>
               </div>
             </div>
 
             {/* Bottom Drawer Actions */}
-            <div className="pt-6 border-t border-neutral-200 space-y-2">
+            <div className="pt-6 border-t border-neutral-200 dark:border-[#1b2559] space-y-2">
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full py-3 rounded-2xl bg-neutral-950 text-white font-black text-xs uppercase tracking-wider hover:bg-neutral-800 shadow-md"
+                className="w-full py-3 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 font-black text-xs uppercase tracking-wider hover:bg-neutral-800 dark:hover:bg-amber-300 shadow-md"
               >
                 Apply Filters ({filteredProducts.length} items)
               </button>
               {activeFilterCount > 0 && (
                 <button
                   onClick={handleClearAllFilters}
-                  className="w-full py-2.5 rounded-2xl border border-neutral-200 text-neutral-800 font-bold text-xs hover:bg-neutral-50"
+                  className="w-full py-2.5 rounded-2xl border border-neutral-200 dark:border-[#1b2559] text-neutral-800 dark:text-neutral-200 font-bold text-xs hover:bg-neutral-50 dark:hover:bg-[#0b1437]"
                 >
                   Clear All
                 </button>

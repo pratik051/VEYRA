@@ -31,8 +31,8 @@ export function ShopPlatform() {
   if (!meta) {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center space-y-4">
-        <h2 className="text-2xl font-black">Marketplace Not Found</h2>
-        <Link to="/shop" className="text-xs font-bold text-red-600 underline">
+        <h2 className="text-2xl font-black text-neutral-950 dark:text-white">Marketplace Not Found</h2>
+        <Link to="/shop" className="text-xs font-bold text-amber-500 hover:text-amber-400 underline">
           Return to Shop Catalog
         </Link>
       </div>
@@ -43,16 +43,16 @@ export function ShopPlatform() {
     <div className="space-y-8 pb-16">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs font-semibold text-neutral-400">
-        <Link to="/" className="hover:text-neutral-900 transition-colors flex items-center gap-1">
+        <Link to="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1">
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Home</span>
         </Link>
         <span>/</span>
-        <Link to="/shop" className="hover:text-neutral-900 transition-colors">
+        <Link to="/shop" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
           Marketplaces
         </Link>
         <span>/</span>
-        <span className="text-neutral-900 font-bold">{meta.name}</span>
+        <span className="text-neutral-900 dark:text-white font-bold">{meta.name}</span>
       </div>
 
       {/* Platform Banner */}
@@ -81,7 +81,7 @@ export function ShopPlatform() {
         <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
           <Link
             to={`/request-product?source=${meta.slug}`}
-            className="rounded-2xl bg-red-600 hover:bg-red-700 text-white px-6 py-3 text-xs font-black transition text-center shadow-md active:scale-95"
+            className="rounded-2xl bg-amber-400 hover:bg-amber-300 text-neutral-950 px-6 py-3 text-xs font-black transition text-center shadow-md active:scale-95"
           >
             Paste {meta.shortName} URL ➔
           </Link>
@@ -100,7 +100,7 @@ export function ShopPlatform() {
       {/* Sourced Products Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg sm:text-xl font-bold text-neutral-900">
+          <h3 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
             Available {meta.name} Sourced Products
           </h3>
           <span className="text-xs font-semibold text-neutral-400">

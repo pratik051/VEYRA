@@ -38,15 +38,15 @@ export function AdminLogin() {
         <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-neutral-900 text-amber-400 mb-2 shadow-md">
           <Shield className="h-8 w-8" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-neutral-950">Admin Control Panel</h1>
-        <p className="text-xs text-neutral-500">
+        <h1 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white">Admin Control Panel</h1>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Authorized staff and master administrator access portal.
         </p>
       </div>
 
-      <div className="rounded-3xl bg-white border border-neutral-200 p-6 sm:p-8 shadow-2xs space-y-5">
+      <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 sm:p-8 shadow-2xs space-y-5">
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -54,7 +54,7 @@ export function AdminLogin() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-800">Admin Email</label>
+            <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Admin Email</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
               <input
@@ -63,13 +63,13 @@ export function AdminLogin() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@sajilomarts.com"
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-neutral-200 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-950"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-800">Master Password</label>
+            <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Master Password</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
               <input
@@ -78,7 +78,7 @@ export function AdminLogin() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-neutral-200 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-950"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
           </div>
@@ -86,7 +86,7 @@ export function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
+            className="w-full py-3.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
           >
             <span>{loading ? 'Verifying...' : 'Access Admin Panel'}</span>
             <ArrowRight className="h-4 w-4" />
