@@ -65,7 +65,7 @@ export function ProductCard({ product, onQuickView }) {
     'Indian Store Sourced';
 
   return (
-    <div className="group relative flex flex-col rounded-lg bg-white border border-neutral-200 hover:border-neutral-300 transition-all duration-200 hover:shadow-sm overflow-hidden">
+    <div className="group relative flex flex-col rounded-xl bg-white border border-neutral-200/90 shadow-[0_6px_22px_rgba(0,0,0,0.07)] hover:shadow-[0_14px_35px_rgba(0,0,0,0.13)] transition-all duration-300 hover:border-neutral-300 overflow-hidden">
       {/* Top Media Container */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-50">
         <Link to={`/product/${product.slug || id}`} className="block h-full w-full">
