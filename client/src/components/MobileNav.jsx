@@ -17,8 +17,11 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200/80 px-2 py-1.5 shadow-2xl">
-      <div className="flex items-center justify-around">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0b1437]/95 backdrop-blur-md border-t border-neutral-200 dark:border-[#1b2559] px-2 py-1.5 shadow-2xl transition-colors"
+      aria-label="Mobile Bottom Navigation"
+    >
+      <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -27,8 +30,10 @@ export function MobileNav() {
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center p-1.5 rounded-xl transition-all relative ${
-                  isActive ? 'text-neutral-950 font-black' : 'text-neutral-400 font-semibold'
-                } ${item.highlight ? 'text-red-600' : ''}`
+                  isActive
+                    ? 'text-neutral-950 dark:text-amber-400 font-black'
+                    : 'text-neutral-500 dark:text-[#a3aed0] hover:text-neutral-900 dark:hover:text-white font-medium'
+                } ${item.highlight ? 'text-amber-600 dark:text-amber-400 font-black' : ''}`
               }
             >
               <div className="relative">
@@ -39,11 +44,13 @@ export function MobileNav() {
                   </span>
                 )}
               </div>
-              <span className="text-[10px] mt-0.5">{item.label}</span>
+              <span className="text-[10px] mt-0.5 tracking-tight">{item.label}</span>
             </NavLink>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
+
+export default MobileNav;

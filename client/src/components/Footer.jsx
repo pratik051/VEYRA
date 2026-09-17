@@ -5,8 +5,8 @@ import { MARKETPLACE_METAS } from '../constants/marketplaces';
 
 export function Footer() {
   return (
-    <footer className="bg-neutral-950 border-t border-neutral-900 text-neutral-400 pt-16 pb-24 md:pb-12 px-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-neutral-900">
+    <footer className="bg-neutral-950 dark:bg-[#070c27] border-t border-neutral-800 dark:border-[#1b2559] text-neutral-400 pt-16 pb-24 md:pb-12 px-4 transition-colors">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-neutral-800 dark:border-[#1b2559]">
         {/* Brand Column */}
         <div className="lg:col-span-2 space-y-4">
           <Link to="/" className="flex items-center gap-2.5 group inline-flex">
@@ -77,6 +77,12 @@ export function Footer() {
             <li>
               <Link to="/track-order" className="hover:text-white transition-colors">
                 Track Sourcing Package
+              </Link>
+            </li>
+            <li>
+              <Link to="/support" className="hover:text-amber-400 font-bold text-neutral-300 transition-colors flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                <span>AI Support &amp; Help Desk</span>
               </Link>
             </li>
             <li>

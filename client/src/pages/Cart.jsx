@@ -21,9 +21,10 @@ export function Cart() {
 
     if (found) {
       if (subtotal >= found.minOrder) {
-        const disc = found.discountType === 'percentage'
-          ? Math.round((subtotal * found.amount) / 100)
-          : found.amount;
+        const disc =
+          found.discountType === 'percentage'
+            ? Math.round((subtotal * found.amount) / 100)
+            : found.amount;
         setDiscount(disc);
         setCouponMsg(`✓ Coupon ${clean} applied! Saved NPR ${disc.toLocaleString()}`);
       } else {
@@ -37,26 +38,26 @@ export function Cart() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center space-y-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 mx-auto">
-          <ShoppingBag className="h-10 w-10" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#111c44] text-neutral-400 mx-auto">
+          <ShoppingBag className="h-10 w-10 text-amber-500" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-neutral-950">Your Cart is Empty</h2>
-          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+          <h2 className="text-2xl font-black text-neutral-950 dark:text-white">Your Cart is Empty</h2>
+          <p className="text-xs text-neutral-500 dark:text-[#a3aed0] max-w-sm mx-auto">
             Looks like you haven't added any items to your shopping cart yet.
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 rounded-2xl bg-neutral-950 px-6 py-3.5 text-xs font-black text-white hover:bg-red-600 transition shadow-md"
+            className="inline-flex items-center gap-2 rounded-2xl bg-neutral-950 dark:bg-amber-400 px-6 py-3.5 text-xs font-black text-white dark:text-neutral-950 hover:bg-amber-400 hover:text-neutral-950 transition shadow-md"
           >
             <span>Browse Products</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             to="/request-product"
-            className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100 px-6 py-3.5 text-xs font-bold text-neutral-800 hover:bg-neutral-200 transition"
+            className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100 dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] px-6 py-3.5 text-xs font-bold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 transition"
           >
             <span>Request Indian Sourcing</span>
           </Link>
@@ -68,41 +69,44 @@ export function Cart() {
   return (
     <div className="space-y-8 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 dark:border-[#1b2559] pb-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black text-neutral-950">Shopping Cart</h1>
-          <p className="text-xs text-neutral-500">
+          <h1 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white">Shopping Cart</h1>
+          <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">
             {items.length} unique items in your basket
           </p>
         </div>
         <button
           onClick={clearCart}
-          className="text-xs font-bold text-neutral-400 hover:text-red-600 transition"
+          className="text-xs font-bold text-neutral-400 hover:text-red-500 transition self-start sm:self-auto"
         >
           Clear All Items
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
         {/* Cart Items List */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-3xl bg-white border border-neutral-200 divide-y divide-neutral-100 overflow-hidden shadow-2xs">
+          <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] divide-y divide-neutral-100 dark:divide-[#1b2559] overflow-hidden shadow-2xs">
             {items.map((item) => (
-              <div key={item._id || item.id || item.slug} className="p-4 sm:p-6 flex gap-4 sm:gap-6 items-center">
+              <div
+                key={item._id || item.id || item.slug}
+                className="p-3.5 sm:p-6 flex gap-3 sm:gap-5 items-start"
+              >
                 <img
                   src={item.image || '/sajilomarts-logo.png'}
                   alt={item.name}
-                  className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover bg-neutral-100 shrink-0 border border-neutral-100"
+                  className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl object-cover bg-neutral-100 dark:bg-[#0b1437] shrink-0 border border-neutral-200 dark:border-[#1b2559]"
                 />
 
-                <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase">
+                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">
                       {item.source || 'SajiloMarts'}
                     </span>
                     <button
                       onClick={() => removeFromCart(item._id || item.id || item.slug)}
-                      className="text-neutral-400 hover:text-red-600 transition p-1"
+                      className="text-neutral-400 hover:text-red-500 transition p-1"
                       aria-label="Remove item"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -111,40 +115,42 @@ export function Cart() {
 
                   <Link
                     to={`/product/${item.slug || item.id}`}
-                    className="text-xs sm:text-sm font-bold text-neutral-900 line-clamp-2 hover:text-red-600 transition"
+                    className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 hover:text-amber-500 transition block"
                   >
                     {item.name}
                   </Link>
 
-                  <div className="flex items-center gap-3 pt-2">
-                    <span className="text-sm sm:text-base font-black text-neutral-950">
-                      NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-                    </span>
-                    {item.quantity > 1 && (
-                      <span className="text-[10px] text-neutral-400">
-                        (NPR {item.price.toLocaleString()} each)
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-sm sm:text-base font-black text-neutral-950 dark:text-amber-400">
+                        NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                       </span>
-                    )}
-                  </div>
-                </div>
+                      {item.quantity > 1 && (
+                        <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0]">
+                          ({item.price.toLocaleString()} ea)
+                        </span>
+                      )}
+                    </div>
 
-                {/* Quantity */}
-                <div className="flex items-center border border-neutral-200 rounded-xl overflow-hidden bg-neutral-50 shrink-0">
-                  <button
-                    onClick={() => updateQty(item._id || item.id || item.slug, (item.quantity || 1) - 1)}
-                    className="px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-200 font-bold text-xs"
-                  >
-                    -
-                  </button>
-                  <span className="px-2.5 py-1.5 text-xs font-black text-neutral-900">
-                    {item.quantity || 1}
-                  </span>
-                  <button
-                    onClick={() => updateQty(item._id || item.id || item.slug, (item.quantity || 1) + 1)}
-                    className="px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-200 font-bold text-xs"
-                  >
-                    +
-                  </button>
+                    {/* Quantity Stepper */}
+                    <div className="flex items-center border border-neutral-200 dark:border-[#1b2559] rounded-xl overflow-hidden bg-neutral-50 dark:bg-[#0b1437]">
+                      <button
+                        onClick={() => updateQty(item._id || item.id || item.slug, (item.quantity || 1) - 1)}
+                        className="px-2.5 py-1 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-[#1b254b] font-bold text-xs"
+                      >
+                        -
+                      </button>
+                      <span className="px-2.5 py-1 text-xs font-black text-neutral-900 dark:text-white">
+                        {item.quantity || 1}
+                      </span>
+                      <button
+                        onClick={() => updateQty(item._id || item.id || item.slug, (item.quantity || 1) + 1)}
+                        className="px-2.5 py-1 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-[#1b254b] font-bold text-xs"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -153,7 +159,7 @@ export function Cart() {
           <div className="flex items-center justify-between pt-2">
             <Link
               to="/shop"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 hover:text-neutral-950 transition"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Continue Shopping</span>
@@ -163,14 +169,14 @@ export function Cart() {
 
         {/* Order Summary & Checkout Card */}
         <div className="space-y-4">
-          <div className="rounded-3xl bg-white border border-neutral-200 p-6 space-y-6 shadow-2xs">
-            <h3 className="text-lg font-black text-neutral-950">Order Summary</h3>
+          <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-5 sm:p-6 space-y-6 shadow-2xs">
+            <h3 className="text-lg font-black text-neutral-950 dark:text-white">Order Summary</h3>
 
             {/* Price Lines */}
-            <div className="space-y-3 text-xs border-b border-neutral-100 pb-4">
-              <div className="flex justify-between text-neutral-600">
+            <div className="space-y-3 text-xs border-b border-neutral-100 dark:border-[#1b2559] pb-4">
+              <div className="flex justify-between text-neutral-600 dark:text-[#a3aed0]">
                 <span>Subtotal</span>
-                <span className="font-bold text-neutral-900">NPR {subtotal.toLocaleString()}</span>
+                <span className="font-bold text-neutral-900 dark:text-white">NPR {subtotal.toLocaleString()}</span>
               </div>
 
               {discount > 0 && (
@@ -180,9 +186,9 @@ export function Cart() {
                 </div>
               )}
 
-              <div className="flex justify-between text-neutral-600">
+              <div className="flex justify-between text-neutral-600 dark:text-[#a3aed0]">
                 <span>Estimated Nepal Delivery</span>
-                <span className="font-bold text-neutral-900">
+                <span className="font-bold text-neutral-900 dark:text-white">
                   {deliveryFee === 0 ? <span className="text-emerald-600">FREE</span> : `NPR ${deliveryFee}`}
                 </span>
               </div>
@@ -198,28 +204,28 @@ export function Cart() {
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     placeholder="Coupon code (e.g. REF10)"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-neutral-200 text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-neutral-950"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800"
+                  className="rounded-xl bg-neutral-900 dark:bg-amber-400 px-4 py-2 text-xs font-bold text-white dark:text-neutral-950 hover:bg-neutral-800 transition"
                 >
                   Apply
                 </button>
               </div>
               {couponMsg && (
-                <p className="text-[11px] font-semibold text-neutral-600">{couponMsg}</p>
+                <p className="text-[11px] font-semibold text-neutral-600 dark:text-[#a3aed0]">{couponMsg}</p>
               )}
             </form>
 
             {/* Total */}
-            <div className="pt-2 border-t border-neutral-100 flex items-baseline justify-between">
+            <div className="pt-2 border-t border-neutral-100 dark:border-[#1b2559] flex items-baseline justify-between">
               <div>
-                <span className="text-sm font-bold text-neutral-500">Total Payable</span>
-                <p className="text-[10px] text-neutral-400">Includes all taxes & duties</p>
+                <span className="text-sm font-bold text-neutral-500 dark:text-[#a3aed0]">Total Payable</span>
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500">Includes all taxes &amp; duties</p>
               </div>
-              <span className="text-2xl font-black text-neutral-950">
+              <span className="text-2xl font-black text-neutral-950 dark:text-white">
                 NPR {total.toLocaleString()}
               </span>
             </div>
@@ -227,14 +233,14 @@ export function Cart() {
             {/* Checkout Button */}
             <button
               onClick={() => navigate('/checkout')}
-              className="w-full py-4 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-red-600 transition shadow-md active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-red-600 dark:hover:bg-amber-300 transition shadow-md active:scale-95 flex items-center justify-center gap-2"
             >
               <span>Proceed to 6-Step Checkout</span>
               <ArrowRight className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 text-center">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 dark:text-[#a3aed0] text-center">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
               <span>Secure Encrypted Nepal Checkout</span>
             </div>
           </div>

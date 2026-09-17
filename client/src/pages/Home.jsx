@@ -15,8 +15,12 @@ export function Home() {
     <div className="space-y-12 sm:space-y-16 pb-16">
       {/* Hero & Category Navigation Section */}
       <section className="flex flex-col lg:flex-row gap-6 items-stretch">
-        <CategorySidebar />
-        <HeroCarousel />
+        <div className="order-2 lg:order-1 w-full lg:w-64 shrink-0">
+          <CategorySidebar />
+        </div>
+        <div className="order-1 lg:order-2 flex-1 min-w-0">
+          <HeroCarousel />
+        </div>
       </section>
 
       {/* Services & Guarantees */}

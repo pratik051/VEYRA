@@ -21,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { nepalProvinces } from '../data/mockData';
 import { ProductCard } from '../components/ProductCard';
+import { AISupportAssistant } from '../components/AISupportAssistant';
 import api from '../services/api';
 
 export function Account() {
@@ -434,12 +435,23 @@ export function Account() {
 
       {/* 4. SUPPORT TICKETS */}
       {activeTab === 'tickets' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950">Customer Support Tickets</h3>
+        <div className="space-y-6">
+          {/* AI Support Assistant Box */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-black uppercase text-amber-500 tracking-wider">
+              Instant AI Help
+            </h4>
+            <AISupportAssistant />
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <div>
+              <h3 className="text-lg font-black text-neutral-950 dark:text-white">Customer Support Tickets</h3>
+              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Your official support requests and ticket communications</p>
+            </div>
             <button
               onClick={() => setShowNewTicket(!showNewTicket)}
-              className="px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs font-bold hover:bg-neutral-800"
+              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 transition"
             >
               + Open New Ticket
             </button>

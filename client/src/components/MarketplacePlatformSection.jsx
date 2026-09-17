@@ -31,27 +31,27 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
       {/* SECTION HEADER: INDIAN SHOPPING */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 text-xs font-black tracking-wider uppercase">
             🇮🇳 INDIAN SHOPPING
           </div>
-          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
             Shop By Indian Marketplace
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-500 max-w-2xl">
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-[#a3aed0] max-w-2xl">
             Select a store to view verified, authentic products sourced directly from India's leading e-commerce platforms.
           </p>
         </div>
 
         <Link
           to={`/shop/${activeMeta.slug}`}
-          className="self-start sm:self-end inline-flex items-center gap-2 rounded-full bg-neutral-950 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-600 transition-all shadow-2xs"
+          className="self-start sm:self-end inline-flex items-center gap-2 rounded-full bg-neutral-950 dark:bg-amber-400 px-5 py-2.5 text-xs font-bold text-white dark:text-neutral-950 hover:bg-red-600 dark:hover:bg-amber-300 transition-all shadow-2xs"
         >
           <span>Shop {activeMeta.name} →</span>
         </Link>
       </div>
 
       {/* OFFICIAL MARKETPLACE BRAND CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3">
         {MARKETPLACE_METAS.slice(0, 10).map((meta) => {
           const isActive = meta.id === activePlatformId;
           return (
@@ -59,19 +59,19 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
               key={meta.id}
               type="button"
               onClick={() => setActivePlatformId(meta.id)}
-              className={`flex flex-col items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 text-center ${
+              className={`flex flex-col items-center justify-between p-2.5 sm:p-3.5 rounded-2xl border transition-all duration-200 text-center ${
                 isActive
-                  ? "bg-white border-neutral-950 shadow-md ring-2 ring-neutral-950 scale-105"
-                  : "bg-neutral-50/80 border-neutral-200/80 hover:bg-white hover:border-neutral-300 hover:shadow-2xs"
+                  ? "bg-white dark:bg-[#111c44] border-neutral-950 dark:border-amber-400 shadow-md ring-2 ring-neutral-950 dark:ring-amber-400 scale-[1.02]"
+                  : "bg-white dark:bg-[#111c44]/80 border-neutral-200/90 dark:border-[#1b2559] hover:bg-neutral-50 dark:hover:bg-[#1b254b] hover:shadow-2xs"
               }`}
             >
-              <div className="h-9 w-full flex items-center justify-center">
-                <MarketplaceLogo marketplace={meta.id} className="h-6 w-auto max-w-[90px]" />
+              <div className="h-8 sm:h-9 w-full flex items-center justify-center">
+                <MarketplaceLogo marketplace={meta.id} className="h-5 sm:h-6 w-auto max-w-[85px] sm:max-w-[90px]" />
               </div>
-              <span className="text-xs font-bold text-neutral-900 mt-2 line-clamp-1">
+              <span className="text-xs font-bold text-neutral-900 dark:text-white mt-2 line-clamp-1">
                 {meta.name}
               </span>
-              <span className="text-[10px] text-neutral-400 font-semibold mt-0.5">
+              <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-semibold mt-0.5">
                 Shop {meta.shortName}
               </span>
             </button>
@@ -80,7 +80,7 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
       </div>
 
       {/* ACTIVE PLATFORM HIGHLIGHT BANNER */}
-      <div className="rounded-3xl bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 p-6 sm:p-8 text-white relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-neutral-800">
+      <div className="rounded-3xl bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 dark:from-[#0b1437] dark:via-[#111c44] dark:to-[#0b1437] p-5 sm:p-8 text-white relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-neutral-800 dark:border-[#1b2559]">
         <div className="relative z-10 space-y-3">
           <div className="flex items-center gap-3">
             <div className="bg-white rounded-xl px-3 py-1.5 shadow-xs">
@@ -91,10 +91,10 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
             </span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-white">{activeMeta.name}</h3>
-          <p className="text-xs text-neutral-300 max-w-xl font-medium">{activeMeta.tagline}</p>
+          <p className="text-xs text-neutral-300 dark:text-[#a3aed0] max-w-xl font-medium">{activeMeta.tagline}</p>
         </div>
 
-        <div className="relative z-10 flex flex-wrap items-center gap-3">
+        <div className="relative z-10 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <Link
             to="/request-product"
             className="rounded-2xl bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 text-xs font-black transition active:scale-95 shadow-md"
@@ -121,7 +121,9 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
         ))}
       </div>
 
-      <div className="border-b border-neutral-100 pt-4" />
+      <div className="border-b border-neutral-200 dark:border-[#1b2559] pt-4" />
     </section>
   );
 }
+
+export default MarketplacePlatformSection;
