@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HeroCarousel } from '../components/HeroCarousel';
+import { HeroCarousel, IndiaSourcingHero } from '../components/HeroCarousel';
 import { CategorySidebar, CategoryGrid } from '../components/CategorySidebar';
 import { FlashSalesSection } from '../components/FlashSalesSection';
 import { MarketplacePlatformSection } from '../components/MarketplacePlatformSection';
@@ -13,41 +13,47 @@ export function Home() {
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-16">
-      {/* Hero & Category Navigation Section */}
-      <section className="flex flex-col lg:flex-row gap-6 items-stretch">
-        <div className="order-2 lg:order-1 w-full lg:w-64 shrink-0">
-          <CategorySidebar />
-        </div>
-        <div className="order-1 lg:order-2 flex-1 min-w-0">
-          <HeroCarousel />
-        </div>
-      </section>
 
-      {/* Services & Guarantees */}
+      {/* ── 1. TOP HERO (full-width carousel) ── */}
+      <HeroCarousel />
+
+      {/* ── 2. Services & Guarantees ── */}
       <ServicesHighlight />
 
-      {/* Flash Sales with Countdown */}
+      {/* ── 3. Flash Sales with Countdown ── */}
       <FlashSalesSection
         products={sampleProducts}
         onQuickView={(product) => setQuickViewProduct(product)}
       />
 
-      {/* Instant Indian URL Verification & Quote */}
+      {/* ── 4. Instant Indian URL Verification & Quote (full width) ── */}
       <LinkVerifier />
 
-      {/* Shop By Indian Marketplace Section */}
+      {/* ── 5. India Sourcing Section:
+               LEFT  = Category Sidebar
+               RIGHT = Static India Sourcing Hero ── */}
+      <section className="flex flex-col lg:flex-row gap-6 items-stretch">
+        <div className="w-full lg:w-64 shrink-0">
+          <CategorySidebar />
+        </div>
+        <div className="flex-1 min-w-0">
+          <IndiaSourcingHero />
+        </div>
+      </section>
+
+      {/* ── 6. Shop By Indian Marketplace ── */}
       <MarketplacePlatformSection
         initialProducts={sampleProducts}
         onQuickView={(product) => setQuickViewProduct(product)}
       />
 
-      {/* Browse by Category Grid */}
+      {/* ── 7. Browse by Category Grid ── */}
       <CategoryGrid />
 
-      {/* Experience & Value Banner */}
+      {/* ── 8. Experience & Value Banner ── */}
       <ExperienceBanner />
 
-      {/* New Arrivals & Trending Bento Grid */}
+      {/* ── 9. New Arrivals & Trending Bento Grid ── */}
       <NewArrivalBento />
 
       {/* Quick View Modal */}
