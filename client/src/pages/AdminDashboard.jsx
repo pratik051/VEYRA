@@ -19,8 +19,6 @@ import {
   TrendingUp,
   Search,
   ExternalLink,
-  Sun,
-  Moon,
   DollarSign,
   Truck,
   Check,
@@ -30,12 +28,10 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
 
 export function AdminDashboard() {
   const { user, logout, loading: authLoading } = useAuth();
-  const { theme, toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('orders'); // orders | requests | payments | tickets | settings
@@ -228,15 +224,6 @@ export function AdminDashboard() {
             <span className="hidden sm:inline">Refresh</span>
           </button>
 
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-amber-400 border border-neutral-200 dark:border-[#1b2559] transition"
-            title={`Switch to ${isDark ? 'Light' : 'Dark'} theme`}
-          >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
 
           {/* Storefront Link */}
           <Link

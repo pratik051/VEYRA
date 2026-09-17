@@ -35,7 +35,7 @@ export default function App() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <div className="min-h-screen flex flex-col bg-[#f8fafc] dark:bg-[#0b1437] text-neutral-900 dark:text-neutral-100 selection:bg-amber-400 selection:text-neutral-950 font-sans transition-colors duration-200">
+            <div className="min-h-screen flex flex-col bg-[#F9FAFB] text-neutral-900 selection:bg-amber-400 selection:text-neutral-950 font-sans">
               {/* Top Announcement & Quick Links */}
               <TopBanner />
 
