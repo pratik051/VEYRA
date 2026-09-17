@@ -48,6 +48,10 @@ async function request(endpoint, options = {}) {
     ...(options.headers || {})
   };
 
+  if (options.body instanceof FormData) {
+    delete headers['Content-Type'];
+  }
+
   const config = {
     ...options,
     headers,

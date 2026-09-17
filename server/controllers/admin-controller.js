@@ -1,4 +1,5 @@
 import IndiaOrderModel from "../models/india-order-model.js";
+import OrderModel from "../models/order-model.js";
 import ProductRequestModel from "../models/product-request-model.js";
 import SupportTicketModel from "../models/support-ticket-model.js";
 import ProductModel from "../models/product-model.js";
@@ -9,16 +10,34 @@ import PaymentModel from "../models/payment-model.js";
 // Dashboard Overview Stats
 export async function getDashboardStats(req, res) {
   try {
-    const totalOrdersCount = await IndiaOrderModel.countDocuments({});
-    const pendingVerificationCount = await IndiaOrderModel.countDocuments({ adminVerificationStatus: "Pending Verification" });
+    const [totalIndia, totalStandard] = await Promise.all([
+      IndiaOrderModel.countDocuments({}),
+      OrderModel.countDocuments({})
+    ]);
+    const totalOrdersCount = totalIndia + totalStandard;
+
+    const [pendingIndia, pendingStandard] = await Promise.all([
+      IndiaOrderModel.countDocuments({ adminVerificationStatus: "Pending Verification" }),
+      OrderModel.countDocuments({ paymentStatus: "Pending Verification" })
+    ]);
+    const pendingVerificationCount = pendingIndia + pendingStandard;
+
     const verifiedOrdersCount = await IndiaOrderModel.countDocuments({ adminVerificationStatus: "Verified / Orderable" });
-    const completedOrdersCount = await IndiaOrderModel.countDocuments({ orderStatus: "Delivered" });
+    const completedOrdersCount = (await IndiaOrderModel.countDocuments({ orderStatus: "Delivered" })) +
+      (await OrderModel.countDocuments({ orderStatus: "Delivered" }));
     
     const pendingProductRequests = await ProductRequestModel.countDocuments({ status: "Pending" });
     const openTicketsCount = await SupportTicketModel.countDocuments({ status: { $in: ["Open", "In Progress"] } });
     const totalUsersCount = await UserModel.countDocuments({});
 
-    const recentOrders = await IndiaOrderModel.find({}).sort({ createdAt: -1 }).limit(10).lean();
+    const [recentIndia, recentStandard] = await Promise.all([
+      IndiaOrderModel.find({}).sort({ createdAt: -1 }).limit(10).lean(),
+      OrderModel.find({}).sort({ createdAt: -1 }).limit(10).lean()
+    ]);
+
+    const recentOrders = [...recentStandard, ...recentIndia]
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .slice(0, 10);
 
     return res.json({
       success: true,
@@ -38,21 +57,140 @@ export async function getDashboardStats(req, res) {
   }
 }
 
-// India Orders Management
-export async function getAllIndiaOrders(req, res) {
+// Unified Orders Management (Storefront + India Sourcing)
+export async function getAllOrders(req, res) {
   try {
-    const orders = await IndiaOrderModel.find({}).sort({ createdAt: -1 }).lean();
-    return res.json({ success: true, orders });
+    const [standardOrders, indiaOrders] = await Promise.all([
+      OrderModel.find({}).sort({ createdAt: -1 }).lean(),
+      IndiaOrderModel.find({}).sort({ createdAt: -1 }).lean()
+    ]);
+
+    const combinedMap = new Map();
+
+    for (const ord of standardOrders || []) {
+      const key = String(ord.orderId || ord._id);
+      const items = Array.isArray(ord.items) && ord.items.length > 0
+        ? ord.items.map((i) => ({
+            name: i.name || "Catalog Product",
+            quantity: i.quantity || 1,
+            price: i.price || i.unitPrice || 0,
+            image: i.image || "",
+            source: i.source || "SajiloMarts"
+          }))
+        : [];
+
+      combinedMap.set(key, {
+        ...ord,
+        _id: String(ord._id),
+        orderId: ord.orderId || String(ord._id),
+        customerName: ord.customerName || ord.fullName || ord.shippingAddress?.fullName || "Customer",
+        phone: ord.phone || ord.shippingAddress?.phone || "",
+        email: ord.email || ord.shippingAddress?.email || "",
+        shippingAddress: {
+          fullName: ord.shippingAddress?.fullName || ord.fullName || "Customer",
+          phone: ord.shippingAddress?.phone || ord.phone || "",
+          email: ord.shippingAddress?.email || ord.email || "",
+          city: ord.shippingAddress?.city || ord.city || "Kathmandu",
+          province: ord.shippingAddress?.province || ord.province || "Bagmati",
+          district: ord.shippingAddress?.district || ord.district || "",
+          fullAddress: ord.shippingAddress?.fullAddress || ord.fullAddress || ""
+        },
+        payment: {
+          method: ord.paymentMethod || ord.payment?.method || "eSewa",
+          status: ord.paymentStatus || ord.payment?.status || "Pending",
+          transactionId: ord.paymentReference || ord.payment?.transactionId || "",
+          screenshot: ord.paymentScreenshot || ord.payment?.screenshot || ""
+        },
+        pricing: {
+          totalAmount: ord.totalAmount || ord.total || (ord.pricing?.totalAmount) || 0,
+          deliveryFee: ord.deliveryFee !== undefined ? ord.deliveryFee : (ord.pricing?.deliveryFee || 200),
+          subtotal: ord.subtotal || ord.pricing?.subtotal || 0
+        },
+        totalAmount: ord.totalAmount || ord.total || (ord.pricing?.totalAmount) || 0,
+        status: ord.status || ord.orderStatus || "Processing",
+        orderStatus: ord.orderStatus || ord.status || "Processing",
+        paymentStatus: ord.paymentStatus || ord.payment?.status || "Pending Verification",
+        paymentScreenshot: ord.paymentScreenshot || ord.payment?.screenshot || "",
+        items,
+        type: "standard",
+        createdAt: ord.createdAt
+      });
+    }
+
+    for (const ord of indiaOrders || []) {
+      const key = String(ord.orderId || ord._id);
+      const items = [
+        {
+          name: ord.productName || "Sourced Indian Product",
+          quantity: ord.quantity || 1,
+          price: ord.finalAmountNPR || 0,
+          unitPrice: ord.finalAmountNPR || 0,
+          image: ord.productImage || "",
+          source: ord.marketplace || "Indian Marketplace",
+          originalPriceINR: ord.indianPriceINR || 0
+        }
+      ];
+
+      combinedMap.set(key, {
+        ...ord,
+        _id: String(ord._id),
+        orderId: ord.orderId || String(ord._id),
+        customerName: ord.customerName || ord.shippingAddress?.fullName || "Customer",
+        phone: ord.phone || ord.shippingAddress?.phone || "",
+        email: ord.email || ord.shippingAddress?.email || "",
+        shippingAddress: {
+          fullName: ord.shippingAddress?.fullName || ord.customerName || "Customer",
+          phone: ord.shippingAddress?.phone || ord.phone || "",
+          email: ord.shippingAddress?.email || ord.email || "",
+          city: ord.city || ord.shippingAddress?.city || "Kathmandu",
+          province: ord.province || ord.shippingAddress?.province || "Bagmati",
+          district: ord.district || ord.shippingAddress?.district || "",
+          fullAddress: ord.deliveryAddress || ord.shippingAddress?.fullAddress || ""
+        },
+        payment: {
+          method: ord.paymentMethod || "eSewa",
+          status: ord.paymentStatus || "Pending",
+          transactionId: ord.paymentTransactionId || "",
+          screenshot: ord.paymentScreenshot || ""
+        },
+        pricing: {
+          totalAmount: ord.finalAmountNPR || 0,
+          deliveryFee: ord.deliveryChargeNPR || 200,
+          subtotal: ord.conversionAmountNPR || 0
+        },
+        totalAmount: ord.finalAmountNPR || 0,
+        status: ord.orderStatus || "Processing",
+        orderStatus: ord.orderStatus || "Processing",
+        paymentStatus: ord.paymentStatus || "Pending Verification",
+        paymentScreenshot: ord.paymentScreenshot || "",
+        items,
+        type: "india_sourcing",
+        createdAt: ord.createdAt
+      });
+    }
+
+    const allOrders = Array.from(combinedMap.values()).sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+
+    return res.json({ success: true, orders: allOrders });
   } catch (error) {
-    return res.status(500).json({ error: error.message || "Failed to fetch orders." });
+    console.error("[GET /api/admin/orders Error]:", error);
+    return res.status(500).json({ error: error.message || "Failed to fetch admin orders." });
   }
 }
 
-export async function updateIndiaOrder(req, res) {
+export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const body = req.body || {};
+    const newStatus = body.status || body.orderStatus;
     const updates = { ...body, updatedAt: new Date() };
+
+    if (newStatus) {
+      updates.status = newStatus;
+      updates.orderStatus = newStatus;
+    }
 
     if (body.adminVerificationStatus) {
       updates.adminVerifiedAt = new Date();
@@ -71,19 +209,118 @@ export async function updateIndiaOrder(req, res) {
       }
     }
 
-    const updated = await IndiaOrderModel.findOneAndUpdate(
-      { $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : undefined }, { orderId: id }] },
-      { $set: updates },
-      { new: true }
-    ).lean();
+    const query = {
+      $or: [
+        ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+        { orderId: id }
+      ]
+    };
+
+    // Try Standard OrderModel first
+    let updated = await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+
+    // If not found, try IndiaOrderModel
+    if (!updated) {
+      updated = await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+    }
 
     if (!updated) {
       return res.status(404).json({ error: "Order not found." });
     }
+
     return res.json({ success: true, order: updated });
   } catch (error) {
-    return res.status(400).json({ error: error.message || "Failed to update order." });
+    return res.status(400).json({ error: error.message || "Failed to update order status." });
   }
+}
+
+// Payments Verification Queue Management
+export async function getAllPayments(req, res) {
+  try {
+    const payments = await PaymentModel.find({}).sort({ createdAt: -1 }).lean();
+
+    // Map and enrich with order/proof details
+    const normalizedPayments = payments.map((p) => ({
+      ...p,
+      _id: String(p._id),
+      transactionId: p.transactionCode || p.transactionId || `TXN-${String(p._id).slice(-6)}`,
+      method: p.paymentMethod || p.provider || "eSewa",
+      provider: p.provider || p.paymentMethod || "eSewa",
+      amount: p.amount || 0,
+      orderId: p.orderId || "",
+      screenshot: p.screenshot || "",
+      status: p.status || "submitted",
+      submittedAt: p.submittedAt || p.createdAt
+    }));
+
+    return res.json({ success: true, payments: normalizedPayments });
+  } catch (error) {
+    console.error("[GET /api/admin/payments Error]:", error);
+    return res.status(500).json({ error: error.message || "Failed to fetch payments." });
+  }
+}
+
+export async function verifyPayment(req, res) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body || {};
+
+    if (!status) {
+      return res.status(400).json({ error: "Verification status is required (Approved or Rejected)." });
+    }
+
+    const paymentQuery = {
+      $or: [
+        ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
+        { transactionCode: id }
+      ]
+    };
+
+    const payment = await PaymentModel.findOneAndUpdate(
+      paymentQuery,
+      { $set: { status, verifiedAt: new Date() } },
+      { new: true }
+    ).lean();
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment record not found." });
+    }
+
+    const isApproved = status === "Approved" || status === "verified" || status === "Verified";
+    const newPaymentStatus = isApproved ? "PAID" : "Payment Rejected";
+    const newOrderStatus = isApproved ? "Processing" : "Payment Issue";
+
+    // Update associated order across both OrderModel and IndiaOrderModel
+    if (payment.orderId) {
+      await Promise.allSettled([
+        OrderModel.updateOne(
+          { $or: [{ orderId: payment.orderId }, { _id: payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? payment.orderId : undefined }] },
+          { $set: { paymentStatus: newPaymentStatus, status: newOrderStatus, orderStatus: newOrderStatus } }
+        ),
+        IndiaOrderModel.updateOne(
+          { $or: [{ orderId: payment.orderId }, { _id: payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? payment.orderId : undefined }] },
+          { $set: { paymentStatus: newPaymentStatus, orderStatus: isApproved ? "Verified" : "Cancelled" } }
+        )
+      ]);
+    }
+
+    return res.json({
+      success: true,
+      message: `Payment has been ${status}. Associated order status updated.`,
+      payment
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message || "Failed to verify payment." });
+  }
+}
+
+// Backwards compatibility alias for India Orders
+export async function getAllIndiaOrders(req, res) {
+  return getAllOrders(req, res);
+}
+
+export async function updateIndiaOrder(req, res) {
+  return updateOrder(req, res);
 }
 
 // Product Sourcing Requests

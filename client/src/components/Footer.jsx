@@ -134,12 +134,6 @@ export function Footer() {
                 Refunds & Returns
               </Link>
             </li>
-            <li>
-              <Link to="/admin/login" className="text-neutral-600 hover:text-neutral-400 transition-colors flex items-center gap-1 pt-2">
-                <Lock className="h-3 w-3" />
-                <span>Staff Portal</span>
-              </Link>
-            </li>
           </ul>
         </div>
       </div>

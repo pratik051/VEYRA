@@ -52,11 +52,32 @@ export function Checkout() {
   });
 
   const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState('');
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [referralMessage, setReferralMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
   const [error, setError] = useState('');
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Payment screenshot must be less than 5MB.');
+      return;
+    }
+    setScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setScreenshotPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveScreenshot = () => {
+    setScreenshotFile(null);
+    setScreenshotPreview('');
+  };
 
   // Calculations
   const deliveryFee = formData.deliverySpeed === 'express' ? 300 : (subtotal > 3000 ? 0 : 150);
@@ -140,8 +161,11 @@ export function Checkout() {
         payment: {
           method: formData.paymentMethod,
           transactionId: formData.transactionId || `TXN-${Date.now().toString().slice(-6)}`,
-          status: isCod ? 'Advance Pending' : 'Paid'
+          status: (screenshotPreview || formData.transactionId) ? 'Pending Verification' : (isCod ? 'Advance Pending' : 'Paid'),
+          screenshot: screenshotPreview
         },
+        paymentScreenshot: screenshotPreview,
+        paymentReference: formData.transactionId || '',
         notes: formData.notes
       };
 
@@ -660,6 +684,54 @@ export function Checkout() {
                 placeholder="e.g. 948271038 or TXN-..."
                 className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center justify-between">
+                <span>Upload Payment Screenshot / Transfer Proof</span>
+                <span className="text-[10px] text-amber-500 font-semibold">(Fast verification)</span>
+              </label>
+
+              {screenshotPreview ? (
+                <div className="p-3 rounded-2xl border border-neutral-200 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <img
+                      src={screenshotPreview}
+                      alt="Proof Preview"
+                      className="h-12 w-12 object-cover rounded-xl border border-neutral-200 dark:border-[#1b2559]"
+                    />
+                    <div className="truncate text-xs">
+                      <p className="font-bold text-neutral-900 dark:text-white truncate">
+                        {screenshotFile?.name || 'payment-proof.png'}
+                      </p>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Ready to upload • {(screenshotFile?.size ? (screenshotFile.size / 1024).toFixed(0) + ' KB' : 'Image attached')}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveScreenshot}
+                    className="px-2.5 py-1 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-[11px] font-bold hover:bg-rose-200 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-[#1b2559] hover:border-amber-400 dark:hover:border-amber-400 transition cursor-pointer bg-neutral-50/50 dark:bg-[#0b1437]">
+                  <Upload className="h-5 w-5 text-neutral-400 mb-1" />
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                    Click to select payment screenshot
+                  </span>
+                  <span className="text-[10px] text-neutral-400">PNG, JPG or WebP (max 5MB)</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleScreenshotChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
 
             <div className="space-y-1.5">

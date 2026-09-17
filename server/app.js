@@ -11,6 +11,7 @@ import supportRoutes from "./routes/support-routes.js";
 import requestRoutes from "./routes/request-routes.js";
 import aiRoutes from "./routes/ai-routes.js";
 import userRoutes from "./routes/user-routes.js";
+import checkoutRoutes from "./routes/checkout-routes.js";
 import { authenticateUser } from "./middleware/auth.js";
 
 dotenv.config();
@@ -57,6 +58,7 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use("/uploads", express.static("uploads"));
 app.use(authenticateUser);
 
 // Health check endpoint
@@ -67,6 +69,8 @@ app.get("/api/health", (req, res) => {
 // API Routers
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/checkout", checkoutRoutes);
+app.use("/api/orders", checkoutRoutes);
 app.use("/api/india-order", indiaOrderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);

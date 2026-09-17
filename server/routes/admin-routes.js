@@ -1,6 +1,10 @@
 import express from "express";
 import {
   getDashboardStats,
+  getAllOrders,
+  updateOrder,
+  getAllPayments,
+  verifyPayment,
   getAllIndiaOrders,
   updateIndiaOrder,
   getAllProductRequests,
@@ -23,6 +27,16 @@ router.use(authenticateUser, requireAdmin);
 
 router.get("/stats", getDashboardStats);
 
+// Orders Management
+router.get("/orders", getAllOrders);
+router.get("/orders/:id", getAllOrders);
+router.patch("/orders/:id", updateOrder);
+
+// Payments Verification Queue
+router.get("/payments", getAllPayments);
+router.patch("/payments/:id", verifyPayment);
+
+// Backwards compatibility for India Orders
 router.get("/india-orders", getAllIndiaOrders);
 router.get("/india-orders/:id", getAllIndiaOrders);
 router.patch("/india-orders/:id", updateIndiaOrder);

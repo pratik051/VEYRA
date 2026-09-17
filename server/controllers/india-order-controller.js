@@ -19,15 +19,16 @@ export async function calculatePrice(req, res) {
 export async function createIndiaOrder(req, res) {
   try {
     const body = req.body || {};
-    const customerName = String(body.customerName || body.fullName || "").trim();
-    const phone = String(body.phone || "").trim();
-    const email = String(body.email || "").trim();
-    const deliveryAddress = String(body.deliveryAddress || body.address || "").trim();
-    const city = String(body.city || "").trim();
-    const district = String(body.district || "").trim();
-    const province = String(body.province || "").trim();
-    const postalCode = String(body.postalCode || "").trim();
-    const deliveryInstructions = String(body.deliveryInstructions || "").trim();
+    const shipping = body.shippingAddress || {};
+    const customerName = String(body.customerName || body.fullName || shipping.fullName || "").trim();
+    const phone = String(body.phone || shipping.phone || "").trim();
+    const email = String(body.email || shipping.email || "").trim();
+    const deliveryAddress = String(body.deliveryAddress || body.address || shipping.street || shipping.deliveryAddress || "").trim();
+    const city = String(body.city || shipping.city || "").trim();
+    const district = String(body.district || shipping.district || shipping.city || "").trim();
+    const province = String(body.province || shipping.province || "").trim();
+    const postalCode = String(body.postalCode || shipping.postalCode || "").trim();
+    const deliveryInstructions = String(body.deliveryInstructions || shipping.notes || "").trim();
 
     const productUrl = String(body.productUrl || "").trim();
     const productName = String(body.productName || "Sourced Indian Product").trim();
@@ -39,7 +40,8 @@ export async function createIndiaOrder(req, res) {
     const rawInrPrice = Number(body.indianPriceINR);
 
     const paymentMethod = body.paymentMethod === "FULL_PAYMENT" ? "FULL_PAYMENT" : "COD";
-    const paymentTransactionId = String(body.paymentTransactionId || "").trim();
+    const paymentTransactionId = String(body.paymentTransactionId || body.transactionId || "").trim();
+    const paymentScreenshot = String(body.paymentScreenshot || body.screenshot || "").trim();
 
     if (!customerName || customerName.length < 2) {
       return res.status(400).json({ error: "Please enter a valid customer full name." });
@@ -64,9 +66,9 @@ export async function createIndiaOrder(req, res) {
     const invoiceNumber = `INV-${new Date().getFullYear()}-${randomSuffix}`;
     const invoiceUrl = `/api/india-order/invoice/${orderId}`;
 
-    let paymentStatus = paymentMethod === "FULL_PAYMENT" ? "PAID" : "Pending";
+    let paymentStatus = "Pending Verification";
 
-    const userId = req.user ? String(req.user._id) : "";
+    const userId = req.user ? String(req.user._id) : (body.userId ? String(body.userId) : "");
 
     const shippingAddress = {
       fullName: customerName,
@@ -138,6 +140,7 @@ export async function createIndiaOrder(req, res) {
       paymentMethod,
       paymentStatus,
       paymentTransactionId,
+      paymentScreenshot,
       orderStatus: "Requested",
       invoiceUrl,
       adminVerificationStatus: "Pending Verification"

@@ -30,9 +30,7 @@ export function Header() {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'All Products', href: '/shop' },
-    { name: 'India Sourcing', href: '/request-product' },
     { name: 'Track Order', href: '/track-order' },
-    { name: 'Support', href: '/support' },
   ];
 
   return (
@@ -44,13 +42,13 @@ export function Header() {
             : 'bg-white dark:bg-[#0b1437] border-b border-neutral-200/80 dark:border-[#1b2559]'
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-2.5 sm:px-4 py-2.5 sm:py-3 gap-2 sm:gap-4">
-          {/* Logo & Mobile Menu Toggle */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+          {/* Mobile Menu Button & Brand Logo */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-neutral-100 dark:bg-[#111c44] text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-[#1b2559] hover:bg-neutral-200 dark:hover:bg-[#1b254b] transition"
+              className="lg:hidden p-2 rounded-xl text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-[#111c44] transition"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -91,12 +89,6 @@ export function Header() {
                 </Link>
               );
             })}
-            <Link
-              to="/request-product"
-              className="px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 text-neutral-950 hover:opacity-95 transition-opacity shadow-xs"
-            >
-              🇮🇳 Sourcing Portal
-            </Link>
           </nav>
 
           {/* Right Action Icons: Search, Theme Toggle, Wishlist, Cart, Account */}
@@ -189,26 +181,6 @@ export function Header() {
                 {link.name}
               </Link>
             ))}
-
-            <Link
-              to="/support"
-              className="flex items-center justify-between py-2.5 px-3 rounded-xl text-xs font-bold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-[#111c44] transition"
-            >
-              <span className="flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-amber-500" />
-                <span>AI Support &amp; Help Desk</span>
-              </span>
-              <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                24/7 AI
-              </span>
-            </Link>
-
-            <Link
-              to="/request-product"
-              className="block py-2.5 px-3 rounded-xl text-xs font-black bg-amber-400 text-neutral-950 shadow-xs"
-            >
-              🇮🇳 Request India Product
-            </Link>
 
             {/* Mobile Theme Toggle Row */}
             <div className="pt-2 border-t border-neutral-100 dark:border-[#1b2559] flex items-center justify-between px-3 py-1">

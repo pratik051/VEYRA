@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import PaymentModel from "../models/payment-model.js";
 import IndiaOrderModel from "../models/india-order-model.js";
+import OrderModel from "../models/order-model.js";
 
 const ESEWA_MERCHANT_CODE = process.env.ESEWA_MERCHANT_CODE || "EPAYTEST";
 const KHALTI_PUBLIC_KEY = process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY || "live_public_key_sajilomarts_12345";
@@ -69,30 +70,116 @@ export async function createPaymentQR(req, res) {
 
 export async function submitPaymentProof(req, res) {
   try {
-    const { orderId, transactionCode, screenshot, provider, amount } = req.body || {};
-    if (!orderId || !transactionCode) {
-      return res.status(400).json({ error: "Order ID and Transaction Code are required." });
+    const body = req.body || {};
+    const orderId = String(body.orderId || "").trim();
+    const transactionCode = String(body.transactionCode || body.transactionId || "").trim();
+    const provider = String(body.provider || body.paymentMethod || "eSewa").trim();
+    const amount = Number(body.amount) || 0;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID is required to submit payment proof." });
+    }
+    if (!transactionCode) {
+      return res.status(400).json({ error: "Transaction / Reference Code is required." });
     }
 
-    const payment = await PaymentModel.create({
-      userId: req.user ? req.user._id : null,
-      orderId,
-      provider: provider || "eSewa",
-      paymentMethod: provider || "eSewa",
-      amount: Number(amount) || 0,
-      transactionCode: String(transactionCode).trim(),
-      screenshot: screenshot || "",
-      status: "submitted",
-      submittedAt: new Date()
-    });
+    // Resolve screenshot URL: from uploaded file or base64 data URI in body
+    let screenshot = "";
+    if (req.file) {
+      screenshot = `/uploads/payments/${req.file.filename}`;
+    } else if (body.screenshot) {
+      screenshot = String(body.screenshot);
+    }
 
-    await IndiaOrderModel.updateOne(
+    // Find the target order in either OrderModel or IndiaOrderModel
+    const orderQuery = {
+      $or: [
+        { orderId },
+        ...(orderId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: orderId }] : [])
+      ]
+    };
+
+    let targetOrder = await OrderModel.findOne(orderQuery);
+    let orderType = "standard";
+
+    if (!targetOrder) {
+      targetOrder = await IndiaOrderModel.findOne(orderQuery);
+      orderType = "india_sourcing";
+    }
+
+    if (!targetOrder) {
+      return res.status(404).json({ error: `Order ${orderId} could not be found.` });
+    }
+
+    // Security check: verify order belongs to the user if user is authenticated (unless admin)
+    if (req.user && req.user.role !== "admin") {
+      const authUserId = String(req.user._id);
+      const authEmail = req.user.email ? req.user.email.toLowerCase() : "";
+      const authPhone = req.user.phone ? req.user.phone.trim() : "";
+
+      const orderUserId = String(targetOrder.userId || targetOrder.customerId || "");
+      const orderEmail = targetOrder.email ? targetOrder.email.toLowerCase() : "";
+      const orderPhone = targetOrder.phone ? targetOrder.phone.trim() : "";
+
+      const matches =
+        (orderUserId && orderUserId === authUserId) ||
+        (authEmail && orderEmail === authEmail) ||
+        (authPhone && orderPhone === authPhone);
+
+      if (!matches && orderUserId) {
+        return res.status(403).json({ error: "You are not authorized to upload proof for this order." });
+      }
+    }
+
+    // Create or update payment record
+    const payment = await PaymentModel.findOneAndUpdate(
       { orderId },
-      { $set: { paymentStatus: "PAID", paymentTransactionId: transactionCode, paymentScreenshot: screenshot } }
+      {
+        $set: {
+          userId: req.user ? req.user._id : targetOrder.userId,
+          orderId,
+          provider,
+          paymentMethod: provider,
+          amount: amount || targetOrder.totalAmount || targetOrder.finalAmountNPR || targetOrder.total || 0,
+          transactionCode,
+          screenshot: screenshot || targetOrder.paymentScreenshot,
+          status: "submitted",
+          submittedAt: new Date()
+        }
+      },
+      { upsert: true, new: true }
     );
 
-    return res.json({ success: true, message: "Payment proof submitted successfully.", payment });
+    // Update the order's payment status to Pending Verification (NOT automatically verified!)
+    const updateFields = {
+      paymentStatus: "Pending Verification",
+      paymentScreenshot: screenshot || targetOrder.paymentScreenshot,
+      paymentReference: transactionCode,
+      paymentTransactionId: transactionCode,
+      "payment.status": "Pending Verification",
+      "payment.transactionId": transactionCode,
+      "payment.screenshot": screenshot || targetOrder.paymentScreenshot
+    };
+
+    if (orderType === "standard") {
+      await OrderModel.updateOne(orderQuery, { $set: updateFields });
+    } else {
+      await IndiaOrderModel.updateOne(orderQuery, { $set: updateFields });
+    }
+
+    return res.json({
+      success: true,
+      message: "Payment screenshot submitted successfully! Our staff will verify your transaction shortly.",
+      payment: {
+        _id: payment._id,
+        orderId,
+        transactionId: transactionCode,
+        status: "submitted",
+        screenshot: payment.screenshot
+      }
+    });
   } catch (error) {
+    console.error("[Submit Payment Proof Error]:", error);
     return res.status(400).json({ error: error.message || "Failed to submit payment proof." });
   }
 }

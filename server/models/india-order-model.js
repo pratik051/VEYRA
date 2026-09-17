@@ -14,6 +14,7 @@ export const ORDER_STATUSES = [
 
 export const PAYMENT_STATUSES = [
   "Pending",
+  "Pending Verification",
   "PAID",
   "Failed",
   "Refunded"

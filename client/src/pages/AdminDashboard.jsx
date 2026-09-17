@@ -469,9 +469,34 @@ export function AdminDashboard() {
                         <span className="text-xs font-black text-neutral-950 dark:text-amber-400 block">
                           NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0]">
+                        <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0] block">
                           {ord.items?.length || 1} items ({ord.pricing?.deliveryFee === 0 ? 'Free Delivery' : 'Standard Courier'})
                         </span>
+                        <div className="flex items-center gap-1.5 pt-0.5">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                            (ord.paymentScreenshot || ord.payment?.screenshot)
+                              ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                              : 'bg-neutral-100 dark:bg-[#0b1437] text-neutral-500 dark:text-[#a3aed0]'
+                          }`}>
+                            Payment Proof: {(ord.paymentScreenshot || ord.payment?.screenshot) ? 'Submitted' : 'Not Uploaded'}
+                          </span>
+                          {(ord.paymentScreenshot || ord.payment?.screenshot) && (
+                            <button
+                              type="button"
+                              onClick={() => setPreviewPayment({
+                                _id: ord._id,
+                                orderId: ord.orderId || ord._id,
+                                amount: ord.pricing?.totalAmount || ord.totalAmount || ord.total || 0,
+                                transactionId: ord.payment?.transactionId || ord.paymentReference || ord.paymentTransactionId || 'TXN',
+                                method: ord.payment?.method || ord.paymentMethod || 'eSewa',
+                                screenshot: ord.paymentScreenshot || ord.payment?.screenshot || ''
+                              })}
+                              className="text-[10px] font-bold text-amber-500 hover:text-amber-400 underline cursor-pointer"
+                            >
+                              View Proof
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Right: Status Dropdown */}
@@ -597,6 +622,24 @@ export function AdminDashboard() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                      p.status === 'Approved'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300'
+                        : p.status === 'Rejected'
+                        ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300'
+                        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+                    }`}>
+                      {p.status || 'Pending Verification'}
+                    </span>
+                    {p.screenshot && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewPayment(p)}
+                        className="px-2.5 py-1.5 rounded-xl bg-neutral-100 dark:bg-[#0b1437] text-neutral-800 dark:text-neutral-200 text-[11px] font-bold hover:bg-neutral-200 dark:hover:bg-[#1b254b] transition"
+                      >
+                        View Screenshot
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleVerifyPayment(p._id, 'Approved')}
@@ -791,6 +834,81 @@ export function AdminDashboard() {
                 Update Admin Password
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Proof Preview Modal */}
+      {previewPayment && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#111c44] rounded-3xl max-w-lg w-full p-6 space-y-4 border border-neutral-200 dark:border-[#1b2559] shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1b2559] pb-3">
+              <div>
+                <h3 className="text-base font-black text-neutral-950 dark:text-white">Payment Proof Verification</h3>
+                <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">
+                  Order: {previewPayment.orderId} • NPR {(previewPayment.amount || 0).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setPreviewPayment(null)}
+                className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Payment Method:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {previewPayment.method || previewPayment.provider || 'eSewa'}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Transaction / Ref Code:</span>
+                <span className="font-mono font-bold text-neutral-950 dark:text-amber-400">
+                  {previewPayment.transactionId || 'TXN-NOT-PROVIDED'}
+                </span>
+              </div>
+            </div>
+
+            {previewPayment.screenshot ? (
+              <div className="rounded-2xl overflow-hidden border border-neutral-200 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] max-h-72 flex items-center justify-center p-2">
+                <img
+                  src={previewPayment.screenshot}
+                  alt="Customer Payment Proof"
+                  className="max-h-64 w-auto object-contain rounded-xl shadow-xs"
+                />
+              </div>
+            ) : (
+              <div className="p-6 text-center text-xs text-neutral-400 dark:text-[#a3aed0] bg-neutral-50 dark:bg-[#0b1437] rounded-2xl">
+                No image screenshot attached. Transaction code submitted by customer.
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-[#1b2559]">
+              <button
+                type="button"
+                onClick={() => handleVerifyPayment(previewPayment._id, 'Approved')}
+                className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
+              >
+                Approve & Verify Order
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVerifyPayment(previewPayment._id, 'Rejected')}
+                className="px-4 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+              >
+                Reject
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewPayment(null)}
+                className="px-4 py-2 rounded-xl bg-neutral-100 dark:bg-[#0b1437] text-neutral-700 dark:text-neutral-300 font-bold text-xs hover:bg-neutral-200 dark:hover:bg-[#1b254b] transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
