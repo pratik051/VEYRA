@@ -52,20 +52,23 @@ export async function seedAdmin() {
 export async function getUserByEmail(email) {
   await seedAdmin();
   const normalizedEmail = (email || "").toLowerCase().trim();
-  
-  if (normalizedEmail === "admin" || normalizedEmail.startsWith("admin@")) {
-    const adminUser = await UserModel.findOne({
-      $or: [
-        { role: "admin" },
-        { email: normalizedEmail },
-        { email: "admin@sajilomarts.com" },
-        { email: "admin@sajilomarts.tech" }
-      ]
-    }).lean();
-    if (adminUser) return adminUser;
+  if (!normalizedEmail) return null;
+
+  // 1. Match exact email first
+  let user = await UserModel.findOne({ email: normalizedEmail }).lean();
+  if (user) return user;
+
+  // 2. If entered username 'admin', match configured admin
+  if (normalizedEmail === "admin") {
+    const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
+    user = await UserModel.findOne({ email: adminEmail }).lean();
+    if (!user) {
+      user = await UserModel.findOne({ role: "admin" }).lean();
+    }
+    return user;
   }
-  
-  return await UserModel.findOne({ email: normalizedEmail }).lean();
+
+  return null;
 }
 
 export async function createUser(input) {

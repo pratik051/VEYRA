@@ -46,7 +46,7 @@ export async function login(req, res) {
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: SESSION_MAX_AGE_SECONDS * 1000
     });
 
@@ -98,7 +98,7 @@ export async function signup(req, res) {
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: SESSION_MAX_AGE_SECONDS * 1000
     });
 
