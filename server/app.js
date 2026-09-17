@@ -76,9 +76,15 @@ app.use("/api/verify-product-link", aiRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("[Express Server Error]:", err);
-  res.status(err.status || 500).json({
-    error: err.message || "Internal Server Error"
+  console.error("[Express Server Error]:", err?.message || err);
+  const status = err.status || 500;
+  const isProd = process.env.NODE_ENV === "production";
+  const message = (isProd && status === 500)
+    ? "An unexpected error occurred. Please try again later."
+    : (err.message || "Internal Server Error");
+
+  res.status(status).json({
+    error: message
   });
 });
 

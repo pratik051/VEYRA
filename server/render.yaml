@@ -1,15 +1,24 @@
 services:
   - type: web
     name: sajilomarts-server
-    env: node
+    runtime: node
+    plan: free
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: MONGODB_URI
-        value: mongodb+srv://pratikshah2056_db_user:Ajita_777@cluster0.hvnskf.mongodb.net/sajilomarts?retryWrites=true&w=majority&appName=Cluster0
-      - key: ADMIN_EMAIL
-        value: admin@sajilomarts.com
-      - key: ADMIN_PASSWORD
-        value: Admin@12345
       - key: NODE_ENV
         value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: INDIA_NPR_CONVERSION_RATE
+        value: "1.65"
+      - key: SERVICE_CHARGE_PERCENT
+        value: "20"
+      - key: DELIVERY_CHARGE_NPR
+        value: "200"

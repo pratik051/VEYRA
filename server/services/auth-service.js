@@ -7,8 +7,11 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 export async function seedAdmin() {
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase();
-  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
+  const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword) {
+    return;
+  }
   try {
     const passwordHash = await hashPassword(adminPassword);
     const existingAdmin = await UserModel.findOne({

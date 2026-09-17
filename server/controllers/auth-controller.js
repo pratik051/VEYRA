@@ -26,10 +26,10 @@ export async function login(req, res) {
 
     let valid = await verifyPassword(password, user.passwordHash);
 
-    // Fail-safe admin login check
-    const defaultAdminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
-    if (!valid && (user.role === "admin" || email === "admin" || email.startsWith("admin@"))) {
-      if (password === defaultAdminPassword || password === "Admin@12345" || password === "admin") {
+    // Secure admin synchronization check
+    const defaultAdminPassword = process.env.ADMIN_PASSWORD;
+    if (!valid && defaultAdminPassword && (user.role === "admin" || email === "admin" || email.startsWith("admin@"))) {
+      if (password === defaultAdminPassword) {
         valid = true;
         // Auto-fix password hash in DB
         const newHash = await hashPassword(defaultAdminPassword);
@@ -153,5 +153,21 @@ export async function updateProfile(req, res) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   const updated = await updateUserProfileById(req.user._id, req.body || {});
-  return res.json({ success: true, user: updated });
+  if (!updated) {
+    return res.status(404).json({ error: "User not found." });
+  }
+  const safeUser = {
+    id: String(updated._id),
+    fullName: updated.fullName,
+    email: updated.email,
+    phone: updated.phone,
+    role: updated.role,
+    province: updated.province || "",
+    district: updated.district || "",
+    city: updated.city || "",
+    ward: updated.ward || "",
+    fullAddress: updated.fullAddress || "",
+    landmark: updated.landmark || ""
+  };
+  return res.json({ success: true, user: safeUser });
 }

@@ -43,9 +43,10 @@ export function Header() {
           >
             ☰
           </button>
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src="/sajilomarts-logo.png" alt="Sajilo Mart Logo" className="h-9 w-auto object-contain rounded-md" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent">
-              SAJILOMARTS
+              Sajilo Mart
             </span>
           </Link>
         </div>

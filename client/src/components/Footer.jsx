@@ -6,7 +6,10 @@ export function Footer() {
     <footer className="bg-neutral-950 border-t border-neutral-900 text-neutral-400 py-12 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <h3 className="text-lg font-bold text-white mb-3">SAJILOMARTS</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <img src="/sajilomarts-logo.png" alt="Sajilo Mart Logo" className="h-7 w-auto object-contain rounded-sm" />
+            <h3 className="text-lg font-bold text-white">Sajilo Mart</h3>
+          </div>
           <p className="text-xs leading-relaxed text-neutral-400">
             Nepal's premier cross-border e-commerce platform. Order products directly from Amazon India, Flipkart, Myntra, AJIO & get doorstep delivery across Nepal.
           </p>
