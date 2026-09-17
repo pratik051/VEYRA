@@ -4,7 +4,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
-import { TopBanner } from './components/TopBanner';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { BackToTop } from './components/BackToTop';
@@ -36,9 +35,6 @@ export default function App() {
         <CartProvider>
           <WishlistProvider>
             <div className="min-h-screen flex flex-col bg-[#F9FAFB] text-neutral-900 selection:bg-amber-400 selection:text-neutral-950 font-sans">
-              {/* Top Announcement & Quick Links */}
-              <TopBanner />
-
               {/* Main Sticky Navigation Header */}
               <Header />
 
