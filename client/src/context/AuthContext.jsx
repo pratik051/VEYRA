@@ -46,28 +46,71 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Login failed.');
+    if (!res.ok) throw new Error(data.error || data.message || 'Login failed.');
     if (data.token) {
       localStorage.setItem('sajilomarts_session', data.token);
     }
     setUser(data.user);
-    return data;
+    // Return unified object with both data.role and data.user.role for full backward compatibility
+    return {
+      ...data,
+      role: data.user?.role || data.role
+    };
   };
 
-  const signup = async (fullName, email, phone, password) => {
+  const signup = async (arg1, arg2, arg3, arg4) => {
+    let payload = {};
+    if (typeof arg1 === 'object' && arg1 !== null) {
+      payload = {
+        fullName: arg1.fullName,
+        email: arg1.email,
+        phone: arg1.phone,
+        password: arg1.password
+      };
+    } else {
+      payload = {
+        fullName: arg1,
+        email: arg2,
+        phone: arg3,
+        password: arg4
+      };
+    }
+
     const res = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ fullName, email, phone, password })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Signup failed.');
+    if (!res.ok) throw new Error(data.error || data.message || 'Signup failed.');
     if (data.token) {
       localStorage.setItem('sajilomarts_session', data.token);
     }
     setUser(data.user);
-    return data;
+    return {
+      ...data,
+      role: data.user?.role || data.role
+    };
+  };
+
+  const loginWithFirebase = async ({ idToken, provider = 'google', fullName, email, phone }) => {
+    const res = await fetch(`${API_URL}/api/auth/firebase`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ idToken, provider, fullName, email, phone })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.message || `${provider} authentication failed.`);
+    if (data.token) {
+      localStorage.setItem('sajilomarts_session', data.token);
+    }
+    setUser(data.user);
+    return {
+      ...data,
+      role: data.user?.role || data.role
+    };
   };
 
   const logout = async () => {
@@ -77,7 +120,7 @@ export function AuthProvider({ children }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         credentials: 'include'
       });
@@ -89,10 +132,11 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, signup, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, signup, loginWithFirebase, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => useContext(AuthContext);
+export default AuthContext;

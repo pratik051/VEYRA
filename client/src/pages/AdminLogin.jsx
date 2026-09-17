@@ -18,13 +18,15 @@ export function AdminLogin() {
 
     try {
       const res = await login(email.trim(), password);
-      if (res?.role === 'admin') {
+      // Check both res?.user?.role and res?.role
+      const userRole = res?.user?.role || res?.role;
+      if (userRole === 'admin') {
         navigate('/admin');
       } else {
         setError('Access denied. Administrator privileges required.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid admin credentials.');
+      setError(err?.message || 'Invalid admin credentials.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export function AdminLogin() {
             <div className="relative">
               <Mail className="absolute left-3.5 top-3 h-4 w-4 text-neutral-400" />
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@sajilomarts.com"
@@ -84,7 +86,7 @@ export function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-neutral-950 text-white text-xs font-black hover:bg-neutral-800 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50 cursor-pointer"
           >
             <span>{loading ? 'Verifying...' : 'Access Admin Panel'}</span>
             <ArrowRight className="h-4 w-4" />

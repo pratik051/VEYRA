@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import IndiaOrderModel from "../models/india-order-model.js";
+import OrderModel from "../models/order-model.js";
 import ProductRequestModel from "../models/product-request-model.js";
 import SupportTicketModel from "../models/support-ticket-model.js";
 import AddressModel from "../models/address-model.js";
@@ -11,24 +13,67 @@ export async function getUserOrders(req, res) {
       return res.status(401).json({ error: "Unauthorized access. Please log in." });
     }
     const userId = String(req.user._id);
-    const queryConditions = [
-      { userId },
-      { customerId: userId }
-    ];
-    if (req.user.phone && req.user.phone.trim()) {
-      queryConditions.push({ phone: req.user.phone.trim() });
-    }
-    if (req.user.email && req.user.email.trim()) {
-      queryConditions.push({ email: req.user.email.trim().toLowerCase() });
+    const userPhone = req.user.phone ? req.user.phone.trim() : null;
+    const userEmail = req.user.email ? req.user.email.trim().toLowerCase() : null;
+
+    let indiaOrders = [];
+    let standardOrders = [];
+
+    // 1. Fetch India-to-Nepal orders
+    try {
+      const indiaConditions = [{ userId }, { customerId: userId }];
+      if (userPhone) indiaConditions.push({ phone: userPhone });
+      if (userEmail) indiaConditions.push({ email: userEmail });
+
+      indiaOrders = await IndiaOrderModel.find({ $or: indiaConditions })
+        .sort({ createdAt: -1 })
+        .lean();
+    } catch (e) {
+      console.warn("IndiaOrderModel query error:", e.message);
     }
 
-    const orders = await IndiaOrderModel.find(
-      queryConditions.length > 0 ? { $or: queryConditions } : { userId }
-    )
-      .sort({ createdAt: -1 })
-      .lean();
+    // 2. Fetch standard storefront orders
+    try {
+      const standardConditions = [{ fullName: req.user.fullName }];
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        standardConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
+      }
+      if (userPhone) standardConditions.push({ phone: userPhone });
+      if (userEmail) standardConditions.push({ email: userEmail });
 
-    return res.json({ success: true, orders: orders || [] });
+      standardOrders = await OrderModel.find({ $or: standardConditions })
+        .sort({ createdAt: -1 })
+        .lean();
+    } catch (e) {
+      console.warn("OrderModel query error:", e.message);
+    }
+
+    // 3. Combine and deduplicate
+    const combinedMap = new Map();
+
+    for (const ord of standardOrders || []) {
+      const key = String(ord.orderId || ord._id);
+      combinedMap.set(key, {
+        ...ord,
+        id: String(ord._id),
+        type: "standard"
+      });
+    }
+
+    for (const ord of indiaOrders || []) {
+      const key = String(ord.orderId || ord._id);
+      combinedMap.set(key, {
+        ...ord,
+        id: String(ord._id),
+        type: "india_sourcing"
+      });
+    }
+
+    const allOrders = Array.from(combinedMap.values()).sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+
+    return res.json({ success: true, orders: allOrders });
   } catch (error) {
     console.error("[GET /api/user/orders Error]:", error?.message || error);
     return res.status(500).json({ error: "Failed to fetch user orders." });
@@ -42,14 +87,33 @@ export async function getUserOrderById(req, res) {
       return res.status(401).json({ error: "Unauthorized access. Please log in." });
     }
     const { orderId } = req.params;
-    const order = await IndiaOrderModel.findOne({
+    const userId = String(req.user._id);
+
+    // Check India Orders first
+    let order = await IndiaOrderModel.findOne({
       orderId,
       $or: [
-        { userId: String(req.user._id) },
-        { customerId: String(req.user._id) },
-        { phone: req.user.phone }
+        { userId },
+        { customerId: userId },
+        ...(req.user.phone ? [{ phone: req.user.phone }] : []),
+        ...(req.user.email ? [{ email: req.user.email }] : [])
       ]
     }).lean();
+
+    // If not found, check Standard Orders
+    if (!order) {
+      const standardOr = [
+        ...(req.user.phone ? [{ phone: req.user.phone }] : []),
+        ...(req.user.email ? [{ email: req.user.email }] : [])
+      ];
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        standardOr.push({ userId: new mongoose.Types.ObjectId(userId) });
+      }
+      order = await OrderModel.findOne({
+        orderId,
+        $or: standardOr
+      }).lean();
+    }
 
     if (!order) {
       return res.status(404).json({ error: "Order not found." });
@@ -66,10 +130,12 @@ export async function getUserAddresses(req, res) {
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized access. Please log in." });
     }
-    const addresses = await AddressModel.find({ userId: req.user._id }).sort({ isDefault: -1, createdAt: -1 }).lean();
+    const addresses = await AddressModel.find({ userId: req.user._id })
+      .sort({ isDefault: -1, createdAt: -1 })
+      .lean();
     return res.json({ success: true, addresses: addresses || [] });
   } catch (error) {
-    console.error("[GET /api/user/addresses Error]:", error);
+    console.error("[GET /api/user/addresses Error]:", error?.message || error);
     return res.status(500).json({ error: error.message || "Failed to fetch addresses." });
   }
 }
@@ -113,7 +179,7 @@ export async function getUserProductRequests(req, res) {
 
     return res.json({ success: true, requests: requests || [] });
   } catch (error) {
-    console.error("[GET /api/user/product-requests Error]:", error);
+    console.error("[GET /api/user/product-requests Error]:", error?.message || error);
     return res.status(500).json({ error: error.message || "Failed to fetch product requests." });
   }
 }
@@ -130,7 +196,7 @@ export async function getUserTickets(req, res) {
 
     return res.json({ success: true, tickets: tickets || [] });
   } catch (error) {
-    console.error("[GET /api/user/tickets Error]:", error);
+    console.error("[GET /api/user/tickets Error]:", error?.message || error);
     return res.status(500).json({ error: error.message || "Failed to fetch support tickets." });
   }
 }

@@ -14,13 +14,9 @@ export async function seedAdmin() {
   }
   try {
     const passwordHash = await hashPassword(adminPassword);
-    const existingAdmin = await UserModel.findOne({
-      $or: [
-        { email: adminEmail },
-        { email: "admin@sajilomarts.tech" },
-        { role: "admin" }
-      ]
-    });
+    // Strictly find the admin by their specific admin email only!
+    // NEVER match generic { role: "admin" } which causes account collisions/overwrites.
+    const existingAdmin = await UserModel.findOne({ email: adminEmail });
 
     if (!existingAdmin) {
       await UserModel.create({
@@ -30,19 +26,18 @@ export async function seedAdmin() {
         passwordHash,
         role: "admin"
       });
-      console.log("[Admin Seeded successfully]:", adminEmail);
+      console.log("[Admin Initialized]:", adminEmail);
     } else {
       await UserModel.updateOne(
         { _id: existingAdmin._id },
         {
           $set: {
-            email: adminEmail,
             role: "admin",
             passwordHash
           }
         }
       );
-      console.log("[Admin Synchronized successfully]:", adminEmail);
+      console.log("[Admin Verified]:", adminEmail);
     }
   } catch (error) {
     console.warn("Failed to seed/sync admin:", error.message);
@@ -94,18 +89,22 @@ export async function findOrCreateGoogleUser(input) {
   await seedAdmin();
   const normalizedEmail = input.email.trim().toLowerCase();
   const fallbackPhone = input.phone || "+977-9800000000";
+
   const existing = await UserModel.findOne({
-    $or: [{ googleId: input.googleId }, { email: normalizedEmail }]
+    $or: [
+      ...(input.googleId ? [{ googleId: input.googleId }] : []),
+      { email: normalizedEmail }
+    ]
   }).lean();
 
   if (existing) {
     const updates = {
       fullName: existing.fullName || input.fullName,
       email: normalizedEmail,
-      authProvider: "google",
-      googleId: existing.googleId || input.googleId,
-      passwordHash: existing.passwordHash || "google-oauth"
+      authProvider: "google"
     };
+    if (input.googleId) updates.googleId = input.googleId;
+    if (!existing.passwordHash) updates.passwordHash = "google-oauth";
     if (!existing.phone && fallbackPhone) updates.phone = fallbackPhone;
 
     await UserModel.updateOne({ _id: existing._id }, { $set: updates });
@@ -119,6 +118,85 @@ export async function findOrCreateGoogleUser(input) {
     passwordHash: "google-oauth",
     authProvider: "google",
     googleId: input.googleId,
+    role: "customer"
+  });
+
+  return created.toObject ? created.toObject() : created;
+}
+
+export async function findOrCreateAppleUser(input) {
+  await seedAdmin();
+  const normalizedEmail = input.email ? input.email.trim().toLowerCase() : undefined;
+  const fallbackPhone = input.phone || "+977-9800000000";
+
+  const queryConditions = [];
+  if (input.appleId) queryConditions.push({ appleId: input.appleId });
+  if (input.firebaseUid) queryConditions.push({ firebaseUid: input.firebaseUid });
+  if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
+
+  let existing = null;
+  if (queryConditions.length > 0) {
+    existing = await UserModel.findOne({ $or: queryConditions }).lean();
+  }
+
+  if (existing) {
+    const updates = {
+      fullName: existing.fullName || input.fullName || "Apple Customer",
+      authProvider: "apple"
+    };
+    if (input.appleId) updates.appleId = input.appleId;
+    if (input.firebaseUid) updates.firebaseUid = input.firebaseUid;
+    if (normalizedEmail) updates.email = normalizedEmail;
+    if (!existing.phone && fallbackPhone) updates.phone = fallbackPhone;
+
+    await UserModel.updateOne({ _id: existing._id }, { $set: updates });
+    return await UserModel.findById(existing._id).lean();
+  }
+
+  const created = await UserModel.create({
+    fullName: input.fullName || "Apple Customer",
+    email: normalizedEmail || `apple_${(input.appleId || input.firebaseUid || randomUUID()).slice(0, 8)}@sajilomarts.internal`,
+    phone: fallbackPhone,
+    passwordHash: "apple-oauth",
+    authProvider: "apple",
+    appleId: input.appleId,
+    firebaseUid: input.firebaseUid,
+    role: "customer"
+  });
+
+  return created.toObject ? created.toObject() : created;
+}
+
+export async function findOrCreatePhoneUser(input) {
+  await seedAdmin();
+  const cleanPhone = (input.phone || "").trim();
+  const normalizedEmail = input.email ? input.email.trim().toLowerCase() : undefined;
+
+  const queryConditions = [{ phone: cleanPhone }];
+  if (input.firebaseUid) queryConditions.push({ firebaseUid: input.firebaseUid });
+  if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
+
+  const existing = await UserModel.findOne({ $or: queryConditions }).lean();
+
+  if (existing) {
+    const updates = {
+      fullName: existing.fullName || input.fullName || `Customer (${cleanPhone})`,
+      authProvider: "phone"
+    };
+    if (input.firebaseUid) updates.firebaseUid = input.firebaseUid;
+    if (normalizedEmail && !existing.email) updates.email = normalizedEmail;
+
+    await UserModel.updateOne({ _id: existing._id }, { $set: updates });
+    return await UserModel.findById(existing._id).lean();
+  }
+
+  const created = await UserModel.create({
+    fullName: input.fullName || `Customer (${cleanPhone})`,
+    email: normalizedEmail || `phone_${cleanPhone.replace(/[^0-9]/g, "")}@sajilomarts.internal`,
+    phone: cleanPhone,
+    passwordHash: "firebase-phone-auth",
+    authProvider: "phone",
+    firebaseUid: input.firebaseUid,
     role: "customer"
   });
 
@@ -158,6 +236,11 @@ export async function getSessionUserByToken(token) {
     }
   }
   return null;
+}
+
+export async function updatePasswordByUserId(userId, passwordHash) {
+  const result = await UserModel.updateOne({ _id: userId }, { $set: { passwordHash } });
+  return result.modifiedCount > 0 || result.matchedCount > 0;
 }
 
 export async function updateUserProfileById(userId, input) {
