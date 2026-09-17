@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -6,28 +7,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || '';
-
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('sajilomarts_session');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token && token !== 'undefined' && token !== 'null') {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`${API_URL}/api/auth/me`, {
-        headers,
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
+      const res = await api.get('/api/auth/me');
+      setUser(res.data?.user || null);
     } catch (err) {
-      console.error('Auth check error:', err);
+      console.error('Auth check error:', err?.message || err);
       setUser(null);
     } finally {
       setLoading(false);
@@ -39,18 +24,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const res = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || 'Login failed.');
+    const res = await api.post('/api/auth/login', { email, password });
+    const data = res.data || {};
     if (data.token) {
       localStorage.setItem('sajilomarts_session', data.token);
     }
-    setUser(data.user);
+    setUser(data.user || null);
     // Return unified object with both data.role and data.user.role for full backward compatibility
     return {
       ...data,
@@ -76,18 +55,12 @@ export function AuthProvider({ children }) {
       };
     }
 
-    const res = await fetch(`${API_URL}/api/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || 'Signup failed.');
+    const res = await api.post('/api/auth/signup', payload);
+    const data = res.data || {};
     if (data.token) {
       localStorage.setItem('sajilomarts_session', data.token);
     }
-    setUser(data.user);
+    setUser(data.user || null);
     return {
       ...data,
       role: data.user?.role || data.role
@@ -95,18 +68,12 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithFirebase = async ({ idToken, provider = 'google', fullName, email, phone }) => {
-    const res = await fetch(`${API_URL}/api/auth/firebase`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ idToken, provider, fullName, email, phone })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || `${provider} authentication failed.`);
+    const res = await api.post('/api/auth/firebase', { idToken, provider, fullName, email, phone });
+    const data = res.data || {};
     if (data.token) {
       localStorage.setItem('sajilomarts_session', data.token);
     }
-    setUser(data.user);
+    setUser(data.user || null);
     return {
       ...data,
       role: data.user?.role || data.role
@@ -114,18 +81,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    const token = localStorage.getItem('sajilomarts_session');
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        credentials: 'include'
-      });
+      await api.post('/api/auth/logout');
     } catch (e) {
-      console.error(e);
+      console.warn('Logout API notice:', e?.message || e);
     }
     localStorage.removeItem('sajilomarts_session');
     setUser(null);

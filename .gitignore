@@ -17,3 +17,4 @@ service-account*.json
 firebase-admin*.json
 *.pem
 *.key
+scratch/

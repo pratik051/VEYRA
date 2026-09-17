@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import {
   firebaseAuth,
   googleProvider,
@@ -30,7 +31,6 @@ export function Login() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const API_URL = import.meta.env.VITE_API_URL || '';
 
   const urlError = searchParams.get('error');
   useEffect(() => {
@@ -143,6 +143,7 @@ export function Login() {
     }
   };
 
+
   // 4. Send OTP Email for Forgot Password
   const handleForgotSendOtp = async (e) => {
     e.preventDefault();
@@ -156,15 +157,13 @@ export function Login() {
     setMessage('');
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/forgot-password/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail.trim() })
+      const res = await api.post('/api/auth/forgot-password/send-otp', {
+        email: forgotEmail.trim()
       });
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send verification code.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to send verification code.');
       }
 
       setMessage('A 6-digit verification code has been sent to your email.');
@@ -194,19 +193,15 @@ export function Login() {
     setMessage('');
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/forgot-password/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: forgotEmail.trim(),
-          otp: forgotOtp.trim(),
-          newPassword: forgotNewPassword
-        })
+      const res = await api.post('/api/auth/forgot-password/verify-otp', {
+        email: forgotEmail.trim(),
+        otp: forgotOtp.trim(),
+        newPassword: forgotNewPassword
       });
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Password reset failed.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Password reset failed.');
       }
 
       setMessage('Password updated successfully! You can now sign in.');

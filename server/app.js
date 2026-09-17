@@ -21,28 +21,32 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://www.sajilomarts.tech",
-  "https://sajilomarts.tech"
-];
+  "https://sajilomarts.tech",
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") ||
-        process.env.NODE_ENV !== "production"
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Allow production origins seamlessly
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Session-Token", "Accept"]
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin.includes("vercel.app") ||
+      process.env.NODE_ENV !== "production"
+    ) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow production origins seamlessly
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Session-Token", "Accept"],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Security and Cross-Origin Opener Policy middleware
 app.use((req, res, next) => {
@@ -73,6 +77,13 @@ app.use("/api/request-product", requestRoutes);
 app.use("/api/product-requests", requestRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/verify-product-link", aiRoutes);
+
+// Fallback 404 handler for unmatched routes (always returns JSON, never HTML)
+app.use((req, res) => {
+  res.status(404).json({
+    error: `API route not found: ${req.method} ${req.originalUrl}`
+  });
+});
 
 // Global Error Handler
 app.use((err, req, res, next) => {

@@ -280,6 +280,217 @@ export const sampleProducts = [
     },
     image: "https://images.unsplash.com/photo-1621607512214-68297480165e",
     gallery: ["https://images.unsplash.com/photo-1621607512214-68297480165e"]
+  },
+  {
+    id: "P1008",
+    slug: "cotton-slim-fit-tshirt",
+    name: "Cotton Slim Fit Minimalist T-Shirt",
+    subline: "Cotton T-shirt",
+    category: "T-Shirts",
+    brand: "Aura Minimal",
+    price: 1890,
+    originalPrice: 2450,
+    rating: 4.8,
+    reviews: 112,
+    stock: 45,
+    badge: "NEW",
+    fit: "Slim Fit",
+    sizes: ["XS", "S", "M", "L", "XL", "2X"],
+    colors: ["Oatmeal Beige", "Charcoal Black", "Clean White"],
+    colorHexes: ["#e8dfd8", "#111111", "#ffffff"],
+    description: "Breathable 220 GSM combed organic cotton. Features a tailored slim silhouette, pre-shrunk ribbed collar, and durable double-needle stitching.",
+    specs: {
+      "Fabric": "100% Combed Organic Cotton (220 GSM)",
+      "Fit": "Tailored Slim Fit",
+      "Care": "Machine wash cold with like colors"
+    },
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518",
+    gallery: [
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a"
+    ]
+  },
+  {
+    id: "P1009",
+    slug: "basic-heavy-weight-tshirt",
+    name: "Basic Heavy Weight Boxy Fit T-Shirt",
+    subline: "Heavyweight Cotton",
+    category: "T-Shirts",
+    brand: "Aura Minimal",
+    price: 2150,
+    originalPrice: 2800,
+    rating: 4.9,
+    reviews: 89,
+    stock: 60,
+    badge: "BEST SELLER",
+    fit: "Boxy Fit",
+    sizes: ["XS", "S", "M", "L", "XL", "2X"],
+    colors: ["Charcoal Black", "Washed Olive", "Ash Grey"],
+    colorHexes: ["#111111", "#4d5b43", "#9ca3af"],
+    description: "Dense 280 GSM heavyweight jersey cotton. Boxy drop-shoulder cut inspired by vintage Japanese streetwear. Retains shape after repeated wash cycles.",
+    specs: {
+      "Fabric": "280 GSM Heavy Single Jersey Cotton",
+      "Cut": "Boxy Drop-Shoulder Relaxed",
+      "Collar": "Thick 1.25\" Ribbed Band"
+    },
+    image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c",
+    gallery: ["https://images.unsplash.com/photo-1503342217505-b0a15ec3261c"]
+  },
+  {
+    id: "P1010",
+    slug: "full-sleeve-zipper-utility-jacket",
+    name: "Full Sleeve Zipper Utility Overshirt Jacket",
+    subline: "Cotton / Utility",
+    category: "Jackets",
+    brand: "Studio Atelier",
+    price: 4490,
+    originalPrice: 5900,
+    rating: 4.8,
+    reviews: 76,
+    stock: 18,
+    badge: "TRENDING",
+    fit: "Regular",
+    sizes: ["S", "M", "L", "XL", "2X"],
+    colors: ["Washed Black", "Olive Drab", "Desert Sand"],
+    colorHexes: ["#1c1917", "#4d5b43", "#d6c7b2"],
+    description: "Multi-functional utility jacket featuring a two-way brushed metal zip, twin chest storm pockets, and reinforced elbow patches in durable cotton twill.",
+    specs: {
+      "Material": "Heavy Cotton Twill (340 GSM)",
+      "Hardware": "YKK Dual-Way Metal Zipper",
+      "Pockets": "4 Functional Pockets with Snap Closures"
+    },
+    image: "https://images.unsplash.com/photo-1544441893-675973e31985",
+    gallery: ["https://images.unsplash.com/photo-1544441893-675973e31985"]
+  },
+  {
+    id: "P1011",
+    slug: "classic-linen-relaxed-shirt",
+    name: "Classic Linen Relaxed Long Sleeve Shirt",
+    subline: "Pure Linen Blend",
+    category: "Shirts",
+    brand: "Minimalist Club",
+    price: 2890,
+    originalPrice: 3600,
+    rating: 4.7,
+    reviews: 54,
+    stock: 32,
+    badge: "POPULAR",
+    fit: "Relaxed Fit",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Pure White", "Sky Blue", "Midnight Navy"],
+    colorHexes: ["#ffffff", "#93c5fd", "#1e293b"],
+    description: "Breathable European flax linen-cotton blend. Light, airy drape perfect for warm weather layering with spread collar and mother-of-pearl buttons.",
+    specs: {
+      "Fabric": "55% French Linen, 45% Organic Cotton",
+      "Collar": "Soft Italian Camp Collar",
+      "Buttons": "Mother of Pearl Bio-Resin"
+    },
+    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf",
+    gallery: ["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf"]
+  },
+  {
+    id: "P1012",
+    slug: "textured-ribbed-knit-polo",
+    name: "Textured Ribbed Knit Resort Polo",
+    subline: "Mercerized Knit",
+    category: "Polos",
+    brand: "Aura Minimal",
+    price: 2590,
+    originalPrice: 3200,
+    rating: 4.8,
+    reviews: 42,
+    stock: 25,
+    badge: "NEW",
+    fit: "Slim Fit",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Oatmeal Beige", "Midnight Navy", "Terracotta"],
+    colorHexes: ["#e8dfd8", "#1e293b", "#78593a"],
+    description: "Refined open-collar polo knit from mercerized combed cotton. Features subtle vertical ribbing texture and relaxed hem.",
+    specs: {
+      "Knit": "100% Mercerized Cotton 14-Gauge",
+      "Collar": "Buttonless Johnny Collar",
+      "Hem": "Ribbed Sleeve & Waist Bands"
+    },
+    image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d",
+    gallery: ["https://images.unsplash.com/photo-1586790170083-2f9ceadc732d"]
+  },
+  {
+    id: "P1013",
+    slug: "vintage-wash-relaxed-denim",
+    name: "Vintage Wash Relaxed Straight Leg Denim",
+    subline: "13.5oz Raw Selvedge",
+    category: "Jeans",
+    brand: "Denim Lab",
+    price: 3490,
+    originalPrice: 4500,
+    rating: 4.7,
+    reviews: 63,
+    stock: 30,
+    badge: "HOT",
+    fit: "Relaxed Fit",
+    sizes: ["S", "M", "L", "XL", "2X"],
+    colors: ["Vintage Blue", "Faded Grey", "Raw Indigo"],
+    colorHexes: ["#60a5fa", "#6b7280", "#1e1b4b"],
+    description: "13.5oz non-stretch ring-spun cotton denim with authentic stone enzyme wash. Mid-rise with classic straight leg drape and antique brass rivets.",
+    specs: {
+      "Denim": "13.5 oz 100% Ring-Spun Cotton",
+      "Fly": "Button Fly Closure",
+      "Hardware": "Antiqued Copper Rivets"
+    },
+    image: "https://images.unsplash.com/photo-1542272604-780c96856592",
+    gallery: ["https://images.unsplash.com/photo-1542272604-780c96856592"]
+  },
+  {
+    id: "P1014",
+    slug: "oversized-minimalist-wool-trench-coat",
+    name: "Oversized Minimalist Wool Trench Coat",
+    subline: "Tailored Outerwear",
+    category: "Coats",
+    brand: "Studio Atelier",
+    price: 6890,
+    originalPrice: 8900,
+    rating: 4.9,
+    reviews: 31,
+    stock: 14,
+    badge: "PREMIUM",
+    fit: "Oversized",
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Camel Tan", "Charcoal Black"],
+    colorHexes: ["#c29b38", "#111111"],
+    description: "Double-faced wool-blend overcoat with unlined interior for effortless drape. Wide notched lapels, deep welt pockets and self-tie belt.",
+    specs: {
+      "Material": "70% Wool, 30% Polyamide (550 GSM)",
+      "Length": "Below-Knee Long Cut",
+      "Details": "Storm Flap & Tortoiseshell Buttons"
+    },
+    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6",
+    gallery: ["https://images.unsplash.com/photo-1539571696357-5a69c17a67c6"]
+  },
+  {
+    id: "P1015",
+    slug: "pleated-wide-leg-trousers",
+    name: "Pleated Wide-Leg Tailored Trousers",
+    subline: "Tailored Suiting Fabric",
+    category: "Pants",
+    brand: "Minimalist Club",
+    price: 3290,
+    originalPrice: 4200,
+    rating: 4.6,
+    reviews: 29,
+    stock: 21,
+    badge: "NEW",
+    fit: "Relaxed Fit",
+    sizes: ["XS", "S", "M", "L", "XL", "2X"],
+    colors: ["Charcoal Black", "Espresso Brown", "Slate Grey"],
+    colorHexes: ["#111111", "#451a03", "#64748b"],
+    description: "Double-pleated front trousers in wrinkle-resistant viscose-wool blend. Fluid drape with clean welt pockets and hidden tab fastening.",
+    specs: {
+      "Fabric": "Poly-Viscose Stretch Twill",
+      "Rise": "High Rise with Front Double Pleats",
+      "Closure": "Concealed Zip Fly with Hook-and-Bar"
+    },
+    image: "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0",
+    gallery: ["https://images.unsplash.com/photo-1506630448388-4e683c67ddb0"]
   }
 ];
 
@@ -354,12 +565,16 @@ export const supportedPlatforms = [
 ];
 
 export const categoriesList = [
-  { id: "tech-gadgets", name: "Tech & Gadgets", icon: "📱", count: 12 },
-  { id: "fashion", name: "Fashion & Apparel", icon: "👕", count: 18 },
-  { id: "footwear", name: "Footwear & Sneakers", icon: "👟", count: 9 },
-  { id: "beauty-lifestyle", name: "Beauty & Skincare", icon: "💄", count: 14 },
-  { id: "everyday-essentials", name: "Everyday Essentials", icon: "⚡", count: 11 },
-  { id: "accessories", name: "Accessories & Bags", icon: "🎒", count: 8 }
+  { id: "all", name: "All Products", icon: "✨", count: 20 },
+  { id: "t-shirts", name: "T-Shirts", icon: "👕", count: 6 },
+  { id: "shirts", name: "Shirts", icon: "👔", count: 4 },
+  { id: "polos", name: "Polos", icon: "🎾", count: 3 },
+  { id: "jackets", name: "Jackets & Coats", icon: "🧥", count: 4 },
+  { id: "jeans", name: "Jeans & Denim", icon: "👖", count: 4 },
+  { id: "pants", name: "Pants & Trousers", icon: "🩳", count: 3 },
+  { id: "footwear", name: "Footwear", icon: "👟", count: 4 },
+  { id: "accessories", name: "Accessories", icon: "🎒", count: 5 },
+  { id: "tech-gadgets", name: "Tech & Gadgets", icon: "📱", count: 4 }
 ];
 
 export const nepalProvinces = [
