@@ -31,7 +31,9 @@ export function Header() {
     { name: 'Home', href: '/' },
     { name: 'All Products', href: '/shop' },
     { name: 'Track Order', href: '/track-order' },
+    { name: 'India Sourcing', href: '/request-product' },
   ];
+
 
   return (
     <>

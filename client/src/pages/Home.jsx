@@ -4,7 +4,7 @@ import { CategorySidebar, CategoryGrid } from '../components/CategorySidebar';
 import { FlashSalesSection } from '../components/FlashSalesSection';
 import { MarketplacePlatformSection } from '../components/MarketplacePlatformSection';
 import { NewArrivalBento, ExperienceBanner, ServicesHighlight } from '../components/NewArrivalBento';
-import { LinkVerifier } from '../components/LinkVerifier';
+
 import { QuickViewModal } from '../components/QuickViewModal';
 import { sampleProducts } from '../data/mockData';
 
@@ -32,8 +32,7 @@ export function Home() {
         onQuickView={(product) => setQuickViewProduct(product)}
       />
 
-      {/* Instant Link Verifier Banner */}
-      <LinkVerifier />
+
 
       {/* Browse by Category Grid */}
       <CategoryGrid />
