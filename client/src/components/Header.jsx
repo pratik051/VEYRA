@@ -55,11 +55,11 @@ export function Header() {
             <Link to="/" className="flex items-center gap-2 group shrink-0">
               <img
                 src="/sajilomarts-logo.png"
-                alt="SailloMarts Logo"
-                className="h-7 sm:h-8 w-auto object-contain"
+                alt="SajiloMarts Logo"
+                className="h-6 sm:h-7 w-auto object-contain"
               />
-              <span className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 group-hover:text-amber-600 transition">
-                SailloMarts
+              <span className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 group-hover:text-amber-600 transition">
+                SajiloMarts
               </span>
             </Link>
           </div>

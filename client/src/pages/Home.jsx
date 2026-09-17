@@ -60,8 +60,8 @@ export function Home() {
 
   const faqs = [
     {
-      q: 'How does SailloMarts work?',
-      a: 'SailloMarts enables customers in Nepal to purchase products from Indian online marketplaces. You paste the product URL, we calculate the landed cost in Nepali Rupees (NPR), handle procurement in India, customs processing, and deliver the package directly to your doorstep in Nepal.'
+      q: 'How does SajiloMarts work?',
+      a: 'SajiloMarts enables customers in Nepal to purchase products from Indian online marketplaces. You paste the product URL, we calculate the landed cost in Nepali Rupees (NPR), handle procurement in India, customs processing, and deliver the package directly to your doorstep in Nepal.'
     },
     {
       q: 'Which Indian stores are supported?',
@@ -157,7 +157,7 @@ export function Home() {
       <section id="how-it-works" className="scroll-mt-20">
         <div className="text-center space-y-2 mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
-            How SailloMarts Works
+            How SajiloMarts Works
           </h2>
           <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto">
             A simple, transparent 5-step process to get products from Indian stores delivered across Nepal.
@@ -288,11 +288,11 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── 6. WHY SAILLOMARTS ── */}
+      {/* ── 6. WHY SAJILOMARTS ── */}
       <section>
         <div className="text-center space-y-2 mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
-            Why SailloMarts?
+            Why SajiloMarts?
           </h2>
           <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto">
             Practical, reliable e-commerce sourcing built for shoppers in Nepal.

@@ -10,11 +10,11 @@ export function Footer() {
           <Link to="/" className="inline-flex items-center gap-2">
             <img
               src="/sajilomarts-logo.png"
-              alt="SailloMarts Logo"
-              className="h-7 w-auto object-contain"
+              alt="SajiloMarts Logo"
+              className="h-6 w-auto object-contain"
             />
-            <span className="text-base font-bold text-neutral-900">
-              SailloMarts
+            <span className="text-sm sm:text-base font-bold text-neutral-900">
+              SajiloMarts
             </span>
           </Link>
           <p className="text-neutral-500 text-xs">
@@ -106,7 +106,7 @@ export function Footer() {
       {/* Bottom Copyright & accepted payment badges */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-neutral-500">
         <p>
-          &copy; {new Date().getFullYear()} SailloMarts. All rights reserved.
+          &copy; {new Date().getFullYear()} SajiloMarts. All rights reserved.
         </p>
         <div className="flex items-center gap-2 text-[11px] text-neutral-500">
           <span>Supported Payments: eSewa • Khalti • Bank Transfer • COD</span>
