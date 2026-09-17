@@ -43,11 +43,16 @@ export function Header() {
           >
             ☰
           </button>
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src="/sajilomarts-logo.png" alt="Sajilo Mart Logo" className="h-9 w-auto object-contain rounded-md" />
-            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent">
-              Sajilo Mart
-            </span>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <img src="/sajilomarts-logo.png" alt="SajiloMarts Logo" className="h-10 w-auto object-contain rounded-lg shadow-sm" />
+            <div className="flex flex-col justify-center">
+              <span className="text-xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent group-hover:opacity-95 transition">
+                SajiloMarts
+              </span>
+              <span className="text-[9px] font-bold text-neutral-400 tracking-wider uppercase -mt-1 hidden sm:block">
+                Shop Easy • Live Better
+              </span>
+            </div>
           </Link>
         </div>
 
