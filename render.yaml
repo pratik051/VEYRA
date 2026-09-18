@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sajilomarts-server
+    name: sajilomarts-backend
     runtime: node
     plan: free
     rootDir: server
@@ -9,18 +9,14 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 000
       - key: INDIA_NPR_CONVERSION_RATE
         value: "1.65"
       - key: SERVICE_CHARGE_PERCENT
         value: "20"
       - key: DELIVERY_CHARGE_NPR
         value: "200"
-      # The following secrets MUST be set via Render Dashboard → Environment
-      # (not committed to Git):
+      # The following secrets MUST be set manually via Render Dashboard → Environment:
       # MONGODB_URI
-      # MONGO_URI
       # ADMIN_EMAIL
       # ADMIN_PASSWORD
       # JWT_SECRET
