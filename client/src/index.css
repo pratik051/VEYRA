@@ -12,18 +12,15 @@
   --border: #e2e8f0;
   --primary: #0f172a;
   --primary-foreground: #ffffff;
-}
 
-.dark {
-  --background: #0b1437;
-  --foreground: #ffffff;
-  --card: #111c44;
-  --card-foreground: #ffffff;
-  --muted: #1b254b;
-  --muted-foreground: #a3aed0;
-  --border: #1b2559;
-  --primary: #f59e0b;
-  --primary-foreground: #0b1437;
+  /* Sunset Warm Palette Variables */
+  --sunset-cream: #FFEDB9;
+  --sunset-yellow: #FFCB56;
+  --sunset-orange: #FFA259;
+  --sunset-coral: #FF7E7E;
+  --sunset-charcoal: #2C2C2C;
+  --sunset-charcoal-dark: #1E1E1E;
+  --sunset-white: #FFFFFF;
 }
 
 @layer base {
@@ -47,13 +44,12 @@
 
   body {
     margin: 0;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--foreground);
     background-color: var(--background);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   a {
@@ -72,9 +68,6 @@
     background: #cbd5e1;
     border-radius: 9999px;
   }
-  .dark ::-webkit-scrollbar-thumb {
-    background: #27272a;
-  }
   ::-webkit-scrollbar-thumb:hover {
     background: #f59e0b;
   }
@@ -91,112 +84,8 @@
 }
 
 @layer components {
-  /* Universal Dark Theme Readability Guardrails */
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    color: #ffffff;
-  }
-
-  .dark label {
-    color: #cbd5e1;
-  }
-
-  .dark input:not([type="checkbox"]):not([type="radio"]),
-  .dark select,
-  .dark textarea {
-    background-color: #0b1437 !important;
-    color: #ffffff !important;
-    border-color: #1b2559 !important;
-  }
-
-  .dark input::placeholder,
-  .dark textarea::placeholder {
-    color: #64748b !important;
-  }
-
-  .dark select option {
-    background-color: #0b1437;
-    color: #ffffff;
-  }
-
-  /* Universal Dark Background & Text Adaptations */
-  .dark .bg-white {
-    background-color: #111c44;
-  }
-
-  /* Elements that must always keep pure white background (e.g. Scannable QR Codes) */
-  .dark .bg-white-pure {
+  /* Elements that keep pure white background (e.g. Scannable QR Codes) */
+  .bg-white-pure {
     background-color: #ffffff !important;
-  }
-
-  .dark .bg-neutral-50,
-  .dark .bg-slate-50 {
-    background-color: #0b1437;
-  }
-
-  .dark .bg-neutral-100,
-  .dark .bg-slate-100 {
-    background-color: #1b254b;
-  }
-
-  .dark .border-neutral-200,
-  .dark .border-neutral-100,
-  .dark .border-slate-200,
-  .dark .border-slate-100 {
-    border-color: #1b2559;
-  }
-
-  .dark .divide-neutral-100 > :not([hidden]) ~ :not([hidden]),
-  .dark .divide-neutral-200 > :not([hidden]) ~ :not([hidden]),
-  .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-  .dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-    border-color: #1b2559;
-  }
-
-  .dark .text-neutral-950,
-  .dark .text-neutral-900,
-  .dark .text-neutral-800,
-  .dark .text-slate-900,
-  .dark .text-slate-800 {
-    color: #ffffff;
-  }
-
-  .dark .text-neutral-700,
-  .dark .text-neutral-600,
-  .dark .text-slate-700,
-  .dark .text-slate-600 {
-    color: #cbd5e1;
-  }
-
-  .dark .text-neutral-500,
-  .dark .text-slate-500 {
-    color: #94a3b8;
-  }
-
-  /* Guarantee High Contrast for Amber Badges and Buttons */
-  .dark .bg-amber-400,
-  .dark .bg-amber-300 {
-    color: #0b1437 !important;
-  }
-
-  .dark .bg-amber-400 span,
-  .dark .bg-amber-400 p,
-  .dark .bg-amber-400 div,
-  .dark .bg-amber-300 span,
-  .dark .bg-amber-300 p,
-  .dark .bg-amber-300 div {
-    color: #0b1437 !important;
-  }
-
-  /* Guarantee High Contrast for Red Badges and Buttons */
-  .dark .bg-red-600,
-  .dark .bg-red-500 {
-    color: #ffffff !important;
-  }
-
-  .dark .bg-red-600 span,
-  .dark .bg-red-600 p,
-  .dark .bg-red-500 span,
-  .dark .bg-red-500 p {
-    color: #ffffff !important;
   }
 }

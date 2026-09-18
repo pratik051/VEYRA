@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { MarketplaceLogo } from './MarketplaceLogos';
 
-export function ProductCard({ product, onQuickView, layoutMode = 'fashion' }) {
+export function ProductCard({ product, onQuickView }) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [isAdded, setIsAdded] = useState(false);
@@ -62,36 +62,36 @@ export function ProductCard({ product, onQuickView, layoutMode = 'fashion' }) {
     product.subline ||
     product.brand ||
     product.category ||
-    'Original Piece';
+    'Indian Store Sourced';
 
   return (
-    <div className="group relative flex flex-col rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200/80 dark:border-[#1b2559] hover:border-neutral-900 dark:hover:border-amber-400 transition-all duration-300 hover:shadow-xl overflow-hidden">
-      {/* Top Media Container (Fashion 4:5 aspect ratio) */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100 dark:bg-[#0b1437]">
+    <div className="group relative flex flex-col rounded-xl bg-white border border-neutral-200/90 shadow-[0_6px_22px_rgba(0,0,0,0.07)] hover:shadow-[0_14px_35px_rgba(0,0,0,0.13)] transition-all duration-300 hover:border-neutral-300 overflow-hidden">
+      {/* Top Media Container */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-50">
         <Link to={`/product/${product.slug || id}`} className="block h-full w-full">
           <img
             src={displayImage}
             alt={product.name}
-            className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+            className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-102"
             loading="lazy"
           />
         </Link>
 
-        {/* Badges */}
-        <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 flex flex-col gap-1 z-10">
+        {/* Top Badges */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {product.badge && (
-            <span className="rounded-md bg-neutral-950 dark:bg-amber-400 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-white dark:text-neutral-950 shadow-xs">
+            <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">
               {product.badge}
             </span>
           )}
           {discountPercent && (
-            <span className="rounded-md bg-red-600 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black text-white shadow-xs">
-              -{discountPercent}%
+            <span className="rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-neutral-950">
+              {discountPercent}% OFF
             </span>
           )}
           {product.source && product.source !== 'SajiloMarts' && (
-            <div className="bg-white/95 dark:bg-[#111c44]/95 backdrop-blur-xs rounded-md px-1.5 py-0.5 shadow-2xs border border-neutral-100 dark:border-[#1b2559]">
-              <MarketplaceLogo marketplace={product.source} className="h-3 sm:h-3.5 w-auto" />
+            <div className="bg-white/95 rounded px-1.5 py-0.5 shadow-2xs border border-neutral-200">
+              <MarketplaceLogo marketplace={product.source} className="h-3 w-auto" />
             </div>
           )}
         </div>
@@ -101,34 +101,19 @@ export function ProductCard({ product, onQuickView, layoutMode = 'fashion' }) {
           type="button"
           onClick={handleToggleWishlist}
           aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
-          className={`absolute top-2 right-2 sm:top-2.5 sm:right-2.5 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/95 dark:bg-[#0b1437]/95 backdrop-blur-xs shadow-xs transition-all hover:scale-110 z-10 ${
-            inWishlist ? "text-red-500 fill-red-500" : "text-neutral-700 dark:text-neutral-200 hover:text-red-500"
+          className={`absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-xs border border-neutral-200 transition-colors z-10 ${
+            inWishlist ? "text-red-500 fill-red-500" : "text-neutral-500 hover:text-red-500"
           }`}
         >
-          <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${inWishlist ? "fill-current text-red-500" : ""}`} />
+          <Heart className={`h-3.5 w-3.5 ${inWishlist ? "fill-current text-red-500" : ""}`} />
         </button>
-
-        {/* Available Sizes Bar Overlay on Hover */}
-        {product.sizes && product.sizes.length > 0 && (
-          <div className="absolute inset-x-2 bottom-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:flex items-center justify-center gap-1 p-1 bg-white/95 dark:bg-[#0b1437]/95 backdrop-blur-md rounded-xl shadow-md z-10 border border-neutral-200 dark:border-[#1b2559]">
-            <span className="text-[9px] font-black uppercase text-neutral-400 dark:text-[#a3aed0] mr-1">Sizes:</span>
-            {product.sizes.map((sz) => (
-              <span
-                key={sz}
-                className="px-1.5 py-0.5 rounded text-[10px] font-bold text-neutral-800 dark:text-neutral-200 bg-neutral-100 dark:bg-[#1b254b]"
-              >
-                {sz}
-              </span>
-            ))}
-          </div>
-        )}
 
         {/* Quick View Button (Desktop Hover) */}
         {onQuickView && (
           <button
             type="button"
             onClick={handleQuickViewClick}
-            className="absolute bottom-2.5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 hidden sm:flex items-center gap-1.5 rounded-full bg-neutral-950/90 dark:bg-[#0b1437]/90 backdrop-blur-sm text-white px-3.5 py-1.5 text-xs font-bold shadow-md hover:bg-neutral-950 z-10 hover:scale-105 active:scale-95"
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:flex items-center gap-1 rounded bg-neutral-900 text-white px-3 py-1 text-xs font-medium shadow-sm hover:bg-neutral-800 z-10"
           >
             <Eye className="h-3.5 w-3.5" />
             <span>Quick View</span>
@@ -136,64 +121,44 @@ export function ProductCard({ product, onQuickView, layoutMode = 'fashion' }) {
         )}
       </div>
 
-      {/* Content Info matching Figma Fashion Store layout */}
-      <div className="flex flex-1 flex-col p-3 sm:p-4 justify-between bg-white dark:bg-[#111c44] space-y-2.5 sm:space-y-3">
+      {/* Content Info */}
+      <div className="flex flex-1 flex-col p-3 justify-between bg-white space-y-2">
         <div className="space-y-1">
           {/* Subline & Rating */}
-          <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-neutral-400 dark:text-[#a3aed0]">
+          <div className="flex items-center justify-between text-[11px] font-medium text-neutral-500">
             <span className="truncate">{subline}</span>
             {product.rating && (
-              <div className="flex items-center gap-0.5 text-amber-500 font-bold shrink-0">
-                <Star className="h-3 w-3 fill-current" />
+              <div className="flex items-center gap-0.5 text-amber-600 font-semibold shrink-0">
+                <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
                 <span>{product.rating}</span>
-                {product.reviews && (
-                  <span className="text-neutral-400 dark:text-[#a3aed0] text-[9px]">({product.reviews})</span>
-                )}
               </div>
             )}
           </div>
 
           {/* Product Title */}
-          <Link to={`/product/${product.slug || id}`} className="block group-hover:text-amber-500 transition-colors">
-            <h3 className="text-xs sm:text-sm font-black text-neutral-950 dark:text-white line-clamp-1 tracking-tight">
+          <Link to={`/product/${product.slug || id}`} className="block hover:text-amber-700 transition-colors">
+            <h3 className="text-xs sm:text-sm font-semibold text-neutral-900 line-clamp-2 leading-snug">
               {product.name}
             </h3>
           </Link>
-
-          {/* Color Dots indicator if present */}
-          {product.colorHexes && product.colorHexes.length > 0 && (
-            <div className="flex items-center gap-1 pt-0.5">
-              {product.colorHexes.slice(0, 4).map((hex, i) => (
-                <span
-                  key={i}
-                  className="h-2.5 w-2.5 rounded-full border border-neutral-300 dark:border-neutral-600 shadow-2xs"
-                  style={{ backgroundColor: hex }}
-                  title={product.colors?.[i] || 'Color'}
-                />
-              ))}
-              {product.colorHexes.length > 4 && (
-                <span className="text-[9px] text-neutral-400 font-bold">+{product.colorHexes.length - 4}</span>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Price & Add to Cart Action */}
-        <div className="pt-2 flex items-center justify-between border-t border-neutral-100 dark:border-[#1b2559]">
+        <div className="pt-2 flex items-end justify-between border-t border-neutral-100">
           <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs sm:text-base font-black text-neutral-950 dark:text-amber-400 tracking-tight">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-sm sm:text-base font-bold text-neutral-900">
                 NPR {(product.price || 0).toLocaleString()}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-400 line-through">
+                <span className="text-xs text-neutral-400 line-through">
                   NPR {product.originalPrice.toLocaleString()}
                 </span>
               )}
             </div>
             {product.indianPriceINR && (
-              <span className="text-[9px] text-neutral-400 dark:text-[#a3aed0] font-medium block">
-                (₹{product.indianPriceINR} INR)
+              <span className="text-[10px] text-neutral-500 font-normal block">
+                Approx. ₹{product.indianPriceINR} INR
               </span>
             )}
           </div>
@@ -201,12 +166,13 @@ export function ProductCard({ product, onQuickView, layoutMode = 'fashion' }) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl transition-all duration-200 shadow-xs active:scale-95 cursor-pointer ${
+            className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors shadow-2xs active:scale-95 cursor-pointer ${
               isAdded
                 ? 'bg-emerald-600 text-white'
-                : 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-amber-300 hover:scale-105'
+                : 'bg-amber-400 hover:bg-amber-500 text-neutral-950'
             }`}
-            aria-label={`Add ${product.name} to bag`}
+            aria-label={`Add ${product.name} to cart`}
+            title="Add to cart"
           >
             {isAdded ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
           </button>
