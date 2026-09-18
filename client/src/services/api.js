@@ -38,7 +38,7 @@ async function parseResponseData(response) {
   return { text: trimmed, data };
 }
 
-async function request(endpoint, options = {}) {
+async function request(endpoint, options = {}, retries = 2) {
   const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
   const token = localStorage.getItem('sajilomarts_session');
 
@@ -66,11 +66,22 @@ async function request(endpoint, options = {}) {
   try {
     response = await fetch(url, config);
   } catch (networkErr) {
+    // If Render backend is spinning up from cold sleep, retry after a short delay
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 1800));
+      return request(endpoint, options, retries - 1);
+    }
     const error = new Error(
-      networkErr?.message || 'Network error: Failed to reach backend server. Please check your connection.'
+      'Backend server is waking up or temporarily unreachable. Free-tier cloud instances take ~30-50s to wake up from idle. Please try again in a moment.'
     );
     error.isNetworkError = true;
     throw error;
+  }
+
+  // Handle transient 502/503/504 during Render instance boot
+  if ([502, 503, 504].includes(response.status) && retries > 0) {
+    await new Promise((r) => setTimeout(r, 2000));
+    return request(endpoint, options, retries - 1);
   }
 
   const { text, data: parsedJson } = await parseResponseData(response);
@@ -82,7 +93,7 @@ async function request(endpoint, options = {}) {
       if (response.status === 404 || response.status === 405) {
         message = `API endpoint unreachable (${response.status}). Please check backend status or VITE_API_URL configuration.`;
       } else if (response.status === 502 || response.status === 503 || response.status === 504) {
-        message = `Backend server is starting up or temporarily unavailable (${response.status}). Render free-tier cold starts may take ~30-60s. Please retry in a moment.`;
+        message = `Backend server is starting up (${response.status}). Render free-tier cold starts may take ~30-60s. Please retry in a moment.`;
       } else {
         message = `HTTP error ${response.status}`;
       }
