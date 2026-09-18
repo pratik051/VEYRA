@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Compass, PlusCircle, ShoppingBag, User } from 'lucide-react';
+import { Home, Link2, Truck, User, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,9 +10,8 @@ export function MobileNav() {
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
-    { to: '/shop', label: 'Shop', icon: Compass },
-    { to: '/request-product', label: 'Quote', icon: PlusCircle, highlight: true },
-    { to: '/cart', label: 'Cart', icon: ShoppingBag, badge: totalItems },
+    { to: '/request-product', label: 'Paste Link', icon: Link2, highlight: true },
+    { to: '/track-order', label: 'Track', icon: Truck },
     {
       to: user ? (user.role === 'admin' ? '/admin' : '/account') : (loading ? '#' : '/login'),
       label: user ? (user.role === 'admin' ? 'Admin' : 'Account') : (loading ? '...' : 'Login'),
@@ -42,11 +41,6 @@ export function MobileNav() {
             >
               <div className="relative">
                 <Icon className="h-5 w-5" />
-                {item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-neutral-950">
-                    {item.badge}
-                  </span>
-                )}
               </div>
               <span className="text-[10px] mt-0.5">{item.label}</span>
             </NavLink>

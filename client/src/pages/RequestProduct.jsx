@@ -29,6 +29,8 @@ export function RequestProduct() {
   const [searchParams] = useSearchParams();
   const initialUrl = searchParams.get('url') || '';
   const initialSource = searchParams.get('source') || '';
+  const initialInr = searchParams.get('inr') || '';
+  const initialQty = parseInt(searchParams.get('qty') || '1', 10) || 1;
   const { user } = useAuth();
 
   // Wizard Steps: 1: Link & Quote -> 2: Address -> 3: Payment & QR -> 4: Receipt
@@ -38,8 +40,8 @@ export function RequestProduct() {
   const [productUrl, setProductUrl] = useState(initialUrl);
   const [productName, setProductName] = useState('');
   const [productImage, setProductImage] = useState('');
-  const [indianPriceINR, setIndianPriceINR] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [indianPriceINR, setIndianPriceINR] = useState(initialInr);
+  const [quantity, setQuantity] = useState(initialQty);
   const [detectedPlatform, setDetectedPlatform] = useState(initialSource);
 
   // Live Auto-fetch state
@@ -155,8 +157,10 @@ export function RequestProduct() {
   useEffect(() => {
     if (initialUrl) {
       handleAutoFetchDetails(initialUrl);
+    } else if (initialInr && parseFloat(initialInr) > 0) {
+      calculateLandedQuote(initialInr, initialQty);
     }
-  }, [initialUrl]);
+  }, [initialUrl, initialInr, initialQty]);
 
   const handleCalculateQuote = async () => {
     setError('');

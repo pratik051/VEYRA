@@ -21,38 +21,48 @@ export function Footer() {
             Shop Easy • Live Better
           </p>
           <p className="text-neutral-500 text-xs leading-relaxed max-w-xs">
-            Direct marketplace sourcing from Indian online stores with transparent NPR pricing and reliable Nepal delivery.
+            Direct marketplace product sourcing from Indian online stores with transparent NPR landed rates and reliable Nepal delivery.
           </p>
         </div>
 
-        {/* SHOP Column */}
+        {/* ORDER FROM INDIA Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Shop
+            Order by Link
           </h4>
           <ul className="space-y-2">
             <li>
-              <Link to="/shop" className="hover:text-neutral-900 transition-colors">
-                All Products
+              <Link to="/request-product" className="hover:text-neutral-900 transition-colors">
+                Paste Link & Get Quote
               </Link>
             </li>
             <li>
-              <a href="/#categories" className="hover:text-neutral-900 transition-colors">
-                Categories
+              <a href="/#calculator" className="hover:text-neutral-900 transition-colors">
+                Rate Calculator
               </a>
             </li>
             <li>
-              <Link to="/shop" className="hover:text-neutral-900 transition-colors">
-                Deals
+              <a href="/#stores" className="hover:text-neutral-900 transition-colors">
+                Supported Indian Stores
+              </a>
+            </li>
+            <li>
+              <Link to="/request-product?source=Amazon" className="hover:text-neutral-900 transition-colors">
+                Amazon India Sourcing
+              </Link>
+            </li>
+            <li>
+              <Link to="/request-product?source=Flipkart" className="hover:text-neutral-900 transition-colors">
+                Flipkart Sourcing
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* HELP Column */}
+        {/* HELP & TRACKING Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Help
+            Help & Tracking
           </h4>
           <ul className="space-y-2">
             <li>
@@ -62,17 +72,17 @@ export function Footer() {
             </li>
             <li>
               <Link to="/track-order" className="hover:text-neutral-900 transition-colors">
-                Track Order
+                Track Sourcing Order
               </Link>
             </li>
             <li>
               <a href="/#faq" className="hover:text-neutral-900 transition-colors">
-                FAQ
+                FAQs & Pricing
               </a>
             </li>
             <li>
               <Link to="/contact" className="hover:text-neutral-900 transition-colors">
-                Contact
+                Contact & Support
               </Link>
             </li>
           </ul>
@@ -81,7 +91,7 @@ export function Footer() {
         {/* LEGAL Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Legal
+            Legal & Policies
           </h4>
           <ul className="space-y-2">
             <li>
@@ -91,12 +101,12 @@ export function Footer() {
             </li>
             <li>
               <Link to="/terms-and-conditions" className="hover:text-neutral-900 transition-colors">
-                Terms
+                Terms of Sourcing
               </Link>
             </li>
             <li>
               <Link to="/refund-policy" className="hover:text-neutral-900 transition-colors">
-                Returns
+                Refunds & Cancellations
               </Link>
             </li>
           </ul>
@@ -109,7 +119,7 @@ export function Footer() {
           &copy; {new Date().getFullYear()} SajiloMarts. All rights reserved.
         </p>
         <div className="flex items-center gap-2 text-[11px] text-neutral-500">
-          <span>Supported Payments: eSewa • Khalti • Bank Transfer • COD</span>
+          <span>Supported Payments: eSewa • Khalti • Bank Transfer</span>
         </div>
       </div>
     </footer>
