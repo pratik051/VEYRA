@@ -4,8 +4,8 @@ import IndiaOrderModel from "../models/india-order-model.js";
 import OrderModel from "../models/order-model.js";
 
 const ESEWA_MERCHANT_CODE = process.env.ESEWA_MERCHANT_CODE || "EPAYTEST";
-const KHALTI_PUBLIC_KEY = process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY || "live_public_key_sajilomarts_12345";
-const MYPAY_MERCHANT_ID = process.env.MYPAY_MERCHANT_ID || "MYPAY_SAJILOMARTS_NP";
+const KHALTI_PUBLIC_KEY = process.env.KHALTI_PUBLIC_KEY || process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY;
+const MYPAY_MERCHANT_ID = process.env.MYPAY_MERCHANT_ID;
 
 export async function createPaymentQR(req, res) {
   try {
@@ -55,7 +55,6 @@ export async function createPaymentQR(req, res) {
       paymentMode,
       provider,
       qrCode: qrCodeBase64,
-      qrPayloadText,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
     });
   } catch (error) {

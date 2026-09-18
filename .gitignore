@@ -1,20 +1,46 @@
+# Dependencies
 node_modules
 server/node_modules
 client/node_modules
+
+# Environment variable files — NEVER commit real secrets
 .env
 .env.local
 .env.development
 .env.production
-.env.*.local
+.env.test
+.env.*
+!.env.example
+!**/.env.example
+
+# Build output
 dist
 build
 client/dist
 .next
-.gemini
-*.log
+
+# Private key and certificate files — NEVER commit
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Firebase / Google service account credentials — NEVER commit
 serviceAccountKey*.json
 service-account*.json
 firebase-admin*.json
-*.pem
-*.key
+*-service-account*.json
+google-credentials*.json
+credentials*.json
+
+# Editor and OS
+.gemini
+*.log
+.DS_Store
+Thumbs.db
+
+# Scratch / temp
 scratch/

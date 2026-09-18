@@ -18,8 +18,7 @@ const AUTH_COOKIE_NAME = "sajilomarts_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const FIREBASE_API_KEY =
   process.env.FIREBASE_API_KEY ||
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
-  "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk";
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 // Memory fallback store for OTPs if DB is under heavy load
 const memOtps = new Map();
