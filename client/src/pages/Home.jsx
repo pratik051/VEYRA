@@ -39,16 +39,6 @@ export function Home() {
     }
   };
 
-  const categories = [
-    { name: 'Electronics', query: 'Tech & Gadgets', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80', count: '50+ items' },
-    { name: 'Fashion', query: 'Fashion', image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=400&q=80', count: '120+ items' },
-    { name: 'Beauty', query: 'Beauty & Care', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80', count: '80+ items' },
-    { name: 'Gaming', query: 'Gaming', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=400&q=80', count: '30+ items' },
-    { name: 'Watches', query: 'Tech & Gadgets', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80', count: '45+ items' },
-    { name: 'Home & Living', query: 'Home & Living', image: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=400&q=80', count: '60+ items' },
-    { name: 'Accessories', query: 'Accessories', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=400&q=80', count: '90+ items' },
-    { name: 'More Categories', query: 'all', image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=400&q=80', count: 'View all' },
-  ];
 
   const steps = [
     { num: '01', title: 'Find your product', desc: 'Browse your favorite Indian online stores like Amazon, Flipkart, Myntra, etc.' },
@@ -184,53 +174,6 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── 3. SHOP BY CATEGORY ── */}
-      <section id="categories" className="scroll-mt-20">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-              Shop by Category
-            </h2>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Explore frequently requested product collections.
-            </p>
-          </div>
-          <Link
-            to="/shop"
-            className="text-xs font-semibold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1"
-          >
-            <span>View All</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.name}
-              to={cat.query === 'all' ? '/shop' : `/shop?category=${encodeURIComponent(cat.query)}`}
-              className="group bg-white rounded-xl border border-neutral-200/90 hover:border-neutral-300 shadow-[0_6px_22px_rgba(0,0,0,0.07)] hover:shadow-[0_14px_35px_rgba(0,0,0,0.13)] transition-all p-3.5 flex items-center gap-3"
-            >
-              <div className="h-12 w-12 rounded-lg overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200 shadow-2xs">
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-semibold text-neutral-900 truncate group-hover:text-amber-700 transition-colors">
-                  {cat.name}
-                </h3>
-                <span className="text-[11px] text-neutral-500 block">
-                  {cat.count}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* ── 4. TRENDING PRODUCTS ── */}
       <section>
