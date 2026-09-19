@@ -16,7 +16,8 @@ const UserSchema = new mongoose.Schema(
     city: { type: String, default: "" },
     ward: { type: String, default: "" },
     fullAddress: { type: String, default: "" },
-    landmark: { type: String, default: "" }
+    landmark: { type: String, default: "" },
+    welcomeEmailSent: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

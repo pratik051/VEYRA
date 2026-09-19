@@ -71,7 +71,9 @@ const OrderSchema = new mongoose.Schema(
     paymentReference: { type: String, default: "" },
     trackingNumber: { type: String, default: "" },
     notes: { type: String, default: "" },
-    internalNotes: { type: String, default: "" }
+    internalNotes: { type: String, default: "" },
+    confirmationEmailSent: { type: Boolean, default: false },
+    deliveredEmailSent: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

@@ -111,7 +111,9 @@ const IndiaOrderSchema = new mongoose.Schema(
     adminNote: { type: String, default: "" },
     alternativeSourceUrl: { type: String, default: "" },
     alternativePriceINR: { type: Number },
-    alternativeStatus: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" }
+    alternativeStatus: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
+    confirmationEmailSent: { type: Boolean, default: false },
+    deliveredEmailSent: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

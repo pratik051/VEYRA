@@ -32,8 +32,8 @@ export function ShopPlatform() {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center space-y-4">
         <h2 className="text-2xl font-black text-neutral-950 dark:text-white">Marketplace Not Found</h2>
-        <Link to="/shop" className="text-xs font-bold text-amber-500 hover:text-amber-400 underline">
-          Return to Shop Catalog
+        <Link to="/request-product" className="text-xs font-bold text-amber-500 hover:text-amber-400 underline">
+          Go to Sourcing Portal
         </Link>
       </div>
     );
@@ -48,8 +48,8 @@ export function ShopPlatform() {
           <span>Home</span>
         </Link>
         <span>/</span>
-        <Link to="/shop" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-          Marketplaces
+        <Link to="/request-product" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
+          Sourcing
         </Link>
         <span>/</span>
         <span className="text-neutral-900 dark:text-white font-bold">{meta.name}</span>

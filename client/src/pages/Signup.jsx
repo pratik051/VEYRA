@@ -27,6 +27,7 @@ export function Signup() {
   const [error, setError] = useState('');
 
   const urlError = searchParams.get('error');
+  const noticeMsg = searchParams.get('msg');
   useEffect(() => {
     if (urlError) {
       setError(decodeURIComponent(urlError));
@@ -194,6 +195,13 @@ export function Signup() {
               </p>
             </div>
 
+            {noticeMsg && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
+                <span>🔒</span>
+                <span>{decodeURIComponent(noticeMsg)}</span>
+              </div>
+            )}
+
             {error && (
               <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
                 <span>⚠️</span>
@@ -320,7 +328,7 @@ export function Signup() {
                 <p className="text-xs text-slate-500 dark:text-neutral-400">
                   Already have an account?{' '}
                   <Link
-                    to={`/login${redirectUrl !== '/account' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`}
+                    to={`/login${redirectUrl !== '/account' || noticeMsg ? `?redirect=${encodeURIComponent(redirectUrl)}${noticeMsg ? `&msg=${encodeURIComponent(noticeMsg)}` : ''}` : ''}`}
                     className="font-bold text-slate-900 dark:text-amber-400 hover:underline ml-1"
                   >
                     Sign In

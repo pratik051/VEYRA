@@ -10,7 +10,7 @@ import {
   updateUserProfileById
 } from "../services/auth-service.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
-import { sendPasswordResetOtpEmail } from "../utils/mailer.js";
+import { sendPasswordResetOtpEmail, sendWelcomeEmail } from "../utils/mailer.js";
 import UserModel from "../models/user-model.js";
 import PasswordResetOtpModel from "../models/password-reset-otp-model.js";
 
@@ -18,7 +18,8 @@ const AUTH_COOKIE_NAME = "sajilomarts_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const FIREBASE_API_KEY =
   process.env.FIREBASE_API_KEY ||
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
+  "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk";
 
 // Memory fallback store for OTPs if DB is under heavy load
 const memOtps = new Map();
@@ -106,6 +107,19 @@ export async function signup(req, res) {
     }
 
     const token = await createSessionForUser(String(newUser._id));
+
+    // Send welcome email asynchronously without blocking registration response
+    if (email && !newUser.welcomeEmailSent) {
+      sendWelcomeEmail(email, newUser.fullName)
+        .then(async (mRes) => {
+          if (mRes?.success) {
+            await UserModel.updateOne({ _id: newUser._id }, { $set: { welcomeEmailSent: true } });
+          }
+        })
+        .catch((mErr) => {
+          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+        });
+    }
 
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
@@ -239,6 +253,19 @@ export async function firebaseAuthHandler(req, res) {
     }
 
     const token = await createSessionForUser(String(user._id));
+
+    // Send welcome email if new account creation with real email
+    if (user.email && !user.welcomeEmailSent && !user.email.endsWith(".internal")) {
+      sendWelcomeEmail(user.email, user.fullName)
+        .then(async (mRes) => {
+          if (mRes?.success) {
+            await UserModel.updateOne({ _id: user._id }, { $set: { welcomeEmailSent: true } });
+          }
+        })
+        .catch((mErr) => {
+          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+        });
+    }
 
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,

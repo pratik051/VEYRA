@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Link2,
   Sparkles,
@@ -27,6 +27,7 @@ import api from '../services/api';
 
 export function RequestProduct() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialUrl = searchParams.get('url') || '';
   const initialSource = searchParams.get('source') || '';
   const { user } = useAuth();
@@ -62,6 +63,42 @@ export function RequestProduct() {
     postalCode: '44600',
     notes: ''
   });
+
+  // Hydrate pending sourcing quote from sessionStorage
+  useEffect(() => {
+    try {
+      const savedPending = sessionStorage.getItem('pending_sourcing_quote');
+      if (savedPending) {
+        const parsed = JSON.parse(savedPending);
+        if (parsed) {
+          if (parsed.productUrl) setProductUrl(parsed.productUrl);
+          if (parsed.productName) setProductName(parsed.productName);
+          if (parsed.productImage) setProductImage(parsed.productImage);
+          if (parsed.indianPriceINR) setIndianPriceINR(parsed.indianPriceINR);
+          if (parsed.quantity) setQuantity(parsed.quantity);
+          if (parsed.detectedPlatform) setDetectedPlatform(parsed.detectedPlatform);
+          if (parsed.quote) setQuote(parsed.quote);
+          if (parsed.step) {
+            setStep(parsed.step);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore pending sourcing quote', e);
+    }
+  }, []);
+
+  // Sync shipping info with user
+  useEffect(() => {
+    if (user) {
+      setShipping((prev) => ({
+        ...prev,
+        fullName: prev.fullName || user.fullName || '',
+        phone: prev.phone || user.phone || '',
+        email: prev.email || user.email || ''
+      }));
+    }
+  }, [user]);
 
   // Payment details
   const [paymentMethod, setPaymentMethod] = useState('eSewa');
@@ -229,9 +266,50 @@ export function RequestProduct() {
   const advanceAmount = isCod ? Math.round(finalPayable * 0.5) : finalPayable;
   const codBalance = isCod ? finalPayable - advanceAmount : 0;
 
+  const handleProceedToDelivery = () => {
+    if (!quote || quote.finalAmountNPR <= 0) {
+      setError('Please calculate the Nepal price before proceeding.');
+      return;
+    }
+
+    if (!user) {
+      const pendingData = {
+        productUrl,
+        productName: productName || `${detectedPlatform} Sourced Item`,
+        productImage: productImage || '',
+        indianPriceINR,
+        quantity,
+        detectedPlatform,
+        quote,
+        step: 2
+      };
+      sessionStorage.setItem('pending_sourcing_quote', JSON.stringify(pendingData));
+      navigate(`/login?redirect=${encodeURIComponent('/request-product')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
+      return;
+    }
+
+    setStep(2);
+  };
+
   const handleSubmitOrder = async () => {
     if (!quote || quote.finalAmountNPR <= 0) {
       setError('Please calculate the Nepal price before submitting.');
+      return;
+    }
+
+    if (!user) {
+      const pendingData = {
+        productUrl,
+        productName: productName || `${detectedPlatform} Sourced Item`,
+        productImage: productImage || '',
+        indianPriceINR,
+        quantity,
+        detectedPlatform,
+        quote,
+        step: 2
+      };
+      sessionStorage.setItem('pending_sourcing_quote', JSON.stringify(pendingData));
+      navigate(`/login?redirect=${encodeURIComponent('/request-product')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
       return;
     }
 
@@ -283,6 +361,7 @@ export function RequestProduct() {
         }
       }
 
+      sessionStorage.removeItem('pending_sourcing_quote');
       setConfirmedOrder(createdOrder);
       setStep(4);
     } catch (err) {
@@ -503,7 +582,7 @@ export function RequestProduct() {
               <div className="flex justify-end pt-2">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={handleProceedToDelivery}
                   className="px-8 py-3.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition flex items-center gap-2 shadow-md"
                 >
                   <span>Proceed to Delivery Details</span>

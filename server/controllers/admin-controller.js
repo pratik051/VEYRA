@@ -6,6 +6,7 @@ import ProductModel from "../models/product-model.js";
 import MarketplaceProductModel from "../models/marketplace-product-model.js";
 import UserModel from "../models/user-model.js";
 import PaymentModel from "../models/payment-model.js";
+import { sendOrderDeliveredEmail } from "../utils/mailer.js";
 
 // Dashboard Overview Stats
 export async function getDashboardStats(req, res) {
@@ -226,6 +227,26 @@ export async function updateOrder(req, res) {
 
     if (!updated) {
       return res.status(404).json({ error: "Order not found." });
+    }
+
+    // Check if status transitioned to Delivered and delivered email has not been sent yet
+    const isDelivered = (newStatus && String(newStatus).toLowerCase() === "delivered") ||
+      (body.status && String(body.status).toLowerCase() === "delivered") ||
+      (body.orderStatus && String(body.orderStatus).toLowerCase() === "delivered");
+
+    if (isDelivered && !updated.deliveredEmailSent && updated.email) {
+      sendOrderDeliveredEmail(updated.email, updated)
+        .then(async (mRes) => {
+          if (mRes?.success) {
+            await Promise.all([
+              OrderModel.updateOne(query, { $set: { deliveredEmailSent: true } }),
+              IndiaOrderModel.updateOne(query, { $set: { deliveredEmailSent: true } })
+            ]);
+          }
+        })
+        .catch((mErr) => {
+          console.warn("[Delivered Email Notice]:", mErr?.message || mErr);
+        });
     }
 
     return res.json({ success: true, order: updated });

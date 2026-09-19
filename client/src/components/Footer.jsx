@@ -25,25 +25,30 @@ export function Footer() {
           </p>
         </div>
 
-        {/* SHOP Column */}
+        {/* SOURCING Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Shop
+            Sourcing
           </h4>
           <ul className="space-y-2">
             <li>
-              <Link to="/shop" className="hover:text-neutral-900 transition-colors">
-                All Products
+              <Link to="/request-product" className="hover:text-neutral-900 transition-colors">
+                🇮🇳 Sourcing Portal
               </Link>
             </li>
             <li>
-              <a href="/#categories" className="hover:text-neutral-900 transition-colors">
-                Categories
-              </a>
+              <Link to="/request-product" className="hover:text-neutral-900 transition-colors">
+                Link Verification &amp; Quote
+              </Link>
             </li>
             <li>
-              <Link to="/shop" className="hover:text-neutral-900 transition-colors">
-                Deals
+              <Link to="/how-it-works" className="hover:text-neutral-900 transition-colors">
+                How It Works
+              </Link>
+            </li>
+            <li>
+              <Link to="/track-order" className="hover:text-neutral-900 transition-colors">
+                Track Order
               </Link>
             </li>
           </ul>
@@ -52,27 +57,27 @@ export function Footer() {
         {/* HELP Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Help
+            Help &amp; Support
           </h4>
           <ul className="space-y-2">
             <li>
-              <a href="/#how-it-works" className="hover:text-neutral-900 transition-colors">
-                How It Works
-              </a>
-            </li>
-            <li>
-              <Link to="/track-order" className="hover:text-neutral-900 transition-colors">
-                Track Order
+              <Link to="/support" className="hover:text-neutral-900 transition-colors">
+                24/7 AI Support
               </Link>
             </li>
             <li>
-              <a href="/#faq" className="hover:text-neutral-900 transition-colors">
-                FAQ
-              </a>
+              <Link to="/support" className="hover:text-neutral-900 transition-colors">
+                Customer Care Desk
+              </Link>
+            </li>
+            <li>
+              <Link to="/faq" className="hover:text-neutral-900 transition-colors">
+                FAQs
+              </Link>
             </li>
             <li>
               <Link to="/contact" className="hover:text-neutral-900 transition-colors">
-                Contact
+                Contact Us
               </Link>
             </li>
           </ul>
@@ -81,7 +86,7 @@ export function Footer() {
         {/* LEGAL Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Legal
+            Policies
           </h4>
           <ul className="space-y-2">
             <li>
@@ -91,12 +96,17 @@ export function Footer() {
             </li>
             <li>
               <Link to="/terms-and-conditions" className="hover:text-neutral-900 transition-colors">
-                Terms
+                Terms &amp; Conditions
+              </Link>
+            </li>
+            <li>
+              <Link to="/shipping-policy" className="hover:text-neutral-900 transition-colors">
+                Shipping &amp; Customs
               </Link>
             </li>
             <li>
               <Link to="/refund-policy" className="hover:text-neutral-900 transition-colors">
-                Returns
+                Refunds &amp; Returns
               </Link>
             </li>
           </ul>

@@ -44,7 +44,7 @@ async function request(endpoint, options = {}, retries = 2) {
 
   const headers = {
     'Content-Type': 'application/json',
-    ...(token && token !== 'undefined' && token !== 'null' ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token && token !== 'undefined' && token !== 'null' ? { Authorization: `Bearer ${token}`, 'X-Session-Token': token } : {}),
     ...(options.headers || {})
   };
 

@@ -11,13 +11,13 @@ import {
 // They are required to be set in Vercel Environment Variables for production.
 // See .env.example for the full list.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "veyra-np.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "veyra-np",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "veyra-np.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "280582224883",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:280582224883:web:3db4d0ebcf1251f76d7086",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-DQC76EG7D2"
 };
 
 export const isFirebaseEnabled = Boolean(

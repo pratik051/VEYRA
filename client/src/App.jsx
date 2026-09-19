@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -11,8 +11,6 @@ import { MobileNav } from './components/MobileNav';
 
 // Pages
 import { Home } from './pages/Home';
-import { Shop } from './pages/Shop';
-import { ShopPlatform } from './pages/ShopPlatform';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
@@ -41,11 +39,13 @@ export default function App() {
               {/* Page Content Container with Mobile Bottom Nav Padding */}
               <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8 w-full">
                 <Routes>
-                  {/* Storefront & Catalog Routes */}
+                  {/* Storefront Home Route */}
                   <Route path="/" element={<Home />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/shop/:platform" element={<ShopPlatform />} />
-                  <Route path="/marketplace/:source" element={<ShopPlatform />} />
+
+                  {/* Legacy Catalog Routes - Redirect to Sourcing Portal */}
+                  <Route path="/shop" element={<Navigate to="/request-product" replace />} />
+                  <Route path="/shop/:platform" element={<Navigate to="/request-product" replace />} />
+                  <Route path="/marketplace/:source" element={<Navigate to="/request-product" replace />} />
                   <Route path="/product/:slug" element={<ProductDetail />} />
 
                   {/* Sourcing & Order Flow */}

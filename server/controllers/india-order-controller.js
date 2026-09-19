@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import IndiaOrderModel from "../models/india-order-model.js";
 import AddressModel from "../models/address-model.js";
 import { calculateOrderPrice, getCustomerFacingPrice } from "../utils/pricing.js";
+import { sendOrderConfirmationEmail } from "../utils/mailer.js";
 
 export async function calculatePrice(req, res) {
   try {
@@ -18,11 +19,15 @@ export async function calculatePrice(req, res) {
 
 export async function createIndiaOrder(req, res) {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Please log in or create an account before placing your order." });
+    }
+
     const body = req.body || {};
     const shipping = body.shippingAddress || {};
-    const customerName = String(body.customerName || body.fullName || shipping.fullName || "").trim();
-    const phone = String(body.phone || shipping.phone || "").trim();
-    const email = String(body.email || shipping.email || "").trim();
+    const customerName = String(body.customerName || body.fullName || shipping.fullName || req.user.fullName || "").trim();
+    const phone = String(body.phone || shipping.phone || req.user.phone || "").trim();
+    const email = String(body.email || shipping.email || req.user.email || "").trim();
     const deliveryAddress = String(body.deliveryAddress || body.address || shipping.street || shipping.deliveryAddress || "").trim();
     const city = String(body.city || shipping.city || "").trim();
     const district = String(body.district || shipping.district || shipping.city || "").trim();
@@ -68,7 +73,7 @@ export async function createIndiaOrder(req, res) {
 
     let paymentStatus = "Pending Verification";
 
-    const userId = req.user ? String(req.user._id) : String(body.userId || body.customerId || "").trim();
+    const userId = String(req.user._id);
 
     const shippingAddress = {
       fullName: customerName,
@@ -143,10 +148,25 @@ export async function createIndiaOrder(req, res) {
       paymentScreenshot,
       orderStatus: "Requested",
       invoiceUrl,
-      adminVerificationStatus: "Pending Verification"
+      adminVerificationStatus: "Pending Verification",
+      confirmationEmailSent: false,
+      deliveredEmailSent: false
     };
 
     const newOrder = await IndiaOrderModel.create(orderPayload);
+
+    // Send order confirmation email asynchronously
+    if (newOrder.email) {
+      sendOrderConfirmationEmail(newOrder.email, newOrder)
+        .then(async (mRes) => {
+          if (mRes?.success) {
+            await IndiaOrderModel.updateOne({ _id: newOrder._id }, { $set: { confirmationEmailSent: true } });
+          }
+        })
+        .catch((mErr) => {
+          console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
+        });
+    }
 
     return res.json({
       success: true,

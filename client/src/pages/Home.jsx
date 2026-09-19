@@ -81,7 +81,7 @@ export function Home() {
             Shop from India. We Deliver to Nepal.
           </h1>
           <p className="text-sm sm:text-base text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-            Find products on Amazon, Flipkart, Myntra, AJIO and more. Paste the product link and get your NPR quote.
+            Find products on Amazon, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ and more. Paste the product link and get your landed NPR quote instantly.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export function Home() {
         <div className="max-w-3xl mx-auto bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200/90 shadow-[0_12px_40px_-5px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] space-y-4 transition-all hover:shadow-[0_16px_48px_-5px_rgba(0,0,0,0.16)]">
           <div className="space-y-1">
             <label htmlFor="hero-url-input" className="block text-xs font-bold text-neutral-800 uppercase tracking-wider">
-              Paste your product link
+              Paste your Indian product link
             </label>
           </div>
 
@@ -104,7 +104,7 @@ export function Home() {
                   type="text"
                   value={productUrl}
                   onChange={(e) => setProductUrl(e.target.value)}
-                  placeholder="Paste your Indian store product link..."
+                  placeholder="https://www.amazon.in/dp/... or flipkart.com/..."
                   className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-neutral-50 border border-neutral-300 ring-1 ring-neutral-200/70 text-neutral-900 placeholder:text-neutral-400 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition shadow-xs"
                 />
               </div>
@@ -113,7 +113,7 @@ export function Home() {
                 type="submit"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-neutral-950 font-bold px-7 py-3.5 text-sm transition-all shadow-[0_4px_16px_0_rgba(245,158,11,0.42)] hover:shadow-[0_6px_22px_rgba(245,158,11,0.52)] shrink-0 active:scale-[0.99] cursor-pointer"
               >
-                <span>Get My Quote</span>
+                <span>Verify &amp; Get Quote</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -124,8 +124,8 @@ export function Home() {
           </form>
 
           <div className="pt-3 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-500">
-            <span className="font-medium text-neutral-700">Amazon India • Flipkart • Myntra • AJIO • Meesho • Nykaa • +10 more</span>
-            <span className="text-neutral-400">See your estimated NPR cost before placing your order.</span>
+            <span className="font-medium text-neutral-700">Amazon India • Flipkart • Myntra • AJIO • Meesho • Nykaa • Tata CLiQ • boAt</span>
+            <span className="text-neutral-400">100% transparent NPR landed cost breakdown.</span>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export function Home() {
             Know your cost before you order.
           </p>
           <p className="text-amber-800 leading-relaxed">
-            Your quote may include the product price, applicable India shipping, service charges, customs/taxes where applicable, and Nepal delivery.
+            Your quote includes the original Indian store price converted from INR to NPR, service fee, customs clearance, and doorstep Nepal delivery.
           </p>
         </div>
       </section>

@@ -1,18 +1,16 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Compass, PlusCircle, ShoppingBag, User } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { Home, PlusCircle, Clock, HelpCircle, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function MobileNav() {
-  const { totalItems } = useCart();
   const { user, loading } = useAuth();
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
-    { to: '/shop', label: 'Shop', icon: Compass },
     { to: '/request-product', label: 'Quote', icon: PlusCircle, highlight: true },
-    { to: '/cart', label: 'Cart', icon: ShoppingBag, badge: totalItems },
+    { to: '/track-order', label: 'Track', icon: Clock },
+    { to: '/support', label: 'Support', icon: HelpCircle },
     {
       to: user ? (user.role === 'admin' ? '/admin' : '/account') : (loading ? '#' : '/login'),
       label: user ? (user.role === 'admin' ? 'Admin' : 'Account') : (loading ? '...' : 'Login'),

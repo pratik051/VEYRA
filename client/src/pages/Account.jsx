@@ -257,8 +257,8 @@ export function Account() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-neutral-950 dark:text-white">Order History</h3>
-            <Link to="/shop" className="text-xs font-bold text-red-600 dark:text-amber-400 underline">
-              Browse More Products
+            <Link to="/request-product" className="text-xs font-bold text-red-600 dark:text-amber-400 underline">
+              Request a Product
             </Link>
           </div>
 
@@ -267,7 +267,7 @@ export function Account() {
               <Package className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
               <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Orders Found</h4>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                You haven't placed any orders yet. Browse our catalog to get started!
+                You haven't placed any sourcing orders yet. Paste a link from any Indian marketplace to get started!
               </p>
             </div>
           ) : (

@@ -27,10 +27,10 @@ export function Header() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Shop', href: '/shop' },
-    { name: 'Categories', href: '/#categories' },
+    { name: '🇮🇳 Sourcing Portal', href: '/request-product' },
     { name: 'How It Works', href: '/#how-it-works' },
     { name: 'Track Order', href: '/track-order' },
+    { name: 'Support', href: '/support' },
   ];
 
   return (
@@ -67,14 +67,15 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
+              const isHash = link.href.includes('#');
               const isActive =
                 link.href === '/'
                   ? location.pathname === '/' && !location.hash
-                  : link.href.startsWith('/#')
+                  : isHash
                   ? location.hash === link.href.replace('/', '')
                   : location.pathname.startsWith(link.href);
 
-              return (
+              return isHash ? (
                 <a
                   key={link.name}
                   href={link.href}
@@ -86,6 +87,18 @@ export function Header() {
                 >
                   {link.name}
                 </a>
+              ) : (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'text-amber-900 bg-amber-50 font-semibold'
+                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
+                  }`}
+                >
+                  {link.name}
+                </Link>
               );
             })}
           </nav>
@@ -97,8 +110,8 @@ export function Header() {
               type="button"
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 text-xs font-medium transition border border-transparent hover:border-neutral-200"
-              aria-label="Search catalog"
-              title="Search products"
+              aria-label="Search India products"
+              title="Search India sourcing"
             >
               <Search className="h-4 w-4 text-neutral-500" />
               <span className="hidden sm:inline text-neutral-500">Search</span>
@@ -161,15 +174,28 @@ export function Header() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-neutral-200 bg-white px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="block py-2 px-3 rounded-md text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 transition"
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isHash = link.href.includes('#');
+              return isHash ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 px-3 rounded-md text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 transition"
+                >
+                  {link.name}
+                </a>
+              ) : (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 px-3 rounded-md text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 transition"
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
         )}
       </header>

@@ -74,13 +74,13 @@ export function SearchModal({ isOpen, onClose }) {
 
               <div>
                 <h4 className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider mb-2">
-                  Indian Marketplace Portals
+                  Indian Marketplace Sourcing Portals
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {MARKETPLACE_METAS.slice(0, 6).map((m) => (
                     <Link
                       key={m.id}
-                      to={`/shop/${m.slug}`}
+                      to={`/request-product?source=${m.slug}`}
                       onClick={onClose}
                       className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] hover:bg-white dark:hover:bg-[#1b254b] hover:shadow-2xs text-xs font-bold text-neutral-800 dark:text-neutral-200 transition"
                     >

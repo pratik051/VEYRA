@@ -80,9 +80,9 @@ export function ProductDetail() {
           <span>Home</span>
         </Link>
         <span>/</span>
-        <Link to={`/shop?category=${encodeURIComponent(product.category || 'All')}`} className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-          {product.category || 'Catalog'}
-        </Link>
+        <span className="text-neutral-500 dark:text-neutral-400">
+          {product.category || 'Product Details'}
+        </span>
         <span>/</span>
         <span className="text-neutral-900 dark:text-white font-bold truncate max-w-xs">{product.name}</span>
       </div>

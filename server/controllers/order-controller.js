@@ -2,9 +2,14 @@ import mongoose from "mongoose";
 import OrderModel from "../models/order-model.js";
 import PaymentModel from "../models/payment-model.js";
 import AddressModel from "../models/address-model.js";
+import { sendOrderConfirmationEmail } from "../utils/mailer.js";
 
 export async function createCheckoutOrder(req, res) {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Please log in or create an account before placing your order." });
+    }
+
     const body = req.body || {};
     const items = Array.isArray(body.items) ? body.items : [];
 
@@ -13,9 +18,9 @@ export async function createCheckoutOrder(req, res) {
     }
 
     const shipping = body.shippingAddress || {};
-    const fullName = String(shipping.fullName || body.fullName || req.user?.fullName || "").trim();
-    const phone = String(shipping.phone || body.phone || req.user?.phone || "").trim();
-    const email = String(shipping.email || body.email || req.user?.email || "").trim();
+    const fullName = String(shipping.fullName || body.fullName || req.user.fullName || "").trim();
+    const phone = String(shipping.phone || body.phone || req.user.phone || "").trim();
+    const email = String(shipping.email || body.email || req.user.email || "").trim();
 
     if (!fullName || fullName.length < 2) {
       return res.status(400).json({ error: "Please provide the recipient's full name." });
@@ -58,8 +63,7 @@ export async function createCheckoutOrder(req, res) {
     const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     const orderId = `ORD-NP-${randomSuffix}`;
 
-    const rawUserId = req.user ? String(req.user._id) : String(body.userId || body.customerId || "").trim();
-    const userId = rawUserId || undefined;
+    const userId = String(req.user._id);
 
     const normalizedItems = items.map((i) => ({
       productId: String(i.productId || i._id || i.id || ""),
@@ -73,8 +77,8 @@ export async function createCheckoutOrder(req, res) {
 
     const orderDoc = {
       orderId,
-      userId: userId || undefined,
-      customerId: rawUserId || "",
+      userId,
+      customerId: userId,
       fullName,
       customerName: fullName,
       phone,
@@ -122,7 +126,9 @@ export async function createCheckoutOrder(req, res) {
       codRemainingAmount: codRemaining,
       paymentScreenshot,
       paymentReference: transactionId,
-      notes: String(body.notes || "").trim()
+      notes: String(body.notes || "").trim(),
+      confirmationEmailSent: false,
+      deliveredEmailSent: false
     };
 
     const savedOrder = await OrderModel.create(orderDoc);
@@ -131,7 +137,7 @@ export async function createCheckoutOrder(req, res) {
     if (transactionId || paymentScreenshot) {
       try {
         await PaymentModel.create({
-          userId: req.user ? req.user._id : null,
+          userId: req.user._id,
           orderId,
           provider: paymentMethod,
           paymentMethod: paymentMethod,
@@ -165,6 +171,19 @@ export async function createCheckoutOrder(req, res) {
       } catch (addrErr) {
         console.warn("[Address Save Warning]:", addrErr.message);
       }
+    }
+
+    // Send order confirmation email asynchronously
+    if (savedOrder.email) {
+      sendOrderConfirmationEmail(savedOrder.email, savedOrder)
+        .then(async (mRes) => {
+          if (mRes?.success) {
+            await OrderModel.updateOne({ _id: savedOrder._id }, { $set: { confirmationEmailSent: true } });
+          }
+        })
+        .catch((mErr) => {
+          console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
+        });
     }
 
     return res.status(201).json({

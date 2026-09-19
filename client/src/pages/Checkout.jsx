@@ -127,6 +127,10 @@ export function Checkout() {
 
   const handleNextStep = () => {
     setError('');
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent('/checkout')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
+      return;
+    }
     if (currentStep === 1) {
       if (!formData.fullName.trim() || !formData.phone.trim() || !formData.city.trim()) {
         setError('Please fill in your name, phone number, and city.');
@@ -141,6 +145,10 @@ export function Checkout() {
   };
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent('/checkout')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -211,8 +219,8 @@ export function Checkout() {
       <div className="max-w-xl mx-auto py-16 text-center space-y-4">
         <h2 className="text-2xl font-black text-neutral-950 dark:text-white">Your Cart is Empty</h2>
         <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Please add products before checking out.</p>
-        <Link to="/shop" className="inline-block px-6 py-3 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition">
-          Browse Shop Catalog
+        <Link to="/request-product" className="inline-block px-6 py-3 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition">
+          Request a Product
         </Link>
       </div>
     );
@@ -828,10 +836,10 @@ export function Checkout() {
               Track Order Status ➔
             </Link>
             <Link
-              to="/shop"
+              to="/request-product"
               className="px-6 py-3.5 rounded-2xl bg-neutral-100 dark:bg-[#1b254b] text-neutral-800 dark:text-neutral-200 text-xs font-bold hover:bg-neutral-200 dark:hover:bg-[#253266] transition"
             >
-              Continue Shopping
+              Request Another Product
             </Link>
           </div>
         </div>
