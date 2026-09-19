@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Link2, ArrowRight, Search, ChevronDown, Check, Shield, Truck, HelpCircle, Package, ArrowUpRight } from 'lucide-react';
-import { ProductCard } from '../components/ProductCard';
-import { QuickViewModal } from '../components/QuickViewModal';
-import { sampleProducts, sampleReviews } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
+import { Link2, ArrowRight, ChevronDown, Check } from 'lucide-react';
+import { sampleReviews } from '../data/mockData';
 
 export function Home() {
   const [productUrl, setProductUrl] = useState('');
   const [urlError, setUrlError] = useState('');
   const [trackOrderId, setTrackOrderId] = useState('');
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
   const navigate = useNavigate();
 
@@ -175,61 +172,6 @@ export function Home() {
       </section>
 
 
-      {/* ── 4. TRENDING PRODUCTS ── */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-              Trending Products
-            </h2>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Popular products being sourced from India.
-            </p>
-          </div>
-          <Link
-            to="/shop"
-            className="text-xs font-semibold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1"
-          >
-            <span>Browse Catalog</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-          {sampleProducts.slice(0, 8).map((product) => (
-            <ProductCard
-              key={product.id || product.slug}
-              product={product}
-              onQuickView={(p) => setQuickViewProduct(p)}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* ── 5. PROMOTIONAL BANNER ── */}
-      <section className="bg-neutral-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-neutral-800 shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
-        <div className="space-y-2 max-w-lg text-center md:text-left">
-          <span className="inline-block px-2.5 py-0.5 rounded bg-amber-400 text-neutral-950 text-[10px] font-bold uppercase tracking-wider">
-            Featured Deals
-          </span>
-          <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            India Tech Deals
-          </h3>
-          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-            Save on selected tech, smart wearables, and audio gear sourced direct from certified Indian retailers.
-          </p>
-        </div>
-
-        <div className="shrink-0">
-          <Link
-            to="/shop?category=Tech+%26+Gadgets"
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold px-6 py-3 text-xs sm:text-sm transition-all shadow-[0_4px_16px_0_rgba(245,158,11,0.42)] hover:shadow-[0_6px_22px_rgba(245,158,11,0.52)]"
-          >
-            <span>Shop Deals</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
 
       {/* ── 6. WHY SAJILOMARTS ── */}
       <section>
@@ -414,13 +356,6 @@ export function Home() {
           })}
         </div>
       </section>
-
-      {/* Quick View Modal */}
-      <QuickViewModal
-        product={quickViewProduct}
-        isOpen={!!quickViewProduct}
-        onClose={() => setQuickViewProduct(null)}
-      />
     </div>
   );
 }
