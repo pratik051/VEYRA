@@ -3,7 +3,9 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 import {
   GoogleAuthProvider,
   getAuth,
-  signInWithPopup
+  signInWithPopup,
+  browserLocalPersistence,
+  setPersistence
 } from "firebase/auth";
 
 // Firebase Client SDK Configuration
@@ -41,6 +43,7 @@ let auth = null;
 try {
   if (firebaseApp) {
     auth = getAuth(firebaseApp);
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
   }
 } catch (err) {
   console.warn("Firebase Client Auth initialization warning:", err);

@@ -2,6 +2,7 @@ const resolveBaseUrl = () => {
   const envUrl =
     import.meta.env.VITE_API_URL ||
     import.meta.env.NEXT_PUBLIC_API_URL ||
+    import.meta.env.KOYEB_BACKEND_URL ||
     import.meta.env.RENDER_BACKEND_URL;
 
   if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
@@ -10,7 +11,7 @@ const resolveBaseUrl = () => {
 
   // Fallback to relative URL ('') so requests to /api/* are handled by:
   // 1) Vite dev server proxy in development
-  // 2) Vercel edge rewrite proxy to Render in production
+  // 2) Edge rewrite proxy if configured
   return '';
 };
 

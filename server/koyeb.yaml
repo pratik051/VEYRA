@@ -1,0 +1,25 @@
+# Koyeb Deployment Configuration Reference for SajiloMarts Express Backend
+# Free-tier compatible: Nano instance (0.1 vCPU, 512MB RAM) $0/month
+# Learn more: https://www.koyeb.com/docs
+
+name: sajilomarts-backend
+type: web
+env:
+  NODE_ENV: production
+  PORT: "5000"
+regions:
+  - sin # Singapore (lowest latency for Nepal/South Asia)
+instance_types:
+  - nano
+scalings:
+  - min: 1
+    max: 1
+routes:
+  - path: /
+    port: 5000
+health_checks:
+  - http:
+      path: /api/health
+      port: 5000
+    interval: 60
+    timeout: 10

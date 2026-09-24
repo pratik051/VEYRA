@@ -22,9 +22,12 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
+  "http://localhost:4173",
+  "http://localhost:8080",
   "https://www.sajilomarts.tech",
   "https://sajilomarts.tech",
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()) : [])
 ].filter(Boolean);
 
 const corsOptions = {
@@ -32,13 +35,18 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     if (
       allowedOrigins.includes(origin) ||
+      origin.endsWith(".pages.dev") ||
+      origin.includes("pages.dev") ||
+      origin.endsWith(".koyeb.app") ||
+      origin.includes("koyeb.app") ||
       origin.endsWith(".vercel.app") ||
       origin.includes("vercel.app") ||
+      origin.includes("sajilomarts") ||
       process.env.NODE_ENV !== "production"
     ) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow production origins seamlessly
+      callback(null, true); // Allow configured production origins
     }
   },
   credentials: true,
@@ -52,7 +60,7 @@ app.options("*", cors(corsOptions));
 
 // Security and Cross-Origin Opener Policy middleware
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   next();
 });

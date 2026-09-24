@@ -56,13 +56,15 @@ export function Signup() {
         const errMessage = err?.message || 'Google sign-up failed.';
         const lower = errMessage.toLowerCase();
 
-        if (errCode === 'auth/popup-closed-by-user' || lower.includes('popup-closed-by-user')) {
+        if (errCode === 'auth/popup-closed-by-user' || lower.includes('popup-closed-by-user') || errCode === 'auth/cancelled-popup-request') {
           setError('Google Sign-In popup was closed before completing. Please try again.');
         } else if (errCode === 'auth/popup-blocked' || lower.includes('popup-blocked')) {
           setError('Google Sign-In popup was blocked by browser. Please allow popups for this site and retry.');
         } else if (errCode === 'auth/unauthorized-domain' || lower.includes('unauthorized-domain') || lower.includes('authorized domain')) {
           const domain = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
           setError(`Domain "${domain}" is not authorized in Firebase. Please add "${domain}" to Firebase Console -> Authentication -> Settings -> Authorized Domains.`);
+        } else if (errCode === 'auth/network-request-failed' || lower.includes('network-request-failed') || lower.includes('err_connection_closed')) {
+          setError('Unable to connect to Google authentication. Please check your internet connection and try again.');
         } else {
           setError(errMessage);
         }
