@@ -12,13 +12,13 @@ import {
 // NOTE: These VITE_ values are public browser-safe identifiers (not private secrets).
 // They can also be set in Vercel Environment Variables for production.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyD6ByTsLUqcvZ8hW-S1IybjK3yY6OTcqIw",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "sajilomarts-cf2fb.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "sajilomarts-cf2fb",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "sajilomarts-cf2fb.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "142195013313",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:142195013313:web:8599a9df480d3605438640",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-5TC5YNSXMC"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
 export const isFirebaseEnabled = Boolean(

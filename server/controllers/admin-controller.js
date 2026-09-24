@@ -330,16 +330,51 @@ export async function verifyPayment(req, res) {
 
     // Update associated order across both OrderModel and IndiaOrderModel
     if (payment.orderId) {
-      await Promise.allSettled([
-        OrderModel.updateOne(
-          { $or: [{ orderId: payment.orderId }, { _id: payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? payment.orderId : undefined }] },
-          { $set: { paymentStatus: newPaymentStatus, status: newOrderStatus, orderStatus: newOrderStatus } }
-        ),
-        IndiaOrderModel.updateOne(
-          { $or: [{ orderId: payment.orderId }, { _id: payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? payment.orderId : undefined }] },
-          { $set: { paymentStatus: newPaymentStatus, orderStatus: isApproved ? "Verified" : "Cancelled" } }
-        )
+      const orderQuery = {
+        $or: [
+          { orderId: payment.orderId },
+          ...(payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: payment.orderId }] : [])
+        ]
+      };
+
+      const existingOrder =
+        (await OrderModel.findOne(orderQuery).lean()) ||
+        (await IndiaOrderModel.findOne(orderQuery).lean());
+      const oldStatus = existingOrder ? String(existingOrder.orderStatus || existingOrder.status || "").trim() : "";
+
+      const [stdRes, indRes] = await Promise.allSettled([
+        OrderModel.findOneAndUpdate(
+          orderQuery,
+          { $set: { paymentStatus: newPaymentStatus, status: newOrderStatus, orderStatus: newOrderStatus } },
+          { new: true }
+        ).lean(),
+        IndiaOrderModel.findOneAndUpdate(
+          orderQuery,
+          { $set: { paymentStatus: newPaymentStatus, orderStatus: isApproved ? "Verified" : "Cancelled" } },
+          { new: true }
+        ).lean()
       ]);
+
+      const updatedOrder =
+        (stdRes.status === "fulfilled" && stdRes.value) ||
+        (indRes.status === "fulfilled" && indRes.value) ||
+        existingOrder;
+
+      const targetEmail = (
+        updatedOrder?.email ||
+        updatedOrder?.shippingAddress?.email ||
+        existingOrder?.email ||
+        existingOrder?.shippingAddress?.email ||
+        ""
+      ).trim();
+
+      const finalStatus = isApproved ? (indRes?.value ? "Verified" : newOrderStatus) : "Cancelled";
+
+      if (finalStatus && finalStatus.toLowerCase() !== oldStatus.toLowerCase() && targetEmail && updatedOrder) {
+        sendOrderStatusEmail(targetEmail, updatedOrder, finalStatus, oldStatus).catch((err) => {
+          console.warn("[Admin Payment Verification Email Notice]:", err?.message || err);
+        });
+      }
     }
 
     return res.json({

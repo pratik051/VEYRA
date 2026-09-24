@@ -125,8 +125,8 @@ export function Signup() {
 
       {/* Main Glassmorphic Shady White Card */}
       <div className="relative z-10 w-full max-w-5xl bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white shadow-[0_20px_70px_rgba(0,0,0,0.06),0_0_50px_rgba(255,255,255,0.95),0_0_0_1px_rgba(226,232,240,0.85)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
-        {/* Left Side: Brand & Visual Showcase */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-50/95 via-amber-50/25 to-slate-100/90 p-8 lg:p-12 text-slate-900 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-200/80">
+        {/* Left Side (Desktop) / Bottom (Mobile): Brand & Visual Showcase */}
+        <div className="order-2 lg:order-1 lg:col-span-5 bg-gradient-to-br from-slate-50/95 via-amber-50/25 to-slate-100/90 p-8 lg:p-12 text-slate-900 flex flex-col justify-between relative overflow-hidden border-t lg:border-t-0 lg:border-r border-slate-200/80">
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
           <div className="relative z-10 space-y-6">
@@ -198,8 +198,8 @@ export function Signup() {
           </div>
         </div>
 
-        {/* Right Side: Glowing Shady White Signup Form */}
-        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white/95 backdrop-blur-xl">
+        {/* Right Side (Desktop) / Top (Mobile): Glowing Shady White Signup Form */}
+        <div className="order-1 lg:order-2 lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white/95 backdrop-blur-xl">
           <div className="max-w-md mx-auto w-full space-y-5">
             <div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">

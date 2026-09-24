@@ -20,7 +20,7 @@ const FIREBASE_API_KEY =
   process.env.FIREBASE_API_KEY ||
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
   process.env.VITE_FIREBASE_API_KEY ||
-  "AIzaSyD6ByTsLUqcvZ8hW-S1IybjK3yY6OTcqIw";
+  "";
 
 // Memory fallback store for OTPs if DB is under heavy load
 const memOtps = new Map();
@@ -176,7 +176,7 @@ export async function firebaseAuthHandler(req, res) {
     }
 
     // 2. Identity Toolkit verification endpoint fallback
-    if (!uid) {
+    if (!uid && FIREBASE_API_KEY) {
       try {
         const lookupRes = await fetch(
           `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
