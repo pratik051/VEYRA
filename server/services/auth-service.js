@@ -6,7 +6,10 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
+let adminSeeded = false;
+
 export async function seedAdmin() {
+  if (adminSeeded) return;
   const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminEmail || !adminPassword) {
@@ -39,13 +42,13 @@ export async function seedAdmin() {
       );
       console.log("[Admin Verified]:", adminEmail);
     }
+    adminSeeded = true;
   } catch (error) {
     console.warn("Failed to seed/sync admin:", error.message);
   }
 }
 
 export async function getUserByEmail(email) {
-  await seedAdmin();
   const normalizedEmail = (email || "").toLowerCase().trim();
   if (!normalizedEmail) return null;
 
@@ -67,7 +70,6 @@ export async function getUserByEmail(email) {
 }
 
 export async function createUser(input) {
-  await seedAdmin();
   const email = input.email.toLowerCase().trim();
   const existing = await UserModel.findOne({ email }).lean();
   if (existing) return null;
@@ -86,7 +88,6 @@ export async function createUser(input) {
 }
 
 export async function findOrCreateGoogleUser(input) {
-  await seedAdmin();
   const normalizedEmail = input.email.trim().toLowerCase();
   const fallbackPhone = input.phone || "+977-9800000000";
 
@@ -125,7 +126,6 @@ export async function findOrCreateGoogleUser(input) {
 }
 
 export async function findOrCreateAppleUser(input) {
-  await seedAdmin();
   const normalizedEmail = input.email ? input.email.trim().toLowerCase() : undefined;
   const fallbackPhone = input.phone || "+977-9800000000";
 
@@ -168,7 +168,6 @@ export async function findOrCreateAppleUser(input) {
 }
 
 export async function findOrCreatePhoneUser(input) {
-  await seedAdmin();
   const cleanPhone = (input.phone || "").trim();
   const normalizedEmail = input.email ? input.email.trim().toLowerCase() : undefined;
 

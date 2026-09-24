@@ -1,15 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   GoogleAuthProvider,
-  OAuthProvider,
   getAuth,
   signInWithPopup
 } from "firebase/auth";
 
 // Firebase Client SDK Configuration
 // NOTE: These VITE_ values are public browser-safe identifiers (not private secrets).
-// They are required to be set in Vercel Environment Variables for production.
-// See .env.example for the full list.
+// They can also be set in Vercel Environment Variables for production.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "veyra-np.firebaseapp.com",
@@ -54,15 +52,6 @@ export const googleProvider = firebaseAuth ? new GoogleAuthProvider() : null;
 if (googleProvider) {
   try {
     googleProvider.setCustomParameters({ prompt: "select_account" });
-  } catch {}
-}
-
-export const appleProvider = firebaseAuth ? new OAuthProvider("apple.com") : null;
-
-if (appleProvider) {
-  try {
-    appleProvider.addScope("email");
-    appleProvider.addScope("name");
   } catch {}
 }
 

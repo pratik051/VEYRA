@@ -19,16 +19,17 @@ import { seedAdmin } from "./services/auth-service.js";
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  const server = app.listen(PORT, async () => {
-    console.log(`🚀 SajiloMarts Express Backend successfully listening on port ${PORT}`);
-    try {
-      const conn = await connectDB();
-      if (conn) {
-        await seedAdmin();
-      }
-    } catch (err) {
-      console.error("[Database Connection Warning]:", err?.message || err);
+  try {
+    const conn = await connectDB();
+    if (conn) {
+      await seedAdmin();
     }
+  } catch (err) {
+    console.error("[Database Initial Connection Warning]:", err?.message || err);
+  }
+
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 SajiloMarts Express Backend successfully listening on port ${PORT}`);
   });
 
   return server;

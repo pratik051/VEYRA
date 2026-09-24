@@ -13,6 +13,7 @@ import aiRoutes from "./routes/ai-routes.js";
 import userRoutes from "./routes/user-routes.js";
 import checkoutRoutes from "./routes/checkout-routes.js";
 import { authenticateUser } from "./middleware/auth.js";
+import { dbConnectionMiddleware } from "./config/db.js";
 
 dotenv.config();
 
@@ -76,12 +77,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(authenticateUser);
-
-// Health check endpoint
+// Health check endpoint (allowed even if DB is still connecting)
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
+
+// Ensure database connection before running authenticated or database-backed routes
+app.use(dbConnectionMiddleware);
+app.use(authenticateUser);
 
 // API Routers
 app.use("/api/auth", authRoutes);

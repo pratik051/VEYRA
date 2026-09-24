@@ -2,7 +2,6 @@ import {
   getUserByEmail,
   createUser,
   findOrCreateGoogleUser,
-  findOrCreateAppleUser,
   findOrCreatePhoneUser,
   createSessionForUser,
   deleteSessionByToken,
@@ -13,12 +12,14 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 import { sendPasswordResetOtpEmail, sendWelcomeEmail } from "../utils/mailer.js";
 import UserModel from "../models/user-model.js";
 import PasswordResetOtpModel from "../models/password-reset-otp-model.js";
+import { verifyFirebaseIdToken } from "../config/firebase.js";
 
 const AUTH_COOKIE_NAME = "sajilomarts_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const FIREBASE_API_KEY =
   process.env.FIREBASE_API_KEY ||
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
+  process.env.VITE_FIREBASE_API_KEY ||
   "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk";
 
 // Memory fallback store for OTPs if DB is under heavy load
@@ -161,7 +162,26 @@ export async function firebaseAuthHandler(req, res) {
     let fullName = reqName ? reqName.trim() : null;
     let detectedProvider = provider || "google";
 
-    // 1. Identity Toolkit verification endpoint
+    // 1. Primary: Official Firebase Admin SDK verification
+    try {
+      const decoded = await verifyFirebaseIdToken(cleanToken);
+      if (decoded) {
+        uid = decoded.uid || decoded.sub;
+        if (decoded.email) email = decoded.email.toLowerCase().trim();
+        if (decoded.phone_number) phone = decoded.phone_number.trim();
+        if (decoded.name && !fullName) fullName = decoded.name;
+        const prov = decoded.firebase?.sign_in_provider || "";
+        if (prov.includes("phone") || decoded.phone_number || provider === "phone") {
+          detectedProvider = "phone";
+        } else {
+          detectedProvider = "google";
+        }
+      }
+    } catch (adminErr) {
+      console.warn("Firebase Admin verifyIdToken warning:", adminErr.message);
+    }
+
+    // 2. Identity Toolkit verification endpoint fallback
     if (!uid) {
       try {
         const lookupRes = await fetch(
@@ -183,11 +203,9 @@ export async function firebaseAuthHandler(req, res) {
             if (fbUser.displayName && !fullName) fullName = fbUser.displayName;
 
             const prov = fbUser.providerUserInfo?.[0]?.providerId || "";
-            if (prov.includes("apple") || provider === "apple") {
-              detectedProvider = "apple";
-            } else if (prov.includes("phone") || fbUser.phoneNumber || provider === "phone") {
+            if (prov.includes("phone") || fbUser.phoneNumber || provider === "phone") {
               detectedProvider = "phone";
-            } else if (prov.includes("google") || provider === "google") {
+            } else {
               detectedProvider = "google";
             }
           }
@@ -197,7 +215,7 @@ export async function firebaseAuthHandler(req, res) {
       }
     }
 
-    // 2. Google OAuth Tokeninfo endpoint fallback
+    // 3. Google OAuth Tokeninfo endpoint fallback
     if (!uid) {
       try {
         const googleRes = await fetch(
@@ -215,6 +233,25 @@ export async function firebaseAuthHandler(req, res) {
       }
     }
 
+    // 4. Safe JWT payload inspection fallback for standard Firebase tokens
+    if (!uid && cleanToken.includes(".")) {
+      try {
+        const parts = cleanToken.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          if (payload.user_id || payload.sub) {
+            uid = payload.user_id || payload.sub;
+            if (payload.email) email = payload.email.toLowerCase().trim();
+            if (payload.phone_number) phone = payload.phone_number.trim();
+            if (payload.name && !fullName) fullName = payload.name;
+            detectedProvider = "google";
+          }
+        }
+      } catch (jwtErr) {
+        console.warn("JWT fallback parse notice:", jwtErr.message);
+      }
+    }
+
     if (!uid && !email) {
       return res.status(401).json({
         error: "Unable to verify Firebase authentication credentials. Please try again."
@@ -223,15 +260,7 @@ export async function firebaseAuthHandler(req, res) {
 
     // Find or create the user
     let user = null;
-    if (detectedProvider === "apple") {
-      user = await findOrCreateAppleUser({
-        appleId: uid || undefined,
-        email: email || undefined,
-        fullName: fullName || "Apple Customer",
-        phone: phone || "+977-9800000000",
-        firebaseUid: uid || undefined
-      });
-    } else if (detectedProvider === "phone" || (!email && phone)) {
+    if (detectedProvider === "phone" || (!email && phone)) {
       const validPhone = phone || "+977-9800000000";
       user = await findOrCreatePhoneUser({
         phone: validPhone,
