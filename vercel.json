@@ -18,7 +18,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://veyra-backend-cuup.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://sajilomarts.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
