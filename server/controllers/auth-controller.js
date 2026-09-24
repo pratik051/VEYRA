@@ -20,7 +20,7 @@ const FIREBASE_API_KEY =
   process.env.FIREBASE_API_KEY ||
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
   process.env.VITE_FIREBASE_API_KEY ||
-  "AIzaSyBu4-U7nZ0GAMT_OQVSvs9xsU7gt9mN1Pk";
+  "AIzaSyD6ByTsLUqcvZ8hW-S1IybjK3yY6OTcqIw";
 
 // Memory fallback store for OTPs if DB is under heavy load
 const memOtps = new Map();

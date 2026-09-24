@@ -29,7 +29,7 @@ export function initFirebaseAdmin() {
     }
 
     // 2. Try individual cert env variables
-    const projectId = process.env.FIREBASE_PROJECT_ID || "veyra-np";
+    const projectId = process.env.FIREBASE_PROJECT_ID || "sajilomarts-cf2fb";
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
