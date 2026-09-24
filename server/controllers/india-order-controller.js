@@ -157,15 +157,9 @@ export async function createIndiaOrder(req, res) {
 
     // Send order confirmation email asynchronously
     if (newOrder.email) {
-      sendOrderConfirmationEmail(newOrder.email, newOrder)
-        .then(async (mRes) => {
-          if (mRes?.success) {
-            await IndiaOrderModel.updateOne({ _id: newOrder._id }, { $set: { confirmationEmailSent: true } });
-          }
-        })
-        .catch((mErr) => {
-          console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
-        });
+      sendOrderConfirmationEmail(newOrder.email, newOrder).catch((mErr) => {
+        console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
+      });
     }
 
     return res.json({

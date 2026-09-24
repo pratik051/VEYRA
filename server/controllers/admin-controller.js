@@ -6,7 +6,7 @@ import ProductModel from "../models/product-model.js";
 import MarketplaceProductModel from "../models/marketplace-product-model.js";
 import UserModel from "../models/user-model.js";
 import PaymentModel from "../models/payment-model.js";
-import { sendOrderDeliveredEmail } from "../utils/mailer.js";
+import { sendOrderDeliveredEmail, sendOrderStatusEmail } from "../services/emailService.js";
 
 // Dashboard Overview Stats
 export async function getDashboardStats(req, res) {
@@ -185,18 +185,14 @@ export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const body = req.body || {};
-    const newStatus = body.status || body.orderStatus;
+    let newStatus = body.status || body.orderStatus;
     const updates = { ...body, updatedAt: new Date() };
-
-    if (newStatus) {
-      updates.status = newStatus;
-      updates.orderStatus = newStatus;
-    }
 
     if (body.adminVerificationStatus) {
       updates.adminVerifiedAt = new Date();
       updates.adminVerifiedBy = req.user.fullName || req.user.email;
       if (body.adminVerificationStatus === "Verified / Orderable") {
+        newStatus = "Verified";
         updates.orderStatus = "Verified";
         updates.stockStatus = "In Stock";
         updates.deliveryStatus = "Delivery Available";
@@ -205,9 +201,15 @@ export async function updateOrder(req, res) {
       } else if (body.adminVerificationStatus === "Unavailable") {
         updates.stockStatus = "Unavailable";
       } else if (body.adminVerificationStatus === "Rejected") {
+        newStatus = "Cancelled";
         updates.orderStatus = "Cancelled";
         updates.stockStatus = "Rejected";
       }
+    }
+
+    if (newStatus) {
+      updates.status = newStatus;
+      updates.orderStatus = newStatus;
     }
 
     const query = {
@@ -217,36 +219,51 @@ export async function updateOrder(req, res) {
       ]
     };
 
-    // Try Standard OrderModel first
-    let updated = await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+    // 1. Retrieve the existing order first to compare old status vs new status
+    let existing = await OrderModel.findOne(query).lean();
+    let isIndia = false;
+    if (!existing) {
+      existing = await IndiaOrderModel.findOne(query).lean();
+      if (existing) isIndia = true;
+    }
 
-    // If not found, try IndiaOrderModel
+    if (!existing) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+
+    const oldStatus = String(existing.orderStatus || existing.status || "").trim();
+
+    // 2. Perform the update
+    let updated = isIndia
+      ? await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean()
+      : await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+
     if (!updated) {
-      updated = await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+      // Fallback cross-check if model was ambiguous
+      updated = await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean() ||
+        await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
     }
 
     if (!updated) {
       return res.status(404).json({ error: "Order not found." });
     }
 
-    // Check if status transitioned to Delivered and delivered email has not been sent yet
-    const isDelivered = (newStatus && String(newStatus).toLowerCase() === "delivered") ||
-      (body.status && String(body.status).toLowerCase() === "delivered") ||
-      (body.orderStatus && String(body.orderStatus).toLowerCase() === "delivered");
+    // 3. Trigger Email Notification if status ACTUALLY changed
+    const targetEmail = (updated.email || updated.shippingAddress?.email || existing.email || existing.shippingAddress?.email || "").trim();
+    const cleanNewStatus = String(newStatus || "").trim();
 
-    if (isDelivered && !updated.deliveredEmailSent && updated.email) {
-      sendOrderDeliveredEmail(updated.email, updated)
-        .then(async (mRes) => {
-          if (mRes?.success) {
-            await Promise.all([
-              OrderModel.updateOne(query, { $set: { deliveredEmailSent: true } }),
-              IndiaOrderModel.updateOne(query, { $set: { deliveredEmailSent: true } })
-            ]);
-          }
-        })
-        .catch((mErr) => {
-          console.warn("[Delivered Email Notice]:", mErr?.message || mErr);
+    if (cleanNewStatus && cleanNewStatus.toLowerCase() !== oldStatus.toLowerCase() && targetEmail) {
+      if (cleanNewStatus.toLowerCase() === "delivered") {
+        // Dedicated delivered email
+        sendOrderDeliveredEmail(targetEmail, updated).catch((err) => {
+          console.warn("[Admin Delivered Email Notice]:", err?.message || err);
         });
+      } else {
+        // Status update email
+        sendOrderStatusEmail(targetEmail, updated, cleanNewStatus, oldStatus).catch((err) => {
+          console.warn("[Admin Status Email Notice]:", err?.message || err);
+        });
+      }
     }
 
     return res.json({ success: true, order: updated });

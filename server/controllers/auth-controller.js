@@ -111,15 +111,9 @@ export async function signup(req, res) {
 
     // Send welcome email asynchronously without blocking registration response
     if (email && !newUser.welcomeEmailSent) {
-      sendWelcomeEmail(email, newUser.fullName)
-        .then(async (mRes) => {
-          if (mRes?.success) {
-            await UserModel.updateOne({ _id: newUser._id }, { $set: { welcomeEmailSent: true } });
-          }
-        })
-        .catch((mErr) => {
-          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
-        });
+      sendWelcomeEmail(email, newUser.fullName, newUser._id).catch((mErr) => {
+        console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+      });
     }
 
     res.cookie(AUTH_COOKIE_NAME, token, {
@@ -285,15 +279,9 @@ export async function firebaseAuthHandler(req, res) {
 
     // Send welcome email if new account creation with real email
     if (user.email && !user.welcomeEmailSent && !user.email.endsWith(".internal")) {
-      sendWelcomeEmail(user.email, user.fullName)
-        .then(async (mRes) => {
-          if (mRes?.success) {
-            await UserModel.updateOne({ _id: user._id }, { $set: { welcomeEmailSent: true } });
-          }
-        })
-        .catch((mErr) => {
-          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
-        });
+      sendWelcomeEmail(user.email, user.fullName, user._id).catch((mErr) => {
+        console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+      });
     }
 
     res.cookie(AUTH_COOKIE_NAME, token, {

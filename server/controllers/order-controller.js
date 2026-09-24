@@ -175,15 +175,9 @@ export async function createCheckoutOrder(req, res) {
 
     // Send order confirmation email asynchronously
     if (savedOrder.email) {
-      sendOrderConfirmationEmail(savedOrder.email, savedOrder)
-        .then(async (mRes) => {
-          if (mRes?.success) {
-            await OrderModel.updateOne({ _id: savedOrder._id }, { $set: { confirmationEmailSent: true } });
-          }
-        })
-        .catch((mErr) => {
-          console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
-        });
+      sendOrderConfirmationEmail(savedOrder.email, savedOrder).catch((mErr) => {
+        console.warn("[Order Confirmation Email Notice]:", mErr?.message || mErr);
+      });
     }
 
     return res.status(201).json({
