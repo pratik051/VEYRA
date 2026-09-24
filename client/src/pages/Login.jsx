@@ -149,21 +149,21 @@ export function Login() {
       setForgotStep('otp');
       setResendCooldown(60);
     } catch (err) {
-      setError(err?.message || 'Failed to send code.');
+      setError(err?.message || 'Failed to send OTP code.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Verify OTP & Set New Password
+  // Verify OTP and Reset Password
   const handleForgotVerifyOtp = async (e) => {
     e.preventDefault();
-    if (forgotOtp.trim().length !== 6) {
+    if (!forgotOtp.trim() || forgotOtp.trim().length !== 6) {
       setError('Please enter the 6-digit verification code.');
       return;
     }
-    if (forgotNewPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (!forgotNewPassword || forgotNewPassword.length < 6) {
+      setError('New password must be at least 6 characters.');
       return;
     }
 
@@ -195,42 +195,44 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-[#080d21] text-slate-900 dark:text-white flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans antialiased">
-      {/* Background ambient lighting effects */}
+    <div className="min-h-[calc(100vh-140px)] bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#fffbeb]/40 text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans antialiased relative">
+      {/* Background ambient glowing light orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-500/10 dark:bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-[-5%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-white/90 via-amber-200/30 to-white/60 rounded-full blur-3xl opacity-80" />
+        <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-white/90 via-indigo-100/30 to-amber-100/30 rounded-full blur-3xl opacity-80" />
+        <div className="absolute top-[40%] right-[30%] w-[400px] h-[400px] bg-white/80 rounded-full blur-3xl opacity-90" />
       </div>
 
-      <div className="relative z-10 w-full max-w-5xl bg-white dark:bg-[#0f172a] rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
-        {/* Left Side: Rich Figma-style Brand & Visual Showcase */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          {/* Subtle geometric pattern overlay */}
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-          
+      {/* Main Glassmorphic Shady White Card */}
+      <div className="relative z-10 w-full max-w-5xl bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white shadow-[0_20px_70px_rgba(0,0,0,0.06),0_0_50px_rgba(255,255,255,0.95),0_0_0_1px_rgba(226,232,240,0.85)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+        {/* Left Side: Shady White / Frosted Pearl Showcase */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-50/95 via-amber-50/25 to-slate-100/90 p-8 lg:p-12 text-slate-900 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-200/80">
+          {/* Subtle dot pattern overlay */}
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
           <div className="relative z-10 space-y-6">
             <Link to="/" className="inline-flex items-center gap-3 group">
               <img
                 src="/sajilomarts-logo.png"
                 alt="SajiloMarts Logo"
-                className="h-11 w-auto object-contain rounded-xl shadow-md group-hover:scale-105 transition-transform"
+                className="h-11 w-auto object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform"
               />
               <div className="flex flex-col justify-center">
-                <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 bg-clip-text text-transparent">
+                <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-amber-700 to-amber-600 bg-clip-text text-transparent">
                   SajiloMarts
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase -mt-1">
+                <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase -mt-1">
                   Cross-Border Logistics
                 </span>
               </div>
             </Link>
 
-            <div className="pt-4 space-y-2">
-              <h3 className="text-xl lg:text-2xl font-black text-white tracking-tight leading-tight">
+            <div className="pt-3 space-y-2">
+              <h3 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight">
                 Buy Any Indian Product.<br />
-                <span className="text-amber-400">Delivered Across Nepal.</span>
+                <span className="text-amber-600">Delivered Across Nepal.</span>
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 Connect your account to paste links from Amazon India, Flipkart, Myntra, and boAt with automated NPR conversion.
               </p>
             </div>
@@ -238,55 +240,55 @@ export function Login() {
 
           {/* Value props showcase cards */}
           <div className="relative z-10 my-8 space-y-3">
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
-              <div className="w-9 h-9 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-lg font-bold">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/85 backdrop-blur-md border border-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-amber-200/70 transition-all duration-200">
+              <div className="w-9 h-9 rounded-xl bg-amber-100/90 text-amber-700 flex items-center justify-center text-lg font-bold shadow-xs">
                 ⚡
               </div>
               <div>
-                <h4 className="font-bold text-white text-xs">Instant Link Price Calculator</h4>
-                <p className="text-[11px] text-slate-400">Exact landed price in NPR in seconds.</p>
+                <h4 className="font-extrabold text-slate-900 text-xs">Instant Link Price Calculator</h4>
+                <p className="text-[11px] text-slate-500 font-medium">Exact landed price in NPR in seconds.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
-              <div className="w-9 h-9 rounded-xl bg-emerald-400/20 text-emerald-400 flex items-center justify-center text-lg font-bold">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/85 backdrop-blur-md border border-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-emerald-200/70 transition-all duration-200">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100/90 text-emerald-700 flex items-center justify-center text-lg font-bold shadow-xs">
                 📦
               </div>
               <div>
-                <h4 className="font-bold text-white text-xs">Customs & Duty Included</h4>
-                <p className="text-[11px] text-slate-400">Zero surprise fees at your doorstep.</p>
+                <h4 className="font-extrabold text-slate-900 text-xs">Customs &amp; Duty Included</h4>
+                <p className="text-[11px] text-slate-500 font-medium">Zero surprise fees at your doorstep.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
-              <div className="w-9 h-9 rounded-xl bg-indigo-400/20 text-indigo-400 flex items-center justify-center text-lg font-bold">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/85 backdrop-blur-md border border-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-indigo-200/70 transition-all duration-200">
+              <div className="w-9 h-9 rounded-xl bg-indigo-100/90 text-indigo-700 flex items-center justify-center text-lg font-bold shadow-xs">
                 📍
               </div>
               <div>
-                <h4 className="font-bold text-white text-xs">Real-Time Transit Tracking</h4>
-                <p className="text-[11px] text-slate-400">From Indian warehouse to Nepal hub.</p>
+                <h4 className="font-extrabold text-slate-900 text-xs">Real-Time Transit Tracking</h4>
+                <p className="text-[11px] text-slate-500 font-medium">From Indian warehouse to Nepal hub.</p>
               </div>
             </div>
           </div>
 
           {/* Footer security tag */}
-          <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+          <div className="relative z-10 pt-4 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
               256-Bit SSL Secured
             </span>
             <span>Nepal Sourcing Hub</span>
           </div>
         </div>
 
-        {/* Right Side: High-End Figma Authentication Form */}
-        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white dark:bg-[#0f172a]">
+        {/* Right Side: Glowing Shady White Auth Form */}
+        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white/95 backdrop-blur-xl">
           <div className="max-w-md mx-auto w-full space-y-6">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 {isForgot ? 'Reset your password' : 'Sign in to account'}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1.5 font-medium">
                 {isForgot
                   ? 'Enter your registered email to receive your OTP verification code.'
                   : 'Welcome back! Please enter your credentials to continue.'}
@@ -294,21 +296,21 @@ export function Login() {
             </div>
 
             {noticeMsg && (
-              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2.5">
+              <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 text-amber-900 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
                 <span>🔒</span>
                 <span>{decodeURIComponent(noticeMsg)}</span>
               </div>
             )}
 
             {error && (
-              <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2.5">
+              <div className="p-3.5 rounded-2xl bg-red-50/90 border border-red-200/90 text-red-700 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
                 <span>⚠️</span>
                 <span>{error}</span>
               </div>
             )}
 
             {message && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
+              <div className="p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/90 text-emerald-800 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
                 <span>✓</span>
                 <span>{message}</span>
               </div>
@@ -322,7 +324,7 @@ export function Login() {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-3.5 py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-sm hover:shadow-md"
+                    className="w-full flex items-center justify-center gap-3.5 py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-50/90 border border-slate-200/90 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-xs hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:border-slate-300"
                   >
                     <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -336,8 +338,8 @@ export function Login() {
 
                 {/* Divider */}
                 <div className="relative flex items-center justify-center my-1">
-                  <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
-                  <span className="bg-white dark:bg-[#0f172a] px-3.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 absolute">
+                  <div className="border-t border-slate-200/90 w-full" />
+                  <span className="bg-white px-3.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 absolute">
                     or with email
                   </span>
                 </div>
@@ -345,7 +347,7 @@ export function Login() {
                 {/* Email/Password Form */}
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                       Email Address
                     </label>
                     <div className="relative">
@@ -356,14 +358,14 @@ export function Login() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="name@example.com"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70 transition-all placeholder:text-slate-400"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 focus:outline-none transition-all placeholder:text-slate-400 shadow-xs"
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                         Password
                       </label>
                       <button
@@ -374,7 +376,7 @@ export function Login() {
                           setError('');
                           setMessage('');
                         }}
-                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition cursor-pointer"
+                        className="text-xs font-bold text-amber-600 hover:text-amber-700 transition cursor-pointer"
                       >
                         Forgot password?
                       </button>
@@ -387,12 +389,12 @@ export function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70 transition-all pr-12 placeholder:text-slate-400"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 focus:outline-none transition-all pr-12 placeholder:text-slate-400 shadow-xs"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 dark:hover:text-white text-xs font-bold cursor-pointer"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-800 text-xs font-bold cursor-pointer"
                       >
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
@@ -407,25 +409,25 @@ export function Login() {
                         onChange={(e) => setRememberMe(e.target.checked)}
                         className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"
                       />
-                      <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Remember me</span>
+                      <span className="text-xs text-slate-600 font-semibold">Remember me</span>
                     </label>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-md hover:shadow-lg hover:shadow-amber-500/20 active:scale-[0.99]"
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-[0_4px_16px_rgba(245,158,11,0.35)] hover:shadow-[0_6px_22px_rgba(245,158,11,0.45)] active:scale-[0.99]"
                   >
                     {isSubmitting ? 'Signing In...' : 'Sign In ➔'}
                   </button>
                 </form>
 
                 <div className="pt-2 text-center">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 font-medium">
                     Don&apos;t have an account?{' '}
                     <Link
                       to={`/signup${redirectUrl !== '/account' || noticeMsg ? `?redirect=${encodeURIComponent(redirectUrl)}${noticeMsg ? `&msg=${encodeURIComponent(noticeMsg)}` : ''}` : ''}`}
-                      className="font-bold text-amber-600 dark:text-amber-400 hover:underline ml-1"
+                      className="font-bold text-amber-600 hover:text-amber-700 hover:underline ml-1"
                     >
                       Create account
                     </Link>
@@ -438,7 +440,7 @@ export function Login() {
                 {forgotStep === 'email' ? (
                   <form onSubmit={handleForgotSendOtp} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                         Registered Email Address
                       </label>
                       <input
@@ -447,14 +449,14 @@ export function Login() {
                         value={forgotEmail}
                         onChange={(e) => setForgotEmail(e.target.value)}
                         placeholder="name@example.com"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 focus:outline-none"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
                     >
                       {isSubmitting ? 'Sending Code...' : 'Send Verification Code ➔'}
                     </button>
@@ -462,7 +464,7 @@ export function Login() {
                 ) : (
                   <form onSubmit={handleForgotVerifyOtp} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                         6-Digit Verification Code
                       </label>
                       <input
@@ -472,12 +474,12 @@ export function Login() {
                         value={forgotOtp}
                         onChange={(e) => setForgotOtp(e.target.value)}
                         placeholder="123456"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-center tracking-widest font-mono text-lg font-bold text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-center tracking-widest font-mono text-lg font-bold text-slate-900 focus:bg-white focus:border-amber-500 focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                         New Password
                       </label>
                       <input
@@ -487,14 +489,14 @@ export function Login() {
                         value={forgotNewPassword}
                         onChange={(e) => setForgotNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-amber-500 focus:outline-none"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
                     >
                       {isSubmitting ? 'Verifying...' : 'Set New Password ➔'}
                     </button>
@@ -504,7 +506,7 @@ export function Login() {
                         type="button"
                         disabled={resendCooldown > 0 || isSubmitting}
                         onClick={handleForgotSendOtp}
-                        className="text-xs text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white font-semibold cursor-pointer disabled:opacity-50"
+                        className="text-xs text-slate-500 hover:text-slate-900 font-semibold cursor-pointer disabled:opacity-50"
                       >
                         {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code'}
                       </button>
@@ -520,7 +522,7 @@ export function Login() {
                       setError('');
                       setMessage('');
                     }}
-                    className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    className="text-xs font-bold text-amber-600 hover:underline cursor-pointer"
                   >
                     ← Back to Sign In
                   </button>
