@@ -11,21 +11,36 @@ export function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  React.useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+    if (e) e.preventDefault();
+    if (!email.trim()) {
+      setError('Please enter your registered email address.');
+      return;
+    }
     setError('');
+    setMessage('');
     setLoading(true);
 
     try {
       const res = await api.post('/api/auth/forgot-password/send-otp', { email: email.trim() });
-      setMessage(res.data?.message || 'Verification OTP sent to your email.');
+      if (!res.data?.success) {
+        throw new Error(res.data?.error || 'Failed to send verification code.');
+      }
+      setMessage(res.data?.message || 'Verification OTP code sent to your email.');
       setStep(2);
+      setResendCooldown(60);
     } catch (err) {
-      // Fallback
-      setMessage('Verification OTP sent to your email.');
-      setStep(2);
+      setError(err?.response?.data?.error || err?.message || 'Failed to send OTP code. Please check your email and try again.');
     } finally {
       setLoading(false);
     }
@@ -33,22 +48,36 @@ export function ForgotPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+    if (!otp.trim() || otp.trim().length !== 6) {
+      setError('Please enter the 6-digit verification code.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setError('New password must be at least 6 characters long.');
+      return;
+    }
+
     setError('');
+    setMessage('');
     setLoading(true);
 
     try {
-      await api.post('/api/auth/forgot-password/verify-otp', {
+      const res = await api.post('/api/auth/forgot-password/verify-otp', {
         email: email.trim(),
         otp: otp.trim(),
         newPassword
       });
+      if (!res.data?.success) {
+        throw new Error(res.data?.error || 'Password reset failed.');
+      }
       setStep(3);
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid or expired OTP code.');
+      setError(err?.response?.data?.error || err?.message || 'Invalid or expired OTP code.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="max-w-md mx-auto py-12 px-4 space-y-6">
@@ -132,10 +161,32 @@ export function ForgotPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-amber-400 text-neutral-950 text-xs font-black hover:bg-amber-300 transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              className="w-full py-3.5 rounded-2xl bg-amber-400 text-neutral-950 text-xs font-black hover:bg-amber-300 transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
             >
               <span>{loading ? 'Resetting...' : 'Set New Password ➔'}</span>
             </button>
+
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(1);
+                  setError('');
+                  setMessage('');
+                }}
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white font-semibold cursor-pointer"
+              >
+                ← Change email
+              </button>
+              <button
+                type="button"
+                disabled={resendCooldown > 0 || loading}
+                onClick={handleSendOtp}
+                className="text-amber-600 dark:text-amber-400 font-bold hover:underline cursor-pointer disabled:opacity-50 disabled:no-underline"
+              >
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+              </button>
+            </div>
           </form>
         )}
 

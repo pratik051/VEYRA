@@ -1,67 +1,81 @@
+import "../config/env.js";
 import nodemailer from "nodemailer";
 import EmailNotificationModel from "../models/email-notification-model.js";
 import UserModel from "../models/user-model.js";
 import OrderModel from "../models/order-model.js";
 import IndiaOrderModel from "../models/india-order-model.js";
 
-// Server-side SMTP credentials resolution
-const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "465", 10);
-const SMTP_SECURE = process.env.SMTP_SECURE === "true" || SMTP_PORT === 465;
+// Dynamic Server-side SMTP credentials resolution
+export function getSmtpConfig() {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = parseInt(process.env.SMTP_PORT || "465", 10);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
-const SMTP_USER =
-  process.env.SMTP_USER ||
-  process.env.GMAIL_USER ||
-  process.env.EMAIL_USER ||
-  "";
+  const user =
+    process.env.SMTP_USER ||
+    process.env.GMAIL_USER ||
+    process.env.EMAIL_USER ||
+    "";
 
-const SMTP_PASS = (
-  process.env.SMTP_PASS ||
-  process.env.SMTP_PASSWORD ||
-  process.env.GMAIL_APP_PASSWORD ||
-  process.env.EMAIL_PASS ||
-  ""
-).replace(/\s+/g, "");
+  const pass = (
+    process.env.SMTP_PASS ||
+    process.env.SMTP_PASSWORD ||
+    process.env.GMAIL_APP_PASSWORD ||
+    process.env.EMAIL_PASS ||
+    ""
+  ).replace(/\s+/g, "");
 
-const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || "SajiloMarts";
-const EMAIL_FROM =
-  process.env.EMAIL_FROM ||
-  (SMTP_USER ? `"${EMAIL_FROM_NAME}" <${SMTP_USER}>` : `"SajiloMarts" <no-reply@sajilomarts.tech>`);
+  return { host, port, secure, user, pass };
+}
 
-const FRONTEND_URL = (process.env.FRONTEND_URL || "https://www.sajilomarts.tech").replace(/\/+$/, "");
+export function getEmailFrom() {
+  const { user } = getSmtpConfig();
+  const fromName = process.env.EMAIL_FROM_NAME || "SajiloMarts";
+  return (
+    process.env.EMAIL_FROM ||
+    (user ? `"${fromName}" <${user}>` : `"SajiloMarts" <no-reply@sajilomarts.tech>`)
+  );
+}
+
+export function getFrontendUrl() {
+  return (process.env.FRONTEND_URL || "https://www.sajilomarts.tech").replace(/\/+$/, "");
+}
 
 let transporter = null;
+let lastCredsKey = "";
 
-function getTransporter() {
-  if (!transporter) {
-    if (!SMTP_USER || !SMTP_PASS) {
-      throw new Error("SMTP credentials are not configured in server environment variables.");
-    }
+export function getTransporter() {
+  const config = getSmtpConfig();
+  if (!config.user || !config.pass) {
+    throw new Error("SMTP credentials are not configured in server environment variables (SMTP_USER/SMTP_PASS).");
+  }
 
+  const credsKey = `${config.host}:${config.port}:${config.user}:${config.pass}`;
+  if (!transporter || lastCredsKey !== credsKey) {
     const transportConfig = {
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_SECURE,
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
       auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS
+        user: config.user,
+        pass: config.pass
       }
     };
 
-    if (SMTP_HOST.includes("gmail.com") && SMTP_PORT === 465) {
+    if (config.host.includes("gmail.com") && config.port === 465) {
       transportConfig.service = "gmail";
     }
 
     transporter = nodemailer.createTransport(transportConfig);
+    lastCredsKey = credsKey;
   }
   return transporter;
 }
 
-/**
- * Common HTML Email Wrapper with SajiloMarts Branding
- */
+
 function buildEmailLayout({ headerTitle = "SajiloMarts", headerSubtitle = "Shop from India • Delivered to Nepal", bodyContent, badgeColor = "#f59e0b", badgeTextColor = "#09090b" }) {
   const currentYear = new Date().getFullYear();
+  const frontendUrl = getFrontendUrl();
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,7 +91,7 @@ function buildEmailLayout({ headerTitle = "SajiloMarts", headerSubtitle = "Shop 
           <!-- Header Banner -->
           <tr>
             <td style="padding: 28px 32px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); text-align: center;">
-              <a href="${FRONTEND_URL}" style="text-decoration: none; display: inline-block;">
+              <a href="${frontendUrl}" style="text-decoration: none; display: inline-block;">
                 <div style="display: inline-block; background-color: ${badgeColor}; border-radius: 10px; padding: 8px 20px; margin-bottom: 6px;">
                   <span style="font-weight: 900; font-size: 20px; color: ${badgeTextColor}; letter-spacing: 1.5px; text-transform: uppercase;">
                     SajiloMarts
@@ -152,8 +166,9 @@ export async function sendWelcomeEmail(toEmail, customerName, userId = "") {
 
     const client = getTransporter();
     const name = (customerName || "Valued Customer").trim();
-    const actionUrl = `${FRONTEND_URL}/verify-product-link`;
-    const homeUrl = FRONTEND_URL;
+    const frontendUrl = getFrontendUrl();
+    const actionUrl = `${frontendUrl}/verify-product-link`;
+    const homeUrl = frontendUrl;
 
     const subject = "Welcome to SajiloMarts! 🛍️";
 
@@ -221,7 +236,7 @@ ${homeUrl}`;
     });
 
     const mailOptions = {
-      from: EMAIL_FROM,
+      from: getEmailFrom(),
       to: cleanEmail,
       subject,
       text: textContent,
@@ -332,7 +347,8 @@ export async function sendOrderConfirmationEmail(toEmail, order) {
       minute: "2-digit"
     });
 
-    const trackUrl = `${FRONTEND_URL}/track-order?id=${encodeURIComponent(orderId)}`;
+    const frontendUrl = getFrontendUrl();
+    const trackUrl = `${frontendUrl}/track-order?id=${encodeURIComponent(orderId)}`;
     const subject = `Order Confirmed — SajiloMarts #${orderId}`;
 
     const textContent = `Hi ${customerName},
@@ -481,7 +497,7 @@ SajiloMarts Team`;
     });
 
     const mailOptions = {
-      from: EMAIL_FROM,
+      from: getEmailFrom(),
       to: cleanEmail,
       subject,
       text: textContent,
@@ -557,7 +573,8 @@ export async function sendOrderStatusEmail(toEmail, order, newStatus, oldStatus 
       "Valued Customer"
     ).trim();
 
-    const trackUrl = `${FRONTEND_URL}/track-order?id=${encodeURIComponent(orderId)}`;
+    const frontendUrl = getFrontendUrl();
+    const trackUrl = `${frontendUrl}/track-order?id=${encodeURIComponent(orderId)}`;
     const subject = `Order Update — SajiloMarts #${orderId}`;
 
     // Contextual description for various supported statuses
@@ -657,7 +674,7 @@ SajiloMarts Team`;
     });
 
     const mailOptions = {
-      from: EMAIL_FROM,
+      from: getEmailFrom(),
       to: cleanEmail,
       subject,
       text: textContent,
@@ -735,8 +752,9 @@ export async function sendOrderDeliveredEmail(toEmail, order) {
       day: "numeric"
     });
 
-    const supportUrl = `${FRONTEND_URL}/support`;
-    const accountUrl = `${FRONTEND_URL}/account`;
+    const frontendUrl = getFrontendUrl();
+    const supportUrl = `${frontendUrl}/support`;
+    const accountUrl = `${frontendUrl}/account`;
     const subject = `Your Order Has Been Delivered — SajiloMarts #${orderId} 🎉`;
 
     const textContent = `Hi ${customerName},
@@ -829,7 +847,7 @@ SajiloMarts Team`;
     });
 
     const mailOptions = {
-      from: EMAIL_FROM,
+      from: getEmailFrom(),
       to: cleanEmail,
       subject,
       text: textContent,
@@ -876,7 +894,7 @@ export async function sendPasswordResetOtpEmail(toEmail, otpCode, recipientName)
     const name = recipientName || "Valued Customer";
 
     const mailOptions = {
-      from: EMAIL_FROM,
+      from: getEmailFrom(),
       to: cleanEmail,
       subject: `${otpCode} is your SAJILOMARTS verification code`,
       text: `Hello ${name},\n\nYour 6-digit password reset verification code for SAJILOMARTS is: ${otpCode}\n\nThis code expires in 10 minutes.\n\nIf you did not request this password reset, please ignore this email.\n\n— The SAJILOMARTS Team`,

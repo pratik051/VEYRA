@@ -325,7 +325,10 @@ export async function forgotPasswordSendOtp(req, res) {
 
     const user = await getUserByEmail(email);
     if (!user) {
-      return res.status(404).json({ success: false, error: "No account found with this email address." });
+      return res.status(404).json({
+        success: false,
+        error: "No registered account found with this email address. Please check spelling or create an account."
+      });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -339,18 +342,20 @@ export async function forgotPasswordSendOtp(req, res) {
     }
     memOtps.set(email, { otp, expiresAt });
 
+    console.log(`[AUTH OTP DEBUG] Generated OTP for ${email}: ${otp}`);
+
     const mailResult = await sendPasswordResetOtpEmail(email, otp, user.fullName);
     if (!mailResult.success) {
       console.warn("Failed to deliver OTP email:", mailResult.error);
       return res.status(500).json({
         success: false,
-        error: "Failed to send verification code email. Please try again later."
+        error: `Failed to send verification code email (${mailResult.error || "SMTP delivery error"}). Please try again.`
       });
     }
 
     return res.json({
       success: true,
-      message: "A 6-digit verification code has been sent to your email address."
+      message: `A 6-digit verification code has been sent to ${email}.`
     });
   } catch (error) {
     console.error("forgotPasswordSendOtp error:", error);

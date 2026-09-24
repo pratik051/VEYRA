@@ -130,7 +130,7 @@ export function RequestProduct() {
 
     // Internal calculation (never exposed in UI)
     const exchangeRate = 1.65;
-    const servicePercent = 0.20;
+    const servicePercent = 0.15;
     const deliveryFee = 200;
 
     const baseInrTotal = inr * qty;

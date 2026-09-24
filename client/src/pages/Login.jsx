@@ -147,11 +147,11 @@ export function Login() {
         throw new Error(data?.error || 'Failed to send verification code.');
       }
 
-      setMessage('A 6-digit verification code has been sent to your email.');
+      setMessage(data?.message || 'A 6-digit verification code has been sent to your email.');
       setForgotStep('otp');
       setResendCooldown(60);
     } catch (err) {
-      setError(err?.message || 'Failed to send OTP code.');
+      setError(err?.response?.data?.error || err?.message || 'Failed to send OTP code.');
     } finally {
       setIsSubmitting(false);
     }
@@ -185,12 +185,12 @@ export function Login() {
         throw new Error(data?.error || 'Password reset failed.');
       }
 
-      setMessage('Password updated successfully! You can now sign in.');
+      setMessage(data?.message || 'Password updated successfully! You can now sign in.');
       setIsForgot(false);
       setForgotStep('email');
       setEmail(forgotEmail);
     } catch (err) {
-      setError(err?.message || 'Reset failed.');
+      setError(err?.response?.data?.error || err?.message || 'Reset failed.');
     } finally {
       setIsSubmitting(false);
     }
