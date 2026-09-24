@@ -35,6 +35,7 @@ export function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -101,7 +102,7 @@ export function Login() {
     }
   };
 
-  // 3. Email & Password Sign In
+  // Email & Password Sign In
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -122,8 +123,7 @@ export function Login() {
     }
   };
 
-
-  // 4. Send OTP Email for Forgot Password
+  // Send OTP Email for Forgot Password
   const handleForgotSendOtp = async (e) => {
     e.preventDefault();
     if (!forgotEmail.trim()) {
@@ -155,7 +155,7 @@ export function Login() {
     }
   };
 
-  // 5. Verify OTP & Set New Password
+  // Verify OTP & Set New Password
   const handleForgotVerifyOtp = async (e) => {
     e.preventDefault();
     if (forgotOtp.trim().length !== 6) {
@@ -195,85 +195,120 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b1437] text-slate-900 dark:text-white flex items-center justify-center p-4 sm:p-6 lg:p-10 font-sans">
-      <div className="w-full max-w-4xl bg-white dark:bg-[#111c44] rounded-3xl border border-slate-200 dark:border-[#1b2559] shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
-        {/* Left Side: Brand & Benefits */}
-        <div className="lg:col-span-5 bg-slate-900 dark:bg-[#0b1437] p-8 lg:p-12 text-white flex flex-col justify-between border-r border-transparent dark:border-[#1b2559]">
-          <div className="space-y-4 text-center sm:text-left">
-            <Link to="/" className="inline-flex items-center gap-2.5 group">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#080d21] text-slate-900 dark:text-white flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans antialiased">
+      {/* Background ambient lighting effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-500/10 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-5xl bg-white dark:bg-[#0f172a] rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+        {/* Left Side: Rich Figma-style Brand & Visual Showcase */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+          {/* Subtle geometric pattern overlay */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+          
+          <div className="relative z-10 space-y-6">
+            <Link to="/" className="inline-flex items-center gap-3 group">
               <img
                 src="/sajilomarts-logo.png"
                 alt="SajiloMarts Logo"
-                className="h-10 w-auto object-contain rounded-lg shadow-sm"
+                className="h-11 w-auto object-contain rounded-xl shadow-md group-hover:scale-105 transition-transform"
               />
               <div className="flex flex-col justify-center">
-                <span className="text-xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent">
+                <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 bg-clip-text text-transparent">
                   SajiloMarts
                 </span>
-                <span className="text-[9px] font-bold text-neutral-400 tracking-wider uppercase -mt-1">
-                  Shop Easy • Live Better
+                <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase -mt-1">
+                  Cross-Border Logistics
                 </span>
               </div>
             </Link>
-            <p className="text-xs text-slate-400 leading-relaxed pt-2">
-              Nepal&apos;s primary India-to-Nepal cross-border sourcing platform. Track orders &amp; get direct landed pricing.
-            </p>
-          </div>
 
-          <div className="my-8 space-y-3 text-xs">
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-base">✈️</span>
-              <div>
-                <h4 className="font-bold text-white">Direct Marketplace Access</h4>
-                <p className="text-[11px] text-slate-400">Amazon India, Flipkart, Myntra &amp; boAt.</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
-              <span className="text-base">🧾</span>
-              <div>
-                <h4 className="font-bold text-white">Transparent NPR Pricing</h4>
-                <p className="text-[11px] text-slate-400">Custom clearance &amp; flat delivery included.</p>
-              </div>
+            <div className="pt-4 space-y-2">
+              <h3 className="text-xl lg:text-2xl font-black text-white tracking-tight leading-tight">
+                Buy Any Indian Product.<br />
+                <span className="text-amber-400">Delivered Across Nepal.</span>
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Connect your account to paste links from Amazon India, Flipkart, Myntra, and boAt with automated NPR conversion.
+              </p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-            <span>🔒 Secure 256-Bit SSL</span>
-            <span>Nepal Fulfillment</span>
+          {/* Value props showcase cards */}
+          <div className="relative z-10 my-8 space-y-3">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-lg font-bold">
+                ⚡
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-xs">Instant Link Price Calculator</h4>
+                <p className="text-[11px] text-slate-400">Exact landed price in NPR in seconds.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-emerald-400/20 text-emerald-400 flex items-center justify-center text-lg font-bold">
+                📦
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-xs">Customs & Duty Included</h4>
+                <p className="text-[11px] text-slate-400">Zero surprise fees at your doorstep.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.07] backdrop-blur-md border border-white/10 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-indigo-400/20 text-indigo-400 flex items-center justify-center text-lg font-bold">
+                📍
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-xs">Real-Time Transit Tracking</h4>
+                <p className="text-[11px] text-slate-400">From Indian warehouse to Nepal hub.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer security tag */}
+          <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              256-Bit SSL Secured
+            </span>
+            <span>Nepal Sourcing Hub</span>
           </div>
         </div>
 
-        {/* Right Side: Clean White Form */}
-        <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white dark:bg-[#111c44]">
+        {/* Right Side: High-End Figma Authentication Form */}
+        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white dark:bg-[#0f172a]">
           <div className="max-w-md mx-auto w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                {isForgot ? 'Reset Password' : 'Welcome back'}
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                {isForgot ? 'Reset your password' : 'Sign in to account'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
                 {isForgot
-                  ? 'Enter your email to receive a 6-digit verification code.'
-                  : 'Sign in to access your orders, track shipments & manage account.'}
+                  ? 'Enter your registered email to receive your OTP verification code.'
+                  : 'Welcome back! Please enter your credentials to continue.'}
               </p>
             </div>
 
             {noticeMsg && (
-              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2.5">
                 <span>🔒</span>
                 <span>{decodeURIComponent(noticeMsg)}</span>
               </div>
             )}
 
             {error && (
-              <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+              <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2.5">
                 <span>⚠️</span>
                 <span>{error}</span>
               </div>
             )}
 
             {message && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
                 <span>✓</span>
                 <span>{message}</span>
               </div>
@@ -281,14 +316,15 @@ export function Login() {
 
             {!isForgot ? (
               <>
-                <div className="space-y-2.5">
+                {/* One-Click Google OAuth */}
+                <div>
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-white dark:bg-[#0b1437] border border-slate-300 dark:border-[#1b2559] hover:bg-slate-50 dark:hover:bg-[#1b254b] text-slate-800 dark:text-neutral-200 font-bold text-xs transition cursor-pointer disabled:opacity-50 shadow-xs"
+                    className="w-full flex items-center justify-center gap-3.5 py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-sm hover:shadow-md"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -298,32 +334,36 @@ export function Login() {
                   </button>
                 </div>
 
-                <div className="relative flex items-center justify-center py-1">
-                  <div className="border-t border-slate-200 dark:border-[#1b2559] w-full" />
-                  <span className="bg-white dark:bg-[#111c44] px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-400 absolute">
-                    Or email
+                {/* Divider */}
+                <div className="relative flex items-center justify-center my-1">
+                  <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+                  <span className="bg-white dark:bg-[#0f172a] px-3.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 absolute">
+                    or with email
                   </span>
                 </div>
 
-                <form onSubmit={handleSignIn} className="space-y-3.5">
+                {/* Email/Password Form */}
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-200 mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                       Email Address
                     </label>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      className="w-full rounded-xl border border-slate-300 dark:border-[#1b2559] p-3 text-xs font-medium text-slate-900 dark:text-white focus:border-black dark:focus:border-amber-400 focus:outline-none bg-slate-50/50 dark:bg-[#0b1437]"
-                    />
+                    <div className="relative">
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70 transition-all placeholder:text-slate-400"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-200">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                         Password
                       </label>
                       <button
@@ -334,9 +374,9 @@ export function Login() {
                           setError('');
                           setMessage('');
                         }}
-                        className="text-[11px] font-bold text-slate-600 dark:text-amber-400 hover:text-black dark:hover:text-amber-300 cursor-pointer"
+                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition cursor-pointer"
                       >
-                        Forgot?
+                        Forgot password?
                       </button>
                     </div>
                     <div className="relative">
@@ -347,46 +387,58 @@ export function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 dark:border-[#1b2559] p-3 text-xs font-medium text-slate-900 dark:text-white focus:border-black dark:focus:border-amber-400 focus:outline-none bg-slate-50/50 dark:bg-[#0b1437] pr-12"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70 transition-all pr-12 placeholder:text-slate-400"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 dark:text-neutral-400 hover:text-black dark:hover:text-white text-xs font-bold cursor-pointer"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 dark:hover:text-white text-xs font-bold cursor-pointer"
                       >
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                   </div>
 
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"
+                      />
+                      <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Remember me</span>
+                    </label>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 px-4 rounded-xl bg-slate-900 dark:bg-amber-400 hover:bg-slate-800 dark:hover:bg-amber-300 text-white dark:text-neutral-950 font-black text-xs transition cursor-pointer disabled:opacity-50 shadow-md"
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-md hover:shadow-lg hover:shadow-amber-500/20 active:scale-[0.99]"
                   >
                     {isSubmitting ? 'Signing In...' : 'Sign In ➔'}
                   </button>
                 </form>
 
                 <div className="pt-2 text-center">
-                  <p className="text-xs text-slate-500 dark:text-neutral-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Don&apos;t have an account?{' '}
                     <Link
                       to={`/signup${redirectUrl !== '/account' || noticeMsg ? `?redirect=${encodeURIComponent(redirectUrl)}${noticeMsg ? `&msg=${encodeURIComponent(noticeMsg)}` : ''}` : ''}`}
-                      className="font-bold text-slate-900 dark:text-amber-400 hover:underline ml-1"
+                      className="font-bold text-amber-600 dark:text-amber-400 hover:underline ml-1"
                     >
-                      Create Account
+                      Create account
                     </Link>
                   </p>
                 </div>
               </>
             ) : (
-              /* Forgot Password Inline OTP Flow */
+              /* Forgot Password Flow */
               <div className="space-y-4">
                 {forgotStep === 'email' ? (
-                  <form onSubmit={handleForgotSendOtp} className="space-y-3.5">
+                  <form onSubmit={handleForgotSendOtp} className="space-y-4">
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-200 mb-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                         Registered Email Address
                       </label>
                       <input
@@ -395,22 +447,22 @@ export function Login() {
                         value={forgotEmail}
                         onChange={(e) => setForgotEmail(e.target.value)}
                         placeholder="name@example.com"
-                        className="w-full rounded-xl border border-slate-300 dark:border-[#1b2559] p-3 text-xs font-medium text-slate-900 dark:text-white focus:border-black dark:focus:border-amber-400 focus:outline-none bg-slate-50/50 dark:bg-[#0b1437]"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3.5 px-4 rounded-xl bg-slate-900 dark:bg-amber-400 hover:bg-slate-800 dark:hover:bg-amber-300 text-white dark:text-neutral-950 font-black text-xs transition cursor-pointer disabled:opacity-50 shadow-md"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
                     >
                       {isSubmitting ? 'Sending Code...' : 'Send Verification Code ➔'}
                     </button>
                   </form>
                 ) : (
-                  <form onSubmit={handleForgotVerifyOtp} className="space-y-3.5">
+                  <form onSubmit={handleForgotVerifyOtp} className="space-y-4">
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-200 mb-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                         6-Digit Verification Code
                       </label>
                       <input
@@ -420,12 +472,12 @@ export function Login() {
                         value={forgotOtp}
                         onChange={(e) => setForgotOtp(e.target.value)}
                         placeholder="123456"
-                        className="w-full rounded-xl border border-slate-300 dark:border-[#1b2559] p-3 text-center tracking-widest font-mono text-base font-bold text-slate-900 dark:text-white focus:border-black dark:focus:border-amber-400 focus:outline-none bg-slate-50/50 dark:bg-[#0b1437]"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-center tracking-widest font-mono text-lg font-bold text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-neutral-200 mb-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                         New Password
                       </label>
                       <input
@@ -435,14 +487,14 @@ export function Login() {
                         value={forgotNewPassword}
                         onChange={(e) => setForgotNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-slate-300 dark:border-[#1b2559] p-3 text-xs font-medium text-slate-900 dark:text-white focus:border-black dark:focus:border-amber-400 focus:outline-none bg-slate-50/50 dark:bg-[#0b1437]"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-3.5 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:border-amber-500 dark:focus:border-amber-400 focus:outline-none bg-slate-50/70 dark:bg-slate-900/70"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black text-xs transition cursor-pointer disabled:opacity-50 shadow-md"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition cursor-pointer disabled:opacity-50 shadow-md"
                     >
                       {isSubmitting ? 'Verifying...' : 'Set New Password ➔'}
                     </button>
@@ -452,7 +504,7 @@ export function Login() {
                         type="button"
                         disabled={resendCooldown > 0 || isSubmitting}
                         onClick={handleForgotSendOtp}
-                        className="text-xs text-slate-500 dark:text-neutral-400 hover:text-black dark:hover:text-white font-semibold cursor-pointer disabled:opacity-50"
+                        className="text-xs text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white font-semibold cursor-pointer disabled:opacity-50"
                       >
                         {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code'}
                       </button>
@@ -468,7 +520,7 @@ export function Login() {
                       setError('');
                       setMessage('');
                     }}
-                    className="text-xs font-bold text-slate-600 dark:text-amber-400 hover:text-black dark:hover:text-amber-300 cursor-pointer"
+                    className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
                   >
                     ← Back to Sign In
                   </button>
