@@ -33,8 +33,16 @@ export function AuthProvider({ children }) {
     return null;
   });
 
-  // Track initialization status to prevent showing login before validation completes
-  const [loading, setLoading] = useState(true);
+  // Track initialization status - start false if local session exists to eliminate delay on refresh
+  const [loading, setLoading] = useState(() => {
+    try {
+      const savedToken = localStorage.getItem(SESSION_STORAGE_KEY);
+      const savedUser = localStorage.getItem(USER_STORAGE_KEY);
+      return !(savedToken && savedToken !== 'null' && savedToken !== 'undefined' && savedUser);
+    } catch {
+      return true;
+    }
+  });
 
   const checkAuth = async () => {
     const savedToken = localStorage.getItem(SESSION_STORAGE_KEY);

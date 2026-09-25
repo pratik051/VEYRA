@@ -87,42 +87,77 @@ export async function createUser(input) {
   return created.toObject ? created.toObject() : created;
 }
 
+// In-memory session cache for sub-millisecond session validation
+const SESSION_CACHE = new Map();
+const SESSION_CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+function getCachedSession(token) {
+  const entry = SESSION_CACHE.get(token);
+  if (!entry) return null;
+  if (Date.now() > entry.expires) {
+    SESSION_CACHE.delete(token);
+    return null;
+  }
+  return entry.user;
+}
+
+function setCachedSession(token, user) {
+  if (!token || !user) return;
+  if (SESSION_CACHE.size > 2000) {
+    const oldestKey = SESSION_CACHE.keys().next().value;
+    if (oldestKey) SESSION_CACHE.delete(oldestKey);
+  }
+  SESSION_CACHE.set(token, {
+    user,
+    expires: Date.now() + SESSION_CACHE_TTL_MS
+  });
+}
+
+export function invalidateSessionCache(token = null, userId = null) {
+  if (token) {
+    SESSION_CACHE.delete(token);
+  }
+  if (userId) {
+    const strId = String(userId);
+    for (const [key, entry] of SESSION_CACHE.entries()) {
+      if (entry.user && String(entry.user._id) === strId) {
+        SESSION_CACHE.delete(key);
+      }
+    }
+  }
+}
+
 export async function findOrCreateGoogleUser(input) {
   const normalizedEmail = input.email.trim().toLowerCase();
   const fallbackPhone = input.phone || "+977-9800000000";
 
-  const existing = await UserModel.findOne({
-    $or: [
-      ...(input.googleId ? [{ googleId: input.googleId }] : []),
-      { email: normalizedEmail }
-    ]
-  }).lean();
-
-  if (existing) {
-    const updates = {
-      fullName: existing.fullName || input.fullName,
-      email: normalizedEmail,
-      authProvider: "google"
-    };
-    if (input.googleId) updates.googleId = input.googleId;
-    if (!existing.passwordHash) updates.passwordHash = "google-oauth";
-    if (!existing.phone && fallbackPhone) updates.phone = fallbackPhone;
-
-    await UserModel.updateOne({ _id: existing._id }, { $set: updates });
-    return await UserModel.findById(existing._id).lean();
-  }
-
-  const created = await UserModel.create({
+  const updates = {
     fullName: input.fullName,
     email: normalizedEmail,
-    phone: fallbackPhone,
-    passwordHash: "google-oauth",
-    authProvider: "google",
-    googleId: input.googleId,
-    role: "customer"
-  });
+    authProvider: "google"
+  };
+  if (input.googleId) updates.googleId = input.googleId;
+  if (fallbackPhone) updates.phone = fallbackPhone;
 
-  return created.toObject ? created.toObject() : created;
+  // Single atomic update if user already exists
+  const existing = await UserModel.findOneAndUpdate(
+    {
+      $or: [
+        ...(input.googleId ? [{ googleId: input.googleId }] : []),
+        { email: normalizedEmail }
+      ]
+    },
+    {
+      $set: updates,
+      $setOnInsert: {
+        passwordHash: "google-oauth",
+        role: "customer"
+      }
+    },
+    { new: true, upsert: true, lean: true }
+  );
+
+  return existing;
 }
 
 export async function findOrCreateAppleUser(input) {
@@ -134,23 +169,28 @@ export async function findOrCreateAppleUser(input) {
   if (input.firebaseUid) queryConditions.push({ firebaseUid: input.firebaseUid });
   if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
 
-  let existing = null;
   if (queryConditions.length > 0) {
-    existing = await UserModel.findOne({ $or: queryConditions }).lean();
-  }
-
-  if (existing) {
     const updates = {
-      fullName: existing.fullName || input.fullName || "Apple Customer",
+      fullName: input.fullName || "Apple Customer",
       authProvider: "apple"
     };
     if (input.appleId) updates.appleId = input.appleId;
     if (input.firebaseUid) updates.firebaseUid = input.firebaseUid;
     if (normalizedEmail) updates.email = normalizedEmail;
-    if (!existing.phone && fallbackPhone) updates.phone = fallbackPhone;
+    if (fallbackPhone) updates.phone = fallbackPhone;
 
-    await UserModel.updateOne({ _id: existing._id }, { $set: updates });
-    return await UserModel.findById(existing._id).lean();
+    const existing = await UserModel.findOneAndUpdate(
+      { $or: queryConditions },
+      {
+        $set: updates,
+        $setOnInsert: {
+          passwordHash: "apple-oauth",
+          role: "customer"
+        }
+      },
+      { new: true, upsert: true, lean: true }
+    );
+    return existing;
   }
 
   const created = await UserModel.create({
@@ -175,31 +215,27 @@ export async function findOrCreatePhoneUser(input) {
   if (input.firebaseUid) queryConditions.push({ firebaseUid: input.firebaseUid });
   if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
 
-  const existing = await UserModel.findOne({ $or: queryConditions }).lean();
-
-  if (existing) {
-    const updates = {
-      fullName: existing.fullName || input.fullName || `Customer (${cleanPhone})`,
-      authProvider: "phone"
-    };
-    if (input.firebaseUid) updates.firebaseUid = input.firebaseUid;
-    if (normalizedEmail && !existing.email) updates.email = normalizedEmail;
-
-    await UserModel.updateOne({ _id: existing._id }, { $set: updates });
-    return await UserModel.findById(existing._id).lean();
-  }
-
-  const created = await UserModel.create({
+  const updates = {
     fullName: input.fullName || `Customer (${cleanPhone})`,
-    email: normalizedEmail || `phone_${cleanPhone.replace(/[^0-9]/g, "")}@sajilomarts.internal`,
-    phone: cleanPhone,
-    passwordHash: "firebase-phone-auth",
-    authProvider: "phone",
-    firebaseUid: input.firebaseUid,
-    role: "customer"
-  });
+    authProvider: "phone"
+  };
+  if (input.firebaseUid) updates.firebaseUid = input.firebaseUid;
+  if (normalizedEmail) updates.email = normalizedEmail;
 
-  return created.toObject ? created.toObject() : created;
+  const existing = await UserModel.findOneAndUpdate(
+    { $or: queryConditions },
+    {
+      $set: updates,
+      $setOnInsert: {
+        passwordHash: "firebase-phone-auth",
+        phone: cleanPhone,
+        role: "customer"
+      }
+    },
+    { new: true, upsert: true, lean: true }
+  );
+
+  return existing;
 }
 
 export async function createSessionForUser(userId) {
@@ -210,16 +246,23 @@ export async function createSessionForUser(userId) {
 }
 
 export async function deleteSessionByToken(token) {
+  invalidateSessionCache(token);
   await AuthSessionModel.deleteOne({ token });
 }
 
 export async function getSessionUserByToken(token) {
   if (!token || token === "null" || token === "undefined") return null;
+
+  // 1. Fast cache check
+  const cached = getCachedSession(token);
+  if (cached) return cached;
+
+  // 2. Database validation
   const session = await AuthSessionModel.findOne({ token }).lean();
   if (session && new Date(session.expiresAt).getTime() > Date.now()) {
     const user = await UserModel.findById(session.userId).lean();
     if (user) {
-      return {
+      const userProfile = {
         _id: String(user._id),
         fullName: String(user.fullName),
         email: String(user.email || ""),
@@ -232,12 +275,15 @@ export async function getSessionUserByToken(token) {
         fullAddress: String(user.fullAddress || ""),
         landmark: String(user.landmark || "")
       };
+      setCachedSession(token, userProfile);
+      return userProfile;
     }
   }
   return null;
 }
 
 export async function updatePasswordByUserId(userId, passwordHash) {
+  invalidateSessionCache(null, userId);
   const result = await UserModel.updateOne({ _id: userId }, { $set: { passwordHash } });
   return result.modifiedCount > 0 || result.matchedCount > 0;
 }
@@ -253,9 +299,10 @@ export async function updateUserProfileById(userId, input) {
   if (input.fullAddress !== undefined) updates.fullAddress = input.fullAddress.trim();
   if (input.landmark !== undefined) updates.landmark = input.landmark.trim();
 
+  invalidateSessionCache(null, userId);
+
   if (Object.keys(updates).length > 0) {
-    await UserModel.updateOne({ _id: userId }, { $set: updates });
-    return await UserModel.findById(userId).lean();
+    return await UserModel.findByIdAndUpdate(userId, { $set: updates }, { new: true, lean: true });
   }
   return await UserModel.findById(userId).lean();
 }

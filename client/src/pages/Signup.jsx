@@ -41,7 +41,7 @@ export function Signup() {
       setError('');
       try {
         const result = await signInWithPopup(firebaseAuth, googleProvider);
-        const idToken = await result.user.getIdToken(true);
+        const idToken = await result.user.getIdToken();
         await loginWithFirebase({
           idToken,
           provider: 'google',

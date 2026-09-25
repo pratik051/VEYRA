@@ -41,7 +41,7 @@ const IndiaOrderSchema = new mongoose.Schema(
     customerId: { type: String, default: "", index: true },
     customerName: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true, index: true },
-    email: { type: String, default: "", trim: true, lowercase: true },
+    email: { type: String, default: "", trim: true, lowercase: true, index: true },
     deliveryAddress: { type: String, required: true, trim: true },
     city: { type: String, default: "", trim: true },
     district: { type: String, default: "", trim: true },

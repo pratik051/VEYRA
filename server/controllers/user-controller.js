@@ -17,54 +17,42 @@ export async function getUserOrders(req, res) {
     const userEmail = req.user.email ? req.user.email.trim().toLowerCase() : null;
     const userName = req.user.fullName ? req.user.fullName.trim() : null;
 
-    let indiaOrders = [];
-    let standardOrders = [];
-
-    // 1. Fetch India-to-Nepal orders
-    try {
-      const indiaConditions = [{ userId }, { customerId: userId }];
-      if (mongoose.Types.ObjectId.isValid(userId)) {
-        indiaConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
-      }
-      if (userPhone) {
-        indiaConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
-      }
-      if (userEmail) {
-        indiaConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
-      }
-      if (userName) {
-        indiaConditions.push({ customerName: userName }, { fullName: userName });
-      }
-
-      indiaOrders = await IndiaOrderModel.find({ $or: indiaConditions })
-        .sort({ createdAt: -1 })
-        .lean();
-    } catch (e) {
-      console.warn("IndiaOrderModel query error:", e.message);
+    const indiaConditions = [{ userId }, { customerId: userId }];
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      indiaConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
+    }
+    if (userPhone) {
+      indiaConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
+    }
+    if (userEmail) {
+      indiaConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
+    }
+    if (userName) {
+      indiaConditions.push({ customerName: userName }, { fullName: userName });
     }
 
-    // 2. Fetch standard storefront orders
-    try {
-      const standardConditions = [{ userId }, { customerId: userId }];
-      if (mongoose.Types.ObjectId.isValid(userId)) {
-        standardConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
-      }
-      if (userPhone) {
-        standardConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
-      }
-      if (userEmail) {
-        standardConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
-      }
-      if (userName) {
-        standardConditions.push({ fullName: userName }, { customerName: userName });
-      }
-
-      standardOrders = await OrderModel.find({ $or: standardConditions })
-        .sort({ createdAt: -1 })
-        .lean();
-    } catch (e) {
-      console.warn("OrderModel query error:", e.message);
+    const standardConditions = [{ userId }, { customerId: userId }];
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      standardConditions.push({ userId: new mongoose.Types.ObjectId(userId) });
     }
+    if (userPhone) {
+      standardConditions.push({ phone: userPhone }, { "shippingAddress.phone": userPhone });
+    }
+    if (userEmail) {
+      standardConditions.push({ email: userEmail }, { "shippingAddress.email": userEmail });
+    }
+    if (userName) {
+      standardConditions.push({ fullName: userName }, { customerName: userName });
+    }
+
+    // Fetch both India-to-Nepal and standard orders in parallel
+    const [indiaOrdersRes, standardOrdersRes] = await Promise.allSettled([
+      IndiaOrderModel.find({ $or: indiaConditions }).sort({ createdAt: -1 }).lean(),
+      OrderModel.find({ $or: standardConditions }).sort({ createdAt: -1 }).lean()
+    ]);
+
+    let indiaOrders = indiaOrdersRes.status === "fulfilled" ? indiaOrdersRes.value : [];
+    let standardOrders = standardOrdersRes.status === "fulfilled" ? standardOrdersRes.value : [];
 
     // 3. Combine and normalize
     const combinedMap = new Map();

@@ -13,10 +13,15 @@ export function initFirebaseAdmin() {
     // 1. Try FIREBASE_SERVICE_ACCOUNT JSON object/string
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       try {
-        const serviceAccount =
+        const rawSa =
           typeof process.env.FIREBASE_SERVICE_ACCOUNT === "string"
             ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
             : process.env.FIREBASE_SERVICE_ACCOUNT;
+
+        const serviceAccount = { ...rawSa };
+        if (serviceAccount.private_key && typeof serviceAccount.private_key === "string") {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+        }
 
         firebaseAdminApp = admin.initializeApp({
           credential: admin.credential.cert(serviceAccount)
@@ -34,7 +39,7 @@ export function initFirebaseAdmin() {
     let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
     if (privateKey && clientEmail) {
-      if (privateKey.includes("\\n")) {
+      if (typeof privateKey === "string") {
         privateKey = privateKey.replace(/\\n/g, "\n");
       }
       firebaseAdminApp = admin.initializeApp({
@@ -66,7 +71,12 @@ export async function verifyFirebaseIdToken(idToken) {
   if (!app) return null;
 
   try {
-    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    // Fast timeout race (2500ms max) to prevent blocking authentication
+    const verifyPromise = admin.auth(app).verifyIdToken(idToken);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Firebase token verification timeout")), 2500)
+    );
+    const decoded = await Promise.race([verifyPromise, timeoutPromise]);
     return decoded;
   } catch (err) {
     console.warn("[Firebase Admin Token Verify]:", err.message);

@@ -111,8 +111,10 @@ export async function signup(req, res) {
 
     // Send welcome email asynchronously without blocking registration response
     if (email && !newUser.welcomeEmailSent) {
-      sendWelcomeEmail(email, newUser.fullName, newUser._id).catch((mErr) => {
-        console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+      setImmediate(() => {
+        sendWelcomeEmail(email, newUser.fullName, newUser._id).catch((mErr) => {
+          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+        });
       });
     }
 
@@ -156,7 +158,7 @@ export async function firebaseAuthHandler(req, res) {
     let fullName = reqName ? reqName.trim() : null;
     let detectedProvider = provider || "google";
 
-    // 1. Primary: Official Firebase Admin SDK verification
+    // 1. Primary: Official Firebase Admin SDK verification (fast)
     try {
       const decoded = await verifyFirebaseIdToken(cleanToken);
       if (decoded) {
@@ -175,7 +177,7 @@ export async function firebaseAuthHandler(req, res) {
       console.warn("Firebase Admin verifyIdToken warning:", adminErr.message);
     }
 
-    // 2. Identity Toolkit verification endpoint fallback
+    // 2. Identity Toolkit verification endpoint fallback (only if Admin SDK didn't resolve)
     if (!uid && FIREBASE_API_KEY) {
       try {
         const lookupRes = await fetch(
@@ -183,7 +185,8 @@ export async function firebaseAuthHandler(req, res) {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken: cleanToken })
+            body: JSON.stringify({ idToken: cleanToken }),
+            signal: AbortSignal.timeout(2000)
           }
         );
 
@@ -209,11 +212,12 @@ export async function firebaseAuthHandler(req, res) {
       }
     }
 
-    // 3. Google OAuth Tokeninfo endpoint fallback
+    // 3. Google OAuth Tokeninfo endpoint fallback (only if still unresolved)
     if (!uid) {
       try {
         const googleRes = await fetch(
-          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(cleanToken)}`
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(cleanToken)}`,
+          { signal: AbortSignal.timeout(2000) }
         );
         if (googleRes.ok) {
           const tokenInfo = await googleRes.json();
@@ -277,10 +281,12 @@ export async function firebaseAuthHandler(req, res) {
 
     const token = await createSessionForUser(String(user._id));
 
-    // Send welcome email if new account creation with real email
+    // Send welcome email asynchronously if new account creation with real email
     if (user.email && !user.welcomeEmailSent && !user.email.endsWith(".internal")) {
-      sendWelcomeEmail(user.email, user.fullName, user._id).catch((mErr) => {
-        console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+      setImmediate(() => {
+        sendWelcomeEmail(user.email, user.fullName, user._id).catch((mErr) => {
+          console.warn("[Welcome Email Notice]:", mErr?.message || mErr);
+        });
       });
     }
 
