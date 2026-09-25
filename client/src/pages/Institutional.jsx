@@ -188,56 +188,103 @@ export function HowItWorks() {
   const steps = [
     {
       num: "01",
-      title: "Find Any Product Online",
-      desc: "Browse Amazon.in, Flipkart, Myntra, Ajio, Meesho, Nykaa, or any Indian store and copy the product URL."
+      title: "Find your product",
+      desc: "Browse your favorite Indian online stores like Amazon, Flipkart, Myntra, AJIO, Meesho, Nykaa, etc."
     },
     {
       num: "02",
-      title: "Paste URL & Get Instant Quote",
-      desc: "Paste the URL into SajiloMarts. Our system calculates the exact landed NPR price including currency conversion, service fees and delivery."
+      title: "Paste the link",
+      desc: "Paste the product URL into our quote tool on SajiloMarts to check availability and verify details."
     },
     {
       num: "03",
-      title: "Pay Easily with Local Wallets",
-      desc: "Pay 100% online or 50% advance for Cash on Delivery via eSewa, Khalti or bank QR code."
+      title: "Get your NPR quote",
+      desc: "See your exact estimated landed cost calculated in Nepali Rupees (NPR) before placing an order."
     },
     {
       num: "04",
-      title: "Doorstep Nepal Delivery",
-      desc: "We source the authentic item in India, inspect it at our transit hub, clear customs, and courier it straight to your home."
+      title: "Confirm your order",
+      desc: "Review the cost breakdown and place your order securely using eSewa, Khalti, Bank Transfer, or COD."
+    },
+    {
+      num: "05",
+      title: "Receive it in Nepal",
+      desc: "We handle cross-border procurement, customs clearance, transit handling, and doorstep Nepal delivery."
+    }
+  ];
+
+  const benefits = [
+    {
+      title: "Direct India Sourcing",
+      desc: "Products sourced directly from verified Indian marketplace stores and official brand outlets."
+    },
+    {
+      title: "Transparent Pricing",
+      desc: "Understand your estimated cost breakdown clearly in Nepali Rupees before confirming your order."
+    },
+    {
+      title: "Nepal Delivery",
+      desc: "We manage the entire international shipping, customs handling, and local delivery process to your doorstep."
+    },
+    {
+      title: "Order Support",
+      desc: "Get direct assistance, link verification help, and status updates throughout your sourcing request."
     }
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-16">
+    <div className="max-w-5xl mx-auto space-y-16 pb-16">
+      {/* Header */}
       <div className="text-center space-y-2">
-        <span className="text-xs font-black uppercase text-amber-500 tracking-wider">
-          Simple 4-Step Process
+        <span className="text-xs font-bold uppercase text-amber-600 tracking-wider">
+          Simple 5-Step Process
         </span>
-        <h1 className="text-3xl sm:text-5xl font-black text-neutral-950 dark:text-white tracking-tight">
+        <h1 className="text-3xl sm:text-5xl font-bold text-neutral-900 tracking-tight">
           How SajiloMarts Works
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 dark:text-[#a3aed0] max-w-xl mx-auto">
-          From Indian shopping cart to your doorstep in Nepal without international cards or customs headaches.
+        <p className="text-xs sm:text-sm text-neutral-500 max-w-xl mx-auto leading-relaxed">
+          A simple, transparent 5-step process to get products from Indian online stores delivered across Nepal.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {/* 5 Steps Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {steps.map((s) => (
           <div
             key={s.num}
-            className="p-8 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-2xs space-y-3 relative overflow-hidden"
+            className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-[0_6px_22px_rgba(0,0,0,0.07)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)] transition-all space-y-2 relative"
           >
-            <span className="text-4xl font-black text-neutral-100 dark:text-neutral-800/80 absolute top-4 right-4">
+            <span className="text-xs font-bold text-amber-600 tracking-wider">
               {s.num}
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black">
-              {s.num}
-            </div>
-            <h3 className="text-lg font-black text-neutral-950 dark:text-white">{s.title}</h3>
-            <p className="text-xs text-neutral-600 dark:text-[#a3aed0] leading-relaxed">{s.desc}</p>
+            <h3 className="text-sm font-semibold text-neutral-900">{s.title}</h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">{s.desc}</p>
           </div>
         ))}
+      </div>
+
+      {/* Why SajiloMarts */}
+      <div className="space-y-8 pt-6 border-t border-neutral-200">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+            Why SajiloMarts?
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto">
+            Practical, reliable e-commerce sourcing built for shoppers in Nepal.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {benefits.map((b, i) => (
+            <div
+              key={i}
+              className="bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-[0_6px_22px_rgba(0,0,0,0.07)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)] transition-all space-y-2"
+            >
+              <h3 className="text-sm font-semibold text-neutral-900">{b.title}</h3>
+              <p className="text-xs text-neutral-500 leading-relaxed">{b.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -246,42 +293,42 @@ export function HowItWorks() {
 export function FAQ() {
   const faqs = [
     {
-      q: "How long does delivery take from India to Nepal?",
-      a: "Standard delivery typically takes 3 to 5 business days from order confirmation to doorstep delivery across Nepal."
+      q: "How does SajiloMarts work?",
+      a: "SajiloMarts enables customers in Nepal to purchase products from Indian online marketplaces. You paste the product URL, we calculate the landed cost in Nepali Rupees (NPR), handle procurement in India, customs processing, and deliver the package directly to your doorstep in Nepal."
     },
     {
-      q: "Can I order products not listed in the catalog?",
-      a: "Yes! You can order ANY product from Amazon, Flipkart, Myntra, or any Indian website by using our Request Product feature."
+      q: "Which Indian stores are supported?",
+      a: "We support sourcing from Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, boAt Lifestyle, Noise, Tata CLiQ, Croma, and most verified Indian e-commerce stores."
     },
     {
-      q: "What payment methods are supported?",
-      a: "We accept eSewa, Khalti, MyPay, Fonepay/All Nepal Bank Apps, and Cash on Delivery (which requires a 50% advance via QR scan)."
+      q: "How is the NPR price calculated?",
+      a: "The landed price includes the original INR price converted at standard exchange rates, our sourcing service charge, applicable India shipping and Nepal customs clearance, plus domestic delivery across Nepal."
     },
     {
-      q: "Are prices inclusive of customs duty and shipping?",
-      a: "Yes, our calculated NPR price includes the product price, currency conversion, cross-border customs handling, and standard delivery."
+      q: "How long does delivery take?",
+      a: "Standard cross-border delivery from Indian warehouses to Kathmandu typically takes 5 to 9 business days. Deliveries outside Kathmandu Valley take an additional 2 to 4 business days."
     },
     {
-      q: "How can I track my package?",
-      a: "Click on 'Track Order' in the top navigation and enter your Order ID for real-time tracking updates."
+      q: "What happens after I place an order?",
+      a: "Once your order is submitted, our procurement team inspects the listing, verifies the stock in India, purchases the item, and dispatches it toward Nepal. You receive live status updates at every stage."
     },
     {
-      q: "What is the return and refund policy?",
-      a: "SajiloMarts offers a 7-day return policy for items that arrive defective or not as described. Contact our support team or use the AI Assistant to initiate a request."
+      q: "How can I track my order?",
+      a: "You can track your package anytime by entering your Order ID on our Track Order page or directly in your customer account dashboard."
     }
   ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 pb-16">
       <div className="text-center space-y-2">
-        <span className="text-xs font-black uppercase text-amber-500 tracking-wider">
+        <span className="text-xs font-bold uppercase text-amber-600 tracking-wider">
           Help &amp; FAQs
         </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight">
           Frequently Asked Questions
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 dark:text-[#a3aed0]">
-          Find quick answers or chat directly with our AI Support Assistant below.
+        <p className="text-xs sm:text-sm text-neutral-500 max-w-xl mx-auto">
+          Everything you need to know about Indian product sourcing and Nepal delivery.
         </p>
       </div>
 
@@ -289,14 +336,14 @@ export function FAQ() {
       <AISupportAssistant />
 
       {/* FAQ Items */}
-      <div className="space-y-4 pt-4">
+      <div className="space-y-3 pt-4">
         {faqs.map((f, i) => (
           <div
             key={i}
-            className="p-6 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 shadow-2xs"
+            className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.06)] space-y-2"
           >
-            <h4 className="text-sm font-bold text-neutral-950 dark:text-white">{f.q}</h4>
-            <p className="text-xs text-neutral-600 dark:text-[#a3aed0] leading-relaxed">{f.a}</p>
+            <h4 className="text-sm font-semibold text-neutral-900">{f.q}</h4>
+            <p className="text-xs text-neutral-600 leading-relaxed">{f.a}</p>
           </div>
         ))}
       </div>
