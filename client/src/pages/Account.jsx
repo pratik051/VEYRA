@@ -66,37 +66,26 @@ export function Account() {
     loadAccountData();
   }, [user, authLoading]);
 
-  const loadAccountData = async () => {
-    setLoading(true);
-    try {
-      const [ordersRes, addrRes, reqRes, ticketRes] = await Promise.allSettled([
-        api.get('/api/user/orders'),
-        api.get('/api/user/addresses'),
-        api.get('/api/user/product-requests'),
-        api.get('/api/user/tickets')
-      ]);
+  const loadAccountData = () => {
+    api.get('/api/user/orders').then((ordersRes) => {
+      const rawOrders = ordersRes.data?.orders || (Array.isArray(ordersRes.data) ? ordersRes.data : []);
+      setOrders(Array.isArray(rawOrders) ? rawOrders : []);
+    }).catch((e) => console.error("Error loading orders:", e));
 
-      if (ordersRes.status === 'fulfilled') {
-        const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
-        setOrders(Array.isArray(rawOrders) ? rawOrders : []);
-      }
-      if (addrRes.status === 'fulfilled') {
-        const rawAddrs = addrRes.value.data?.addresses || (Array.isArray(addrRes.value.data) ? addrRes.value.data : []);
-        setAddresses(Array.isArray(rawAddrs) ? rawAddrs : []);
-      }
-      if (reqRes.status === 'fulfilled') {
-        const rawReqs = reqRes.value.data?.requests || (Array.isArray(reqRes.value.data) ? reqRes.value.data : []);
-        setProductRequests(Array.isArray(rawReqs) ? rawReqs : []);
-      }
-      if (ticketRes.status === 'fulfilled') {
-        const rawTickets = ticketRes.value.data?.tickets || (Array.isArray(ticketRes.value.data) ? ticketRes.value.data : []);
-        setTickets(Array.isArray(rawTickets) ? rawTickets : []);
-      }
-    } catch (e) {
-      console.error("Error loading account data:", e);
-    } finally {
-      setLoading(false);
-    }
+    api.get('/api/user/addresses').then((addrRes) => {
+      const rawAddrs = addrRes.data?.addresses || (Array.isArray(addrRes.data) ? addrRes.data : []);
+      setAddresses(Array.isArray(rawAddrs) ? rawAddrs : []);
+    }).catch((e) => console.error("Error loading addresses:", e));
+
+    api.get('/api/user/product-requests').then((reqRes) => {
+      const rawReqs = reqRes.data?.requests || (Array.isArray(reqRes.data) ? reqRes.data : []);
+      setProductRequests(Array.isArray(rawReqs) ? rawReqs : []);
+    }).catch((e) => console.error("Error loading product requests:", e));
+
+    api.get('/api/user/tickets').then((ticketRes) => {
+      const rawTickets = ticketRes.data?.tickets || (Array.isArray(ticketRes.data) ? ticketRes.data : []);
+      setTickets(Array.isArray(rawTickets) ? rawTickets : []);
+    }).catch((e) => console.error("Error loading tickets:", e));
   };
 
   const handleAddAddress = async (e) => {

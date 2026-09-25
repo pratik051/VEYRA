@@ -60,7 +60,7 @@ app.options("*", cors(corsOptions));
 
 // Security and Cross-Origin Opener Policy middleware
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   next();
 });

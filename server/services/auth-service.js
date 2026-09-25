@@ -238,10 +238,26 @@ export async function findOrCreatePhoneUser(input) {
   return existing;
 }
 
-export async function createSessionForUser(userId) {
+export async function createSessionForUser(userId, userObj = null) {
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
   await AuthSessionModel.create({ token, userId, expiresAt });
+  if (userObj) {
+    const userProfile = {
+      _id: String(userObj._id || userId),
+      fullName: String(userObj.fullName || ""),
+      email: String(userObj.email || ""),
+      phone: String(userObj.phone || ""),
+      role: userObj.role === "admin" ? "admin" : "customer",
+      province: String(userObj.province || ""),
+      district: String(userObj.district || ""),
+      city: String(userObj.city || ""),
+      ward: String(userObj.ward || ""),
+      fullAddress: String(userObj.fullAddress || ""),
+      landmark: String(userObj.landmark || "")
+    };
+    setCachedSession(token, userProfile);
+  }
   return token;
 }
 

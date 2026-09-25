@@ -54,7 +54,7 @@ export async function login(req, res) {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
-    const token = await createSessionForUser(String(user._id));
+    const token = await createSessionForUser(String(user._id), user);
 
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
@@ -107,7 +107,7 @@ export async function signup(req, res) {
       return res.status(400).json({ error: "Failed to create user account." });
     }
 
-    const token = await createSessionForUser(String(newUser._id));
+    const token = await createSessionForUser(String(newUser._id), newUser);
 
     // Send welcome email asynchronously without blocking registration response
     if (email && !newUser.welcomeEmailSent) {
@@ -158,7 +158,7 @@ export async function firebaseAuthHandler(req, res) {
     let fullName = reqName ? reqName.trim() : null;
     let detectedProvider = provider || "google";
 
-    // 1. Primary: Official Firebase Admin SDK verification (fast)
+    // 1. Primary: Cryptographic / Admin SDK verification (instant <1ms cached)
     try {
       const decoded = await verifyFirebaseIdToken(cleanToken);
       if (decoded) {
@@ -174,69 +174,66 @@ export async function firebaseAuthHandler(req, res) {
         }
       }
     } catch (adminErr) {
-      console.warn("Firebase Admin verifyIdToken warning:", adminErr.message);
+      console.warn("Firebase token verification warning:", adminErr.message);
     }
 
-    // 2. Identity Toolkit verification endpoint fallback (only if Admin SDK didn't resolve)
-    if (!uid && FIREBASE_API_KEY) {
-      try {
-        const lookupRes = await fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken: cleanToken }),
-            signal: AbortSignal.timeout(2000)
-          }
-        );
+    // 2. Fast parallel fallback lookup only if primary didn't resolve
+    if (!uid && (FIREBASE_API_KEY || cleanToken.includes("."))) {
+      const fallbackPromises = [];
 
-        if (lookupRes.ok) {
-          const lookupData = await lookupRes.json();
-          const fbUser = lookupData.users?.[0];
-          if (fbUser) {
-            uid = fbUser.localId;
-            if (fbUser.email) email = fbUser.email.toLowerCase().trim();
-            if (fbUser.phoneNumber) phone = fbUser.phoneNumber.trim();
-            if (fbUser.displayName && !fullName) fullName = fbUser.displayName;
-
-            const prov = fbUser.providerUserInfo?.[0]?.providerId || "";
-            if (prov.includes("phone") || fbUser.phoneNumber || provider === "phone") {
-              detectedProvider = "phone";
-            } else {
-              detectedProvider = "google";
+      if (FIREBASE_API_KEY) {
+        fallbackPromises.push(
+          fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ idToken: cleanToken }),
+              signal: AbortSignal.timeout(800)
             }
-          }
-        }
-      } catch (lookupErr) {
-        console.warn("Firebase Identity Toolkit lookup warning:", lookupErr.message);
-      }
-    }
-
-    // 3. Google OAuth Tokeninfo endpoint fallback (only if still unresolved)
-    if (!uid) {
-      try {
-        const googleRes = await fetch(
-          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(cleanToken)}`,
-          { signal: AbortSignal.timeout(2000) }
+          )
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
         );
-        if (googleRes.ok) {
-          const tokenInfo = await googleRes.json();
-          uid = tokenInfo.sub || tokenInfo.user_id || null;
-          if (tokenInfo.email) email = tokenInfo.email.toLowerCase().trim();
-          if (tokenInfo.name && !fullName) fullName = tokenInfo.name;
+      }
+
+      fallbackPromises.push(
+        fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(cleanToken)}`,
+          { signal: AbortSignal.timeout(800) }
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      );
+
+      const [lookupData, tokenInfo] = await Promise.all(fallbackPromises);
+
+      if (lookupData?.users?.[0]) {
+        const fbUser = lookupData.users[0];
+        uid = fbUser.localId;
+        if (fbUser.email) email = fbUser.email.toLowerCase().trim();
+        if (fbUser.phoneNumber) phone = fbUser.phoneNumber.trim();
+        if (fbUser.displayName && !fullName) fullName = fbUser.displayName;
+        const prov = fbUser.providerUserInfo?.[0]?.providerId || "";
+        if (prov.includes("phone") || fbUser.phoneNumber || provider === "phone") {
+          detectedProvider = "phone";
+        } else {
           detectedProvider = "google";
         }
-      } catch (googleErr) {
-        console.warn("Google tokeninfo fallback warning:", googleErr.message);
+      } else if (tokenInfo?.sub || tokenInfo?.user_id) {
+        uid = tokenInfo.sub || tokenInfo.user_id;
+        if (tokenInfo.email) email = tokenInfo.email.toLowerCase().trim();
+        if (tokenInfo.name && !fullName) fullName = tokenInfo.name;
+        detectedProvider = "google";
       }
     }
 
-    // 4. Safe JWT payload inspection fallback for standard Firebase tokens
+    // 3. Safe JWT payload inspection fallback for standard Firebase tokens
     if (!uid && cleanToken.includes(".")) {
       try {
         const parts = cleanToken.split(".");
         if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
+          const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
           if (payload.user_id || payload.sub) {
             uid = payload.user_id || payload.sub;
             if (payload.email) email = payload.email.toLowerCase().trim();
@@ -279,7 +276,7 @@ export async function firebaseAuthHandler(req, res) {
       return res.status(500).json({ error: "Unable to create or locate account for this user." });
     }
 
-    const token = await createSessionForUser(String(user._id));
+    const token = await createSessionForUser(String(user._id), user);
 
     // Send welcome email asynchronously if new account creation with real email
     if (user.email && !user.welcomeEmailSent && !user.email.endsWith(".internal")) {

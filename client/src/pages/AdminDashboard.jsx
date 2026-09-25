@@ -76,34 +76,23 @@ export function AdminDashboard() {
     loadAdminData();
   }, [user, authLoading]);
 
-  const loadAdminData = async () => {
-    setLoading(true);
-    try {
-      const [ordersRes, reqRes, payRes, ticketRes] = await Promise.allSettled([
-        api.get('/api/admin/orders'),
-        api.get('/api/admin/product-requests'),
-        api.get('/api/admin/payments'),
-        api.get('/api/admin/tickets')
-      ]);
+  const loadAdminData = () => {
+    api.get('/api/admin/orders').then((res) => {
+      const rawOrders = res.data?.orders || (Array.isArray(res.data) ? res.data : []);
+      setOrders(Array.isArray(rawOrders) ? rawOrders : []);
+    }).catch((e) => console.error("Admin orders load error:", e));
 
-      if (ordersRes.status === 'fulfilled') {
-        const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
-        setOrders(Array.isArray(rawOrders) ? rawOrders : []);
-      }
-      if (reqRes.status === 'fulfilled' && reqRes.value.data?.requests) {
-        setRequests(reqRes.value.data.requests);
-      }
-      if (payRes.status === 'fulfilled' && payRes.value.data?.payments) {
-        setPayments(payRes.value.data.payments);
-      }
-      if (ticketRes.status === 'fulfilled' && ticketRes.value.data?.tickets) {
-        setTickets(ticketRes.value.data.tickets);
-      }
-    } catch (e) {
-      console.error("Admin data load error:", e);
-    } finally {
-      setLoading(false);
-    }
+    api.get('/api/admin/product-requests').then((res) => {
+      if (res.data?.requests) setRequests(res.data.requests);
+    }).catch((e) => console.error("Admin requests load error:", e));
+
+    api.get('/api/admin/payments').then((res) => {
+      if (res.data?.payments) setPayments(res.data.payments);
+    }).catch((e) => console.error("Admin payments load error:", e));
+
+    api.get('/api/admin/tickets').then((res) => {
+      if (res.data?.tickets) setTickets(res.data.tickets);
+    }).catch((e) => console.error("Admin tickets load error:", e));
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
