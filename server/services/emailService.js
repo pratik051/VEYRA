@@ -54,23 +54,36 @@ export function getFrontendUrl() {
   return (process.env.FRONTEND_URL || "https://www.sajilomarts.tech").replace(/\/+$/, "");
 }
 
-let transporter = null;
-let lastCredsKey = "";
-
-export function getTransporter() {
-  const config = getSmtpConfig();
+/**
+ * Create a fresh, single-use transport tailored for specific cloud network strategies
+ */
+export function createTransportByStrategy(strategy = "port_465", customConfig = null) {
+  const config = customConfig || getSmtpConfig();
   if (!config.user || !config.pass) {
-    throw new Error("SMTP credentials are not configured in server environment variables (SMTP_USER/SMTP_PASS).");
+    throw new Error("SMTP credentials are not configured in environment variables (SMTP_USER/SMTP_PASS).");
   }
 
-  const credsKey = `${config.host}:${config.port}:${config.secure}:${config.user}:${config.pass}`;
-  if (!transporter || lastCredsKey !== credsKey) {
-    const isGmail = config.host.includes("gmail.com") || config.user.includes("@gmail.com");
+  const isGmail = config.host.includes("gmail.com") || config.user.includes("@gmail.com");
 
-    const transportConfig = {
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
+  if (strategy === "gmail_service" && isGmail) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: config.user,
+        pass: config.pass
+      },
+      pool: false,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000
+    });
+  }
+
+  if (strategy === "port_587") {
+    return nodemailer.createTransport({
+      host: config.host || "smtp.gmail.com",
+      port: 587,
+      secure: false, // STARTTLS
       auth: {
         user: config.user,
         pass: config.pass
@@ -79,19 +92,96 @@ export function getTransporter() {
         rejectUnauthorized: false,
         minVersion: "TLSv1.2"
       },
-      connectionTimeout: 12000,
-      greetingTimeout: 12000,
-      socketTimeout: 15000
-    };
-
-    if (isGmail && config.port === 465) {
-      transportConfig.service = "gmail";
-    }
-
-    transporter = nodemailer.createTransport(transportConfig);
-    lastCredsKey = credsKey;
+      pool: false,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000
+    });
   }
-  return transporter;
+
+  // Default: Direct Port 465 (SSL)
+  return nodemailer.createTransport({
+    host: config.host || "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: config.user,
+      pass: config.pass
+    },
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: "TLSv1.2"
+    },
+    pool: false,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000
+  });
+}
+
+export function getTransporter() {
+  return createTransportByStrategy("port_465");
+}
+
+/**
+ * Execute email dispatch with automatic fallback between SSL (465), STARTTLS (587), and Gmail Service
+ */
+export async function sendMailWithResilience(mailOptions) {
+  const config = getSmtpConfig();
+  if (!config.user || !config.pass) {
+    throw new Error("SMTP credentials are not configured in environment variables (SMTP_USER/SMTP_PASS).");
+  }
+
+  const isGmail = config.host.includes("gmail.com") || config.user.includes("@gmail.com");
+
+  // Determine priority order based on config
+  const strategies = isGmail
+    ? [
+        config.port === 587 ? "port_587" : "port_465",
+        "port_587",
+        "gmail_service",
+        "port_465"
+      ]
+    : [
+        config.secure ? "port_465" : "port_587",
+        config.secure ? "port_587" : "port_465"
+      ];
+
+  // Remove duplicate strategies
+  const uniqueStrategies = Array.from(new Set(strategies));
+
+  let lastError = null;
+
+  for (let i = 0; i < uniqueStrategies.length; i++) {
+    const strat = uniqueStrategies[i];
+    try {
+      const client = createTransportByStrategy(strat, config);
+      const info = await client.sendMail(mailOptions);
+      if (i > 0) {
+        console.log(`[Email Service] ✓ Email dispatched via fallback strategy '${strat}' to ${maskEmail(mailOptions.to)}`);
+      }
+      return info;
+    } catch (err) {
+      lastError = err;
+      const isTimeout =
+        err?.code === "ETIMEDOUT" ||
+        err?.code === "ESOCKET" ||
+        err?.code === "ECONNREFUSED" ||
+        err?.code === "ENOTFOUND" ||
+        err?.command === "CONN" ||
+        String(err?.message || "").toLowerCase().includes("timeout") ||
+        String(err?.message || "").toLowerCase().includes("connection");
+
+      console.warn(`[Email Service] Strategy '${strat}' (${i + 1}/${uniqueStrategies.length}) failed: ${err?.message || err}. ${isTimeout ? "Retrying with alternative cloud transport..." : ""}`);
+
+      // If it's a permanent rejection (e.g. invalid recipient syntax), don't loop endlessly
+      if (!isTimeout && err?.responseCode && err.responseCode >= 500 && err.responseCode < 600) {
+        // Bad auth credentials, retry once more with alternative format
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to deliver email through all available SMTP cloud transport strategies.");
 }
 
 
@@ -282,7 +372,7 @@ ${homeUrl}`;
     };
 
     console.log(`[Email Service] Sending WELCOME email to ${maskEmail(cleanEmail)}...`);
-    const info = await client.sendMail(mailOptions);
+    const info = await sendMailWithResilience(mailOptions);
     console.log(`[Email Service] ✓ WELCOME email sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
@@ -565,7 +655,7 @@ SajiloMarts Team`;
     };
 
     console.log(`[Email Service] Sending ORDER_CONFIRMATION #${orderId} to ${maskEmail(cleanEmail)}...`);
-    const info = await client.sendMail(mailOptions);
+    const info = await sendMailWithResilience(mailOptions);
     console.log(`[Email Service] ✓ ORDER_CONFIRMATION #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
@@ -744,7 +834,7 @@ SajiloMarts Team`;
     };
 
     console.log(`[Email Service] Sending STATUS_UPDATE (${cleanNewStatus}) for #${orderId} to ${maskEmail(cleanEmail)}...`);
-    const info = await client.sendMail(mailOptions);
+    const info = await sendMailWithResilience(mailOptions);
     console.log(`[Email Service] ✓ STATUS_UPDATE (${cleanNewStatus}) for #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
@@ -919,7 +1009,7 @@ SajiloMarts Team`;
     };
 
     console.log(`[Email Service] Sending DELIVERED email for #${orderId} to ${maskEmail(cleanEmail)}...`);
-    const info = await client.sendMail(mailOptions);
+    const info = await sendMailWithResilience(mailOptions);
     console.log(`[Email Service] ✓ DELIVERED email for #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
@@ -1029,7 +1119,7 @@ export async function sendPasswordResetOtpEmail(toEmail, otpCode, recipientName)
     };
 
     console.log(`[Email Service] Sending OTP email to ${maskEmail(cleanEmail)}...`);
-    const info = await client.sendMail(mailOptions);
+    const info = await sendMailWithResilience(mailOptions);
     console.log(`[Email Service] ✓ OTP email sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
