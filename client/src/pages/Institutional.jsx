@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Clock, HelpCircle, ShieldAlert, Sparkles, MessageSquare } from 'lucide-react';
+import { FacebookIcon, InstagramIcon, MailIcon } from '../components/SocialIcons';
 import api from '../services/api';
 
 export function Contact() {
@@ -49,30 +50,40 @@ export function Contact() {
         {/* Contact Info Cards */}
         <div className="space-y-4">
           <div className="p-6 rounded-3xl bg-neutral-950 dark:bg-[#111c44] text-white border border-neutral-900 dark:border-[#1b2559] space-y-2 shadow-sm">
-            <Mail className="h-5 w-5 text-amber-400" />
-            <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Email Support</h4>
+            <div className="flex items-center gap-2 text-amber-400">
+              <MailIcon className="h-5 w-5" />
+              <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider">Email Support</h4>
+            </div>
             <a href="mailto:sajilomarts@gmail.com" className="text-xs font-semibold hover:underline block truncate text-amber-300">sajilomarts@gmail.com</a>
             <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0]">Average response within 2 hours</p>
           </div>
 
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 shadow-2xs">
-            <h4 className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0] uppercase">Official Social Channels</h4>
-            <div className="flex flex-col gap-2 pt-1 text-xs">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-3 shadow-2xs">
+            <h4 className="text-xs font-bold text-neutral-500 dark:text-[#a3aed0] uppercase tracking-wider">Official Social Channels</h4>
+            <div className="flex flex-col gap-2.5 pt-1 text-xs">
               <a
                 href="https://www.facebook.com/profile.php?id=61594687408072"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50/70 hover:bg-blue-100/80 text-[#1877F2] font-bold transition-colors"
               >
-                <span>Facebook Page ➔</span>
+                <span className="flex items-center gap-2">
+                  <FacebookIcon className="h-4 w-4" />
+                  <span>Facebook Page</span>
+                </span>
+                <span className="text-xs opacity-70">➔</span>
               </a>
               <a
                 href="https://www.instagram.com/sajilomarts/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 text-pink-600 dark:text-pink-400 font-bold hover:underline"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-pink-50/70 hover:bg-pink-100/80 text-[#E4405F] font-bold transition-colors"
               >
-                <span>Instagram Profile ➔</span>
+                <span className="flex items-center gap-2">
+                  <InstagramIcon className="h-4 w-4" />
+                  <span>Instagram Profile</span>
+                </span>
+                <span className="text-xs opacity-70">➔</span>
               </a>
             </div>
           </div>

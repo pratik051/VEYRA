@@ -6,16 +6,22 @@ import './index.css'
 
 // Suppress benign browser/DevTools COOP popup polling notices
 if (typeof window !== 'undefined') {
+  const isCoopNotice = (arg) => {
+    if (!arg) return false;
+    const str = typeof arg === 'string' ? arg : (arg.message || String(arg));
+    return str.includes('Cross-Origin-Opener-Policy') || str.includes('window.closed');
+  };
+
   const origWarn = console.warn;
   console.warn = function (...args) {
-    if (
-      args.length > 0 &&
-      typeof args[0] === 'string' &&
-      args[0].includes('Cross-Origin-Opener-Policy')
-    ) {
-      return;
-    }
+    if (args.some(isCoopNotice)) return;
     origWarn.apply(console, args);
+  };
+
+  const origError = console.error;
+  console.error = function (...args) {
+    if (args.some(isCoopNotice)) return;
+    origError.apply(console, args);
   };
 }
 

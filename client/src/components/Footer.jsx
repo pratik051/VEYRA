@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FacebookIcon, InstagramIcon, MailIcon } from './SocialIcons';
 
 export function Footer() {
   return (
@@ -23,27 +24,36 @@ export function Footer() {
           <p className="text-neutral-500 text-xs leading-relaxed max-w-xs">
             Direct marketplace sourcing from Indian online stores with transparent NPR pricing and reliable Nepal delivery.
           </p>
-          <div className="pt-1 flex flex-col gap-1 text-[11px]">
-            <a href="mailto:sajilomarts@gmail.com" className="text-neutral-700 hover:text-neutral-950 font-bold transition-colors">
-              ✉ sajilomarts@gmail.com
+          <div className="pt-2 flex flex-col gap-2 text-xs">
+            <a 
+              href="mailto:sajilomarts@gmail.com" 
+              className="inline-flex items-center gap-2 text-neutral-800 hover:text-neutral-950 font-bold transition-colors group"
+            >
+              <div className="p-1.5 rounded-lg bg-red-50 text-red-600 group-hover:bg-red-100 transition-colors">
+                <MailIcon className="h-4 w-4" />
+              </div>
+              <span className="truncate">sajilomarts@gmail.com</span>
             </a>
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-2 pt-1">
               <a
                 href="https://www.facebook.com/profile.php?id=61594687408072"
                 target="_blank"
                 rel="noreferrer"
-                className="text-blue-600 font-bold hover:underline"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1877F2] font-bold text-xs transition-colors shadow-2xs"
+                title="Facebook"
               >
-                Facebook
+                <FacebookIcon className="h-4 w-4" />
+                <span>Facebook</span>
               </a>
-              <span className="text-neutral-300">•</span>
               <a
                 href="https://www.instagram.com/sajilomarts/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-pink-600 font-bold hover:underline"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-[#E4405F] font-bold text-xs transition-colors shadow-2xs"
+                title="Instagram"
               >
-                Instagram
+                <InstagramIcon className="h-4 w-4" />
+                <span>Instagram</span>
               </a>
             </div>
           </div>
@@ -83,15 +93,16 @@ export function Footer() {
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
             Help &amp; Support
           </h4>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             <li>
               <Link to="/support" className="hover:text-neutral-900 transition-colors">
                 Customer Support Hub
               </Link>
             </li>
             <li>
-              <a href="mailto:sajilomarts@gmail.com" className="hover:text-neutral-900 transition-colors">
-                Email Customer Care
+              <a href="mailto:sajilomarts@gmail.com" className="inline-flex items-center gap-2 hover:text-neutral-900 transition-colors">
+                <MailIcon className="h-3.5 w-3.5 text-red-500" />
+                <span>Email Customer Care</span>
               </a>
             </li>
             <li>
@@ -99,9 +110,10 @@ export function Footer() {
                 href="https://www.facebook.com/profile.php?id=61594687408072"
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-neutral-900 transition-colors"
+                className="inline-flex items-center gap-2 text-neutral-600 hover:text-blue-600 transition-colors"
               >
-                Facebook Support
+                <FacebookIcon className="h-3.5 w-3.5 text-[#1877F2]" />
+                <span>Facebook Support</span>
               </a>
             </li>
             <li>
@@ -109,9 +121,10 @@ export function Footer() {
                 href="https://www.instagram.com/sajilomarts/"
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-neutral-900 transition-colors"
+                className="inline-flex items-center gap-2 text-neutral-600 hover:text-pink-600 transition-colors"
               >
-                Instagram Direct
+                <InstagramIcon className="h-3.5 w-3.5 text-[#E4405F]" />
+                <span>Instagram Direct</span>
               </a>
             </li>
           </ul>
