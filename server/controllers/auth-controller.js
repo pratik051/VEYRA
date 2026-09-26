@@ -321,19 +321,24 @@ export async function googleOAuthRedirectHandler(req, res) {
 const otpRateLimitMap = new Map();
 
 export async function forgotPasswordSendOtp(req, res) {
+  console.log(`[VERIFICATION_EMAIL] Request received`);
   try {
     const { email: rawEmail } = req.body || {};
     const email = (rawEmail || "").trim().toLowerCase();
 
     if (!email || !email.includes("@")) {
+      console.warn(`[VERIFICATION_EMAIL] Validation failed: Invalid email format`);
       return res.status(400).json({ success: false, error: "Please provide a valid email address." });
     }
+
+    console.log(`[VERIFICATION_EMAIL] Validation passed for recipient`);
 
     // 1. Resend rate limit protection: max 1 request every 30 seconds per email
     const lastSent = otpRateLimitMap.get(email);
     const now = Date.now();
     if (lastSent && now - lastSent < 30 * 1000) {
       const waitSeconds = Math.ceil((30 * 1000 - (now - lastSent)) / 1000);
+      console.warn(`[VERIFICATION_EMAIL] Rate limited. Cooldown remaining: ${waitSeconds}s`);
       return res.status(429).json({
         success: false,
         error: `Please wait ${waitSeconds} seconds before requesting another verification code.`
@@ -342,6 +347,7 @@ export async function forgotPasswordSendOtp(req, res) {
 
     const user = await getUserByEmail(email);
     if (!user) {
+      console.warn(`[VERIFICATION_EMAIL] Account not found for email lookup.`);
       return res.status(404).json({
         success: false,
         error: "No registered account found with this email address. Please check spelling or create an account."
@@ -351,32 +357,37 @@ export async function forgotPasswordSendOtp(req, res) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+    console.log(`[VERIFICATION_EMAIL] Code generated`);
+
     try {
       await PasswordResetOtpModel.deleteMany({ email });
       await PasswordResetOtpModel.create({ email, otp, expiresAt, used: false });
     } catch (dbErr) {
-      console.warn("DB OTP write fallback to memory:", dbErr.message);
+      console.warn(`[VERIFICATION_EMAIL] DB write notice (fallback to memory store): ${dbErr.message}`);
     }
     memOtps.set(email, { otp, expiresAt });
     otpRateLimitMap.set(email, now);
 
-    console.log(`[Email Service] Initiating password reset verification email dispatch for masked account.`);
+    console.log(`[VERIFICATION_EMAIL] Database operation completed`);
+    console.log(`[VERIFICATION_EMAIL] Email send started`);
 
     const mailResult = await sendPasswordResetOtpEmail(email, otp, user.fullName);
     if (!mailResult.success) {
-      console.warn(`[Email Service] Failed to deliver OTP email: ${mailResult.error}`);
+      console.warn(`[VERIFICATION_EMAIL] Email send failed: ${mailResult.error || "SMTP transport failure"}`);
       return res.status(500).json({
         success: false,
         error: "Unable to send the verification code right now. Please try again in a moment."
       });
     }
 
+    console.log(`[VERIFICATION_EMAIL] Email send completed: ${mailResult.messageId || "dispatched"}`);
+
     return res.json({
       success: true,
-      message: `A 6-digit verification code has been sent to ${email}.`
+      message: `A 6-digit verification code has been sent to your email.`
     });
   } catch (error) {
-    console.error("forgotPasswordSendOtp error:", error?.message || error);
+    console.error(`[VERIFICATION_EMAIL] Email send failed: ${error?.message || error}`);
     return res.status(500).json({
       success: false,
       error: "Unable to send the verification code right now. Please try again in a moment."

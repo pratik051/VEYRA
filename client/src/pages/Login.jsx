@@ -128,6 +128,7 @@ export function Login() {
   // Send OTP Email for Forgot Password
   const handleForgotSendOtp = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!forgotEmail.trim()) {
       setError('Please enter your registered email address.');
       return;

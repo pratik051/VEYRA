@@ -23,6 +23,7 @@ export function ForgotPassword() {
 
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
+    if (loading) return;
     if (!email.trim()) {
       setError('Please enter your registered email address.');
       return;

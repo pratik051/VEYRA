@@ -14,24 +14,45 @@ export function maskEmail(email) {
   return `${visible}***@${domain}`;
 }
 
-// Dynamic Server-side SMTP credentials resolution
+// Dynamic Server-side SMTP credentials resolution supporting all common naming conventions
 export function getSmtpConfig() {
-  const host = (process.env.SMTP_HOST || "smtp.gmail.com").trim();
-  const port = parseInt((process.env.SMTP_PORT || "465").toString().trim(), 10) || 465;
+  const host = (
+    process.env.SMTP_HOST ||
+    process.env.MAIL_HOST ||
+    process.env.EMAIL_HOST ||
+    "smtp.gmail.com"
+  ).trim();
+
+  const rawPort =
+    process.env.SMTP_PORT ||
+    process.env.MAIL_PORT ||
+    process.env.EMAIL_PORT ||
+    "587"; // Default to 587 for cloud egress reliability
+
+  const port = parseInt(rawPort.toString().trim(), 10) || 587;
   const is465 = port === 465;
   const secure = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === "true" : is465;
 
   const rawUser =
     process.env.SMTP_USER ||
+    process.env.SMTP_USERNAME ||
     process.env.GMAIL_USER ||
     process.env.EMAIL_USER ||
+    process.env.EMAIL_USERNAME ||
+    process.env.MAIL_USER ||
+    process.env.MAIL_USERNAME ||
     "";
 
   const rawPass =
     process.env.SMTP_PASS ||
     process.env.SMTP_PASSWORD ||
     process.env.GMAIL_APP_PASSWORD ||
+    process.env.GMAIL_PASS ||
+    process.env.GMAIL_PASSWORD ||
     process.env.EMAIL_PASS ||
+    process.env.EMAIL_PASSWORD ||
+    process.env.MAIL_PASS ||
+    process.env.MAIL_PASSWORD ||
     "";
 
   // Clean strings by trimming and removing accidental wrapping quotes or internal whitespace
@@ -46,6 +67,7 @@ export function getEmailFrom() {
   const fromName = (process.env.EMAIL_FROM_NAME || "SajiloMarts").trim();
   return (
     process.env.EMAIL_FROM ||
+    process.env.MAIL_FROM ||
     (user ? `"${fromName}" <${user}>` : `"SajiloMarts" <sajilomarts@gmail.com>`)
   );
 }
