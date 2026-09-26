@@ -1,6 +1,16 @@
+import dns from "node:dns";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
+// Enforce IPv4-first DNS lookups across Node runtime (prevents IPv6 connection drops on cloud hosts like Render/Vercel)
+try {
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder("ipv4first");
+  }
+} catch {
+  // Ignored on legacy engines
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -55,7 +55,67 @@ export function getFrontendUrl() {
 }
 
 /**
- * Create a fresh, single-use transport tailored for specific cloud network strategies
+ * Send email via Resend / Brevo HTTPS REST API (Port 443 - zero socket timeout risk on cloud hosts)
+ */
+async function sendViaHttpsApi(mailOptions) {
+  const resendKey = (process.env.RESEND_API_KEY || "").trim();
+  const brevoKey = (process.env.BREVO_API_KEY || "").trim();
+
+  if (resendKey) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: mailOptions.from || getEmailFrom(),
+        to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+        text: mailOptions.text
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      return { success: true, messageId: json.id || "resend-ok" };
+    }
+    const errText = await res.text();
+    throw new Error(`Resend HTTPS API error (${res.status}): ${errText}`);
+  }
+
+  if (brevoKey) {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": brevoKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        sender: { email: "sajilomarts@gmail.com", name: "SajiloMarts" },
+        to: [{ email: mailOptions.to }],
+        subject: mailOptions.subject,
+        htmlContent: mailOptions.html,
+        textContent: mailOptions.text
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      return { success: true, messageId: json.messageId || "brevo-ok" };
+    }
+    const errText = await res.text();
+    throw new Error(`Brevo HTTPS API error (${res.status}): ${errText}`);
+  }
+
+  return null;
+}
+
+/**
+ * Create a fresh, single-use transport tailored for specific cloud network strategies (forcing IPv4)
  */
 export function createTransportByStrategy(strategy = "port_465", customConfig = null) {
   const config = customConfig || getSmtpConfig();
@@ -73,9 +133,10 @@ export function createTransportByStrategy(strategy = "port_465", customConfig = 
         pass: config.pass
       },
       pool: false,
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000
+      family: 4, // Force IPv4
+      connectionTimeout: 7000,
+      greetingTimeout: 7000,
+      socketTimeout: 9000
     });
   }
 
@@ -93,9 +154,10 @@ export function createTransportByStrategy(strategy = "port_465", customConfig = 
         minVersion: "TLSv1.2"
       },
       pool: false,
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000
+      family: 4, // Force IPv4
+      connectionTimeout: 7000,
+      greetingTimeout: 7000,
+      socketTimeout: 9000
     });
   }
 
@@ -113,9 +175,10 @@ export function createTransportByStrategy(strategy = "port_465", customConfig = 
       minVersion: "TLSv1.2"
     },
     pool: false,
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 10000
+    family: 4, // Force IPv4
+    connectionTimeout: 7000,
+    greetingTimeout: 7000,
+    socketTimeout: 9000
   });
 }
 
@@ -124,9 +187,20 @@ export function getTransporter() {
 }
 
 /**
- * Execute email dispatch with automatic fallback between SSL (465), STARTTLS (587), and Gmail Service
+ * Execute email dispatch with automatic fallback between HTTPS API, SSL (465), STARTTLS (587), and Gmail Service
  */
 export async function sendMailWithResilience(mailOptions) {
+  // 1. Try HTTPS API first if API key configured (Zero timeout risk on cloud egress)
+  try {
+    const apiResult = await sendViaHttpsApi(mailOptions);
+    if (apiResult) {
+      console.log(`[Email Service] ✓ Email dispatched via HTTPS REST API to ${maskEmail(mailOptions.to)}`);
+      return apiResult;
+    }
+  } catch (httpsErr) {
+    console.warn(`[Email Service] HTTPS API attempt notice: ${httpsErr.message}. Falling back to resilient SMTP...`);
+  }
+
   const config = getSmtpConfig();
   if (!config.user || !config.pass) {
     throw new Error("SMTP credentials are not configured in environment variables (SMTP_USER/SMTP_PASS).");
@@ -134,7 +208,7 @@ export async function sendMailWithResilience(mailOptions) {
 
   const isGmail = config.host.includes("gmail.com") || config.user.includes("@gmail.com");
 
-  // Determine priority order based on config
+  // Priority order with IPv4 enforced
   const strategies = isGmail
     ? [
         config.port === 587 ? "port_587" : "port_465",
@@ -147,9 +221,7 @@ export async function sendMailWithResilience(mailOptions) {
         config.secure ? "port_587" : "port_465"
       ];
 
-  // Remove duplicate strategies
   const uniqueStrategies = Array.from(new Set(strategies));
-
   let lastError = null;
 
   for (let i = 0; i < uniqueStrategies.length; i++) {
@@ -173,11 +245,6 @@ export async function sendMailWithResilience(mailOptions) {
         String(err?.message || "").toLowerCase().includes("connection");
 
       console.warn(`[Email Service] Strategy '${strat}' (${i + 1}/${uniqueStrategies.length}) failed: ${err?.message || err}. ${isTimeout ? "Retrying with alternative cloud transport..." : ""}`);
-
-      // If it's a permanent rejection (e.g. invalid recipient syntax), don't loop endlessly
-      if (!isTimeout && err?.responseCode && err.responseCode >= 500 && err.responseCode < 600) {
-        // Bad auth credentials, retry once more with alternative format
-      }
     }
   }
 
