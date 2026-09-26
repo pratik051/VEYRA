@@ -11,7 +11,6 @@ import {
   Trash2,
   ExternalLink,
   Shield,
-  FileText,
   Clock,
   CheckCircle2,
   Send,
@@ -32,7 +31,6 @@ export function Account() {
   // Sub-states
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
-  const [productRequests, setProductRequests] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -75,10 +73,6 @@ export function Account() {
       setAddresses(Array.isArray(rawAddrs) ? rawAddrs : []);
     }).catch((e) => console.error("Error loading addresses:", e));
 
-    api.get('/api/user/product-requests').then((reqRes) => {
-      const rawReqs = reqRes.data?.requests || (Array.isArray(reqRes.data) ? reqRes.data : []);
-      setProductRequests(Array.isArray(rawReqs) ? rawReqs : []);
-    }).catch((e) => console.error("Error loading product requests:", e));
 
     api.get('/api/user/tickets').then((ticketRes) => {
       const rawTickets = ticketRes.data?.tickets || (Array.isArray(ticketRes.data) ? ticketRes.data : []);
@@ -208,7 +202,6 @@ export function Account() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200 dark:border-[#1b2559]">
         {[
           { id: 'orders', label: 'My Orders', icon: Package, count: orders.length },
-          { id: 'requests', label: 'India Requests', icon: FileText, count: productRequests.length },
           { id: 'addresses', label: 'Saved Addresses', icon: MapPin, count: addresses.length },
           { id: 'tickets', label: 'Support Tickets', icon: HelpCircle, count: tickets.length },
           { id: 'wishlist', label: 'Wishlist', icon: Heart, count: wishlist.length }
@@ -336,54 +329,6 @@ export function Account() {
         </div>
       )}
 
-      {/* 2. INDIA PRODUCT ORDERS */}
-      {activeTab === 'requests' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950 dark:text-white">India Product Orders</h3>
-            <Link
-              to="/order"
-              className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
-            >
-              + New Product Link
-            </Link>
-          </div>
-
-          {productRequests.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
-              <FileText className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
-              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Sourcing Requests Yet</h4>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Found a product on Amazon, Flipkart or Myntra? Paste its URL to request delivery!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {productRequests.map((req) => (
-                <div key={req._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 text-xs">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-neutral-900 dark:text-white">{req.productName || 'Sourced Item'}</span>
-                    <span className="text-amber-600 dark:text-amber-400">{req.orderStatus || req.status || 'Pending Review'}</span>
-                  </div>
-                  {(req.brand || req.variant || req.productVariant || req.color || req.size) && (
-                    <div className="flex flex-wrap gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
-                      {req.brand && <span>Brand: <strong className="text-neutral-700 dark:text-neutral-200">{req.brand}</strong></span>}
-                      {(req.variant || req.productVariant) && <span>Variant: <strong className="text-neutral-700 dark:text-neutral-200">{req.variant || req.productVariant}</strong></span>}
-                      {req.color && <span>Color: <strong className="text-neutral-700 dark:text-neutral-200">{req.color}</strong></span>}
-                      {req.size && <span>Size: <strong className="text-neutral-700 dark:text-neutral-200">{req.size}</strong></span>}
-                    </div>
-                  )}
-                  <p className="text-neutral-400 truncate">{req.productUrl}</p>
-                  <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559]">
-                    <span className="text-neutral-500 dark:text-neutral-400">Source: ₹{req.indianPriceINR} INR</span>
-                    <span className="font-black text-neutral-950 dark:text-amber-400">NPR {(req.finalAmountNPR || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* 3. SAVED ADDRESSES */}
       {activeTab === 'addresses' && (
