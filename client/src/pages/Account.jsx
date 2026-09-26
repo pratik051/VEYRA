@@ -21,7 +21,6 @@ import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { nepalProvinces } from '../data/mockData';
 import { ProductCard } from '../components/ProductCard';
-import { AISupportAssistant } from '../components/AISupportAssistant';
 import api from '../services/api';
 
 export function Account() {
@@ -246,8 +245,8 @@ export function Account() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-neutral-950 dark:text-white">Order History</h3>
-            <Link to="/request-product" className="text-xs font-bold text-red-600 dark:text-amber-400 underline">
-              Request a Product
+            <Link to="/order" className="text-xs font-bold text-red-600 dark:text-amber-400 underline">
+              Order by Link
             </Link>
           </div>
 
@@ -256,7 +255,7 @@ export function Account() {
               <Package className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
               <h4 className="text-sm font-bold text-neutral-900 dark:text-white">No Orders Found</h4>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                You haven't placed any sourcing orders yet. Paste a link from any Indian marketplace to get started!
+                You haven't placed any orders yet. Paste a link from any Indian marketplace to get started!
               </p>
             </div>
           ) : (
@@ -297,16 +296,16 @@ export function Account() {
         </div>
       )}
 
-      {/* 2. INDIA SOURCING REQUESTS */}
+      {/* 2. INDIA PRODUCT ORDERS */}
       {activeTab === 'requests' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-neutral-950 dark:text-white">India Sourcing Requests</h3>
+            <h3 className="text-lg font-black text-neutral-950 dark:text-white">India Product Orders</h3>
             <Link
-              to="/request-product"
+              to="/order"
               className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
             >
-              + New Sourcing Link
+              + New Product Link
             </Link>
           </div>
 
@@ -439,14 +438,6 @@ export function Account() {
       {/* 4. SUPPORT TICKETS */}
       {activeTab === 'tickets' && (
         <div className="space-y-6">
-          {/* AI Support Assistant Box */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-black uppercase text-amber-500 tracking-wider">
-              Instant AI Help
-            </h4>
-            <AISupportAssistant />
-          </div>
-
           <div className="flex items-center justify-between pt-2">
             <div>
               <h3 className="text-lg font-black text-neutral-950 dark:text-white">Customer Support Tickets</h3>

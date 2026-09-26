@@ -111,10 +111,10 @@ export function ExperienceBanner() {
 
         <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
           <Link
-            to="/request-product"
+            to="/order"
             className="rounded-full bg-amber-400 text-neutral-950 hover:bg-white px-8 py-4 text-xs sm:text-sm font-black shadow-lg transition-transform hover:scale-105 active:scale-95"
           >
-            Start Sourcing Request ➔
+            Order by Product Link ➔
           </Link>
           <Link
             to="/how-it-works"

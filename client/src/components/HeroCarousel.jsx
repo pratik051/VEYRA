@@ -143,18 +143,18 @@ export function IndiaSourcingHero() {
 
         <div className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-4">
           <Link
-            to="/request-product"
+            to="/order"
             className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-amber-400 text-neutral-950 dark:text-neutral-950 px-5 py-2.5 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-extrabold shadow-lg hover:bg-amber-300 dark:hover:bg-amber-300 transition-all duration-200 hover:scale-105 active:scale-95"
           >
-            <span>Request Any Product</span>
+            <span>Order Any Product</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
 
           <Link
-            to="/request-product"
+            to="/order"
             className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-bold border border-white/15 transition-all duration-200"
           >
-            <span>🇮🇳 Sourcing Portal</span>
+            <span>Paste Product Link</span>
           </Link>
         </div>
       </div>

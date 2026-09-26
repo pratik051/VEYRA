@@ -8,7 +8,7 @@ export function MobileNav() {
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
-    { to: '/request-product', label: 'Quote', icon: PlusCircle, highlight: true },
+    { to: '/order', label: 'Order', icon: PlusCircle, highlight: true },
     { to: '/track-order', label: 'Track', icon: Clock },
     { to: '/support', label: 'Support', icon: HelpCircle },
     {

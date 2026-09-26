@@ -13,7 +13,7 @@ export function TopBanner() {
 
         <div>
           <Link
-            to="/request-product"
+            to="/order"
             className="font-semibold text-amber-400 hover:text-amber-300 transition-colors inline-flex items-center gap-1"
           >
             <span>Paste Link &amp; Get Quote</span>

@@ -23,8 +23,8 @@ export function LinkVerifier() {
 
       const matched = MARKETPLACE_METAS.find((m) => hostname.includes(m.domain.toLowerCase()) || hostname.includes(m.shortName.toLowerCase()));
 
-      // Navigate to request-product with the prefilled URL
-      navigate(`/request-product?url=${encodeURIComponent(url.trim())}`);
+      // Navigate to order with the prefilled URL
+      navigate(`/order?url=${encodeURIComponent(url.trim())}`);
     } catch (err) {
       setError('Please enter a valid URL starting with http:// or https://');
     }

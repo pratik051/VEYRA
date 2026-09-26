@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyProductLink } from "../controllers/ai-controller.js";
+import { verifyProductLink } from "../controllers/product-link-controller.js";
 
 const router = express.Router();
 

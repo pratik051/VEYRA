@@ -49,10 +49,10 @@ export function Cart() {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link
-            to="/request-product"
+            to="/order"
             className="inline-flex items-center gap-2 rounded-2xl bg-neutral-950 dark:bg-amber-400 px-6 py-3.5 text-xs font-black text-white dark:text-neutral-950 hover:bg-amber-400 hover:text-neutral-950 transition shadow-md"
           >
-            <span>Verify &amp; Source Product</span>
+            <span>Order by Product Link</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -152,11 +152,11 @@ export function Cart() {
 
           <div className="flex items-center justify-between pt-2">
             <Link
-              to="/request-product"
+              to="/order"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Request Another Product</span>
+              <span>Order Another Product</span>
             </Link>
           </div>
         </div>

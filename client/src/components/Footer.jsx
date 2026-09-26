@@ -28,17 +28,17 @@ export function Footer() {
         {/* SOURCING Column */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Sourcing
+            Order Products
           </h4>
           <ul className="space-y-2">
             <li>
-              <Link to="/request-product" className="hover:text-neutral-900 transition-colors">
-                🇮🇳 Sourcing Portal
+              <Link to="/order" className="hover:text-neutral-900 transition-colors">
+                Order by Product Link
               </Link>
             </li>
             <li>
-              <Link to="/request-product" className="hover:text-neutral-900 transition-colors">
-                Link Verification &amp; Quote
+              <Link to="/order" className="hover:text-neutral-900 transition-colors">
+                Price Calculator
               </Link>
             </li>
             <li>
@@ -62,7 +62,7 @@ export function Footer() {
           <ul className="space-y-2">
             <li>
               <Link to="/support" className="hover:text-neutral-900 transition-colors">
-                24/7 AI Support
+                Customer Support Hub
               </Link>
             </li>
             <li>

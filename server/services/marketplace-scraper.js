@@ -1,5 +1,4 @@
 import { calculateOrderPrice } from "../utils/pricing.js";
-import { GoogleGenAI } from "@google/genai";
 
 export const MARKETPLACE_DOMAINS = [
   { domain: "amazon.in", name: "Amazon India", shortName: "Amazon" },
@@ -33,23 +32,50 @@ function parseCleanPrice(priceStr) {
   return !isNaN(num) && num > 0 ? num : null;
 }
 
-// Extract product metadata via HTML tags, OpenGraph, JSON-LD, and regex
+// Extract product metadata via HTML tags, OpenGraph, JSON-LD, and deterministic regex
 async function extractFromHtml(html, platform) {
   let title = "";
+  let brand = null;
+  let variant = null;
   let image = "";
   let price = null;
   let inStock = true;
 
-  // 1. OpenGraph Meta Tags
-  const ogTitleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ||
-    html.match(/<meta[^>]+name=["']title["'][^>]+content=["']([^"']+)["']/i);
+  // 1. OpenGraph & Meta Tags
+  const ogTitleMatch =
+    html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+name=["']title["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+name=["']twitter:title["'][^>]+content=["']([^"']+)["']/i);
   if (ogTitleMatch) title = ogTitleMatch[1].trim();
 
-  const ogImageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+  const ogBrandMatch =
+    html.match(/<meta[^>]+property=["']og:brand["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+property=["']product:brand["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+name=["']brand["'][^>]+content=["']([^"']+)["']/i);
+  if (ogBrandMatch && ogBrandMatch[1]?.trim()) brand = ogBrandMatch[1].trim();
+
+  const ogColorMatch =
+    html.match(/<meta[^>]+property=["']product:color["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+property=["']og:color["'][^>]+content=["']([^"']+)["']/i);
+  const ogSizeMatch =
+    html.match(/<meta[^>]+property=["']product:size["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+property=["']og:size["'][^>]+content=["']([^"']+)["']/i);
+
+  if (ogColorMatch && ogSizeMatch) {
+    variant = `${ogColorMatch[1].trim()} / ${ogSizeMatch[1].trim()}`;
+  } else if (ogColorMatch) {
+    variant = ogColorMatch[1].trim();
+  } else if (ogSizeMatch) {
+    variant = ogSizeMatch[1].trim();
+  }
+
+  const ogImageMatch =
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
   if (ogImageMatch) image = ogImageMatch[1].trim();
 
-  const ogPriceMatch = html.match(/<meta[^>]+property=["']og:price:amount["'][^>]+content=["']([^"']+)["']/i) ||
+  const ogPriceMatch =
+    html.match(/<meta[^>]+property=["']og:price:amount["'][^>]+content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]+property=["']product:price:amount["'][^>]+content=["']([^"']+)["']/i);
   if (ogPriceMatch) price = parseCleanPrice(ogPriceMatch[1]);
 
@@ -60,17 +86,39 @@ async function extractFromHtml(html, platform) {
       try {
         const jsonContent = block.replace(/<\/?script[^>]*>/gi, "").trim();
         const parsed = JSON.parse(jsonContent);
-        const product = Array.isArray(parsed) ? parsed.find((p) => p["@type"] === "Product") : (parsed["@type"] === "Product" ? parsed : null);
+        const product = Array.isArray(parsed)
+          ? parsed.find((p) => p && p["@type"] === "Product")
+          : parsed && parsed["@type"] === "Product"
+          ? parsed
+          : null;
 
         if (product) {
           if (!title && product.name) title = product.name;
+          if (!brand && product.brand) {
+            brand = typeof product.brand === "object" ? product.brand.name || null : String(product.brand);
+          }
+          if (!variant) {
+            if (product.color && product.size) {
+              variant = `${product.color} / ${product.size}`;
+            } else if (product.color) {
+              variant = product.color;
+            } else if (product.size) {
+              variant = product.size;
+            } else if (product.model) {
+              variant = product.model;
+            }
+          }
           if (!image && product.image) {
-            image = Array.isArray(product.image) ? product.image[0] : (typeof product.image === "string" ? product.image : product.image.url || "");
+            image = Array.isArray(product.image)
+              ? product.image[0]
+              : typeof product.image === "string"
+              ? product.image
+              : product.image.url || "";
           }
           if (product.offers) {
             const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
-            if (offer.price) price = parseCleanPrice(offer.price);
-            if (offer.availability && offer.availability.includes("OutOfStock")) inStock = false;
+            if (offer && offer.price) price = parseCleanPrice(offer.price);
+            if (offer && offer.availability && String(offer.availability).includes("OutOfStock")) inStock = false;
           }
         }
       } catch {
@@ -79,30 +127,69 @@ async function extractFromHtml(html, platform) {
     }
   }
 
-  // 3. Platform-specific regex patterns
-  if (!price) {
-    if (platform.shortName === "Amazon") {
-      const amazonPriceMatch = html.match(/class=["']a-price-whole["'][^>]*>([0-9,]+)/i) ||
+  // 3. Platform-specific deterministic extraction
+  if (platform.shortName === "Amazon") {
+    if (!brand) {
+      const amazonBrandMatch =
+        html.match(/<a[^>]+id=["']bylineInfo["'][^>]*>([^<]+)<\/a>/i) ||
+        html.match(/class=["']po-brand["'][^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/i);
+      if (amazonBrandMatch) {
+        brand = amazonBrandMatch[1].replace(/^(Brand:\s*|Visit the\s*|\s*Store)/gi, "").trim();
+      }
+    }
+    if (!price) {
+      const amazonPriceMatch =
+        html.match(/class=["']a-price-whole["'][^>]*>([0-9,]+)/i) ||
         html.match(/id=["']priceblock_ourprice["'][^>]*>₹?\s*([0-9,.]+)/i) ||
         html.match(/id=["']priceblock_dealprice["'][^>]*>₹?\s*([0-9,.]+)/i) ||
+        html.match(/class=["']apexPriceToPay["'][^>]*>[\s\S]*?class=["']a-offscreen["'][^>]*>₹?\s*([0-9,.]+)/i) ||
         html.match(/"priceAmount":\s*([0-9.]+)/i);
       if (amazonPriceMatch) price = parseCleanPrice(amazonPriceMatch[1]);
-    } else if (platform.shortName === "Flipkart") {
-      const flipkartMatch = html.match(/class=["'][^"']*_30jeq3[^"']*["'][^>]*>₹?\s*([0-9,]+)/i) ||
+    }
+  } else if (platform.shortName === "Flipkart") {
+    if (!brand) {
+      const fkBrandMatch =
+        html.match(/class=["']G6XhRU["'][^>]*>([^<]+)<\/span>/i) ||
+        html.match(/class=["']_2W-m08["'][^>]*>([^<]+)<\/div>/i);
+      if (fkBrandMatch) brand = fkBrandMatch[1].trim();
+    }
+    if (!price) {
+      const flipkartMatch =
+        html.match(/class=["'][^"']*Nx9bqj[^"']*["'][^>]*>₹?\s*([0-9,]+)/i) ||
+        html.match(/class=["'][^"']*_30jeq3[^"']*["'][^>]*>₹?\s*([0-9,]+)/i) ||
         html.match(/"price":\s*([0-9]+)/i);
       if (flipkartMatch) price = parseCleanPrice(flipkartMatch[1]);
-    } else if (platform.shortName === "Myntra") {
-      const myntraMatch = html.match(/class=["']pdp-price["'][^>]*><strong>₹?\s*([0-9,]+)/i) ||
+    }
+  } else if (platform.shortName === "Myntra") {
+    if (!brand) {
+      const myntraBrandMatch =
+        html.match(/class=["']pdp-title["'][^>]*>([^<]+)<\/h1>/i) ||
+        html.match(/"brand":\s*"([^"]+)"/i);
+      if (myntraBrandMatch) brand = myntraBrandMatch[1].trim();
+    }
+    if (!price) {
+      const myntraMatch =
+        html.match(/class=["']pdp-price["'][^>]*><strong>₹?\s*([0-9,]+)/i) ||
         html.match(/"discountedPrice":\s*([0-9]+)/i) ||
         html.match(/"price":\s*([0-9]+)/i);
       if (myntraMatch) price = parseCleanPrice(myntraMatch[1]);
-    } else if (platform.shortName === "Meesho") {
-      const meeshoMatch = html.match(/"special_price":\s*([0-9.]+)/i) ||
+    }
+  } else if (platform.shortName === "Meesho") {
+    if (!brand) {
+      const meeshoBrandMatch = html.match(/"brand_name":\s*"([^"]+)"/i);
+      if (meeshoBrandMatch) brand = meeshoBrandMatch[1].trim();
+    }
+    if (!price) {
+      const meeshoMatch =
+        html.match(/"special_price":\s*([0-9.]+)/i) ||
         html.match(/"price":\s*([0-9.]+)/i) ||
         html.match(/₹\s*([0-9,]+)/i);
       if (meeshoMatch) price = parseCleanPrice(meeshoMatch[1]);
-    } else {
-      const genericMatch = html.match(/₹\s*([0-9,]+(\.[0-9]{1,2})?)/i) ||
+    }
+  } else {
+    if (!price) {
+      const genericMatch =
+        html.match(/₹\s*([0-9,]+(\.[0-9]{1,2})?)/i) ||
         html.match(/INR\s*([0-9,]+)/i) ||
         html.match(/Rs\.?\s*([0-9,]+)/i);
       if (genericMatch) price = parseCleanPrice(genericMatch[1]);
@@ -114,59 +201,12 @@ async function extractFromHtml(html, platform) {
     const titleTagMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     if (titleTagMatch) {
       title = titleTagMatch[1]
-        .replace(/-?\s*(Amazon\.in|Flipkart|Myntra|AJIO|Meesho|Nykaa).*$/i, "")
+        .replace(/-?\s*(Amazon\.in|Flipkart|Myntra|AJIO|Meesho|Nykaa|Tata CLiQ|boAt|Noise).*$/i, "")
         .trim();
     }
   }
 
-  return { title, image, price, inStock };
-}
-
-// AI fallback via Google Gemini if HTML is bot-blocked or dynamic
-async function extractViaGemini(url, platform, rawHtmlSnippet = "") {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "<YOUR_GEMINI_API_KEY>") {
-    return null;
-  }
-
-  try {
-    const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Analyze this Indian e-commerce product URL from ${platform.name}:
-URL: ${url}
-Snippet: ${rawHtmlSnippet.slice(0, 3000)}
-
-Extract the product information accurately. Return ONLY a valid JSON object with these keys:
-{
-  "title": "Clean product title",
-  "priceINR": 1499,
-  "imageUrl": "https://...",
-  "inStock": true
-}
-Do not return markdown or explanation. If the exact price is not discernable, return "priceINR": null.`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt
-    });
-
-    const responseText = response.text || "";
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      const price = parseCleanPrice(parsed.priceINR);
-      if (price && price > 0) {
-        return {
-          title: parsed.title || "",
-          image: parsed.imageUrl || "",
-          price,
-          inStock: parsed.inStock !== false
-        };
-      }
-    }
-  } catch (err) {
-    console.warn("[Gemini Price Extraction Warning]:", err.message);
-  }
-  return null;
+  return { title, brand, variant, image, price, inStock };
 }
 
 export async function fetchMarketplaceProduct(url) {
@@ -200,20 +240,7 @@ export async function fetchMarketplaceProduct(url) {
     extracted = await extractFromHtml(html, platform);
   }
 
-  // If price not found or blocked, try Gemini AI extraction
-  if (!extracted || !extracted.price) {
-    const aiResult = await extractViaGemini(cleanUrl, platform, html);
-    if (aiResult && aiResult.price) {
-      extracted = {
-        title: extracted?.title || aiResult.title,
-        image: extracted?.image || aiResult.image,
-        price: aiResult.price,
-        inStock: aiResult.inStock
-      };
-    }
-  }
-
-  // Validate extracted price
+  // Validate extracted price deterministically
   if (!extracted || !extracted.price || isNaN(extracted.price) || extracted.price <= 0) {
     return {
       success: false,
@@ -221,6 +248,8 @@ export async function fetchMarketplaceProduct(url) {
       platform: platform.name,
       platformShort: platform.shortName,
       productName: extracted?.title || "",
+      brand: extracted?.brand || null,
+      variant: extracted?.variant || null,
       productImage: extracted?.image || "",
       url: cleanUrl,
       message: "Could not automatically verify original marketplace price from this link. Please enter the INR amount manually below."
@@ -236,6 +265,8 @@ export async function fetchMarketplaceProduct(url) {
     platform: platform.name,
     platformShort: platform.shortName,
     productName: extracted.title || `${platform.shortName} Sourced Product`,
+    brand: extracted.brand || null,
+    variant: extracted.variant || null,
     productImage: extracted.image || "",
     originalPriceINR: pricing.indianPriceINR,
     currency: "INR",

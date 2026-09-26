@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Clock, HelpCircle, ShieldAlert, Sparkles, MessageSquare } from 'lucide-react';
-import { AISupportAssistant } from '../components/AISupportAssistant';
 import api from '../services/api';
 
 export function Contact() {
@@ -41,20 +40,9 @@ export function Contact() {
           Customer Care &amp; Assistance
         </h1>
         <p className="text-xs sm:text-sm text-neutral-600 dark:text-[#a3aed0] max-w-lg mx-auto">
-          Need instant help with orders, returns, Indian marketplace quotes, or payment verification? Our 24/7 AI Support Assistant and dedicated support agents are here for you.
+          Need help with orders, returns, pricing quotes, or payment verification? Our dedicated support team is here to assist you.
         </p>
       </div>
-
-      {/* AI Support Assistant Section */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-amber-500" />
-          <h2 className="text-sm font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-            Instant 24/7 AI Support
-          </h2>
-        </div>
-        <AISupportAssistant />
-      </section>
 
       {/* Traditional Contact Options & Ticket Form */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
@@ -328,12 +316,9 @@ export function FAQ() {
           Frequently Asked Questions
         </h1>
         <p className="text-xs sm:text-sm text-neutral-500 max-w-xl mx-auto">
-          Everything you need to know about Indian product sourcing and Nepal delivery.
+          Everything you need to know about Indian product ordering and Nepal delivery.
         </p>
       </div>
-
-      {/* AI Assistant Quick Assistance */}
-      <AISupportAssistant />
 
       {/* FAQ Items */}
       <div className="space-y-3 pt-4">

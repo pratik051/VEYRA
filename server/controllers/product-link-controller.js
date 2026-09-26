@@ -54,4 +54,3 @@ export async function verifyProductLink(req, res) {
 export async function fetchMarketplaceLink(req, res) {
   return verifyProductLink(req, res);
 }
-

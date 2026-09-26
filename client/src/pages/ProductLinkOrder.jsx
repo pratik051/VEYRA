@@ -2,42 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Link2,
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  QrCode,
   Upload,
+  Loader2,
+  Package,
+  ExternalLink,
+  Clock,
   ShieldCheck,
   Building,
-  Printer,
-  FileText,
-  Search,
-  ExternalLink,
-  Loader2,
-  Image as ImageIcon,
-  Clock
+  DollarSign,
+  Layers,
+  Tag
 } from 'lucide-react';
 import { MARKETPLACE_METAS, getMarketplaceMeta } from '../constants/marketplaces';
-import { MarketplaceLogo } from '../components/MarketplaceLogos';
 import { nepalProvinces } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
-export function RequestProduct() {
+export function ProductLinkOrder() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialUrl = searchParams.get('url') || '';
   const initialSource = searchParams.get('source') || '';
   const { user } = useAuth();
 
-  // Wizard Steps: 1: Link & Quote -> 2: Address -> 3: Payment & QR -> 4: Receipt
+  // Step 1: Link & Quote -> Step 2: Address -> Step 3: Payment -> Step 4: Receipt
   const [step, setStep] = useState(1);
 
-  // Form State
+  // Product Data
   const [productUrl, setProductUrl] = useState(initialUrl);
   const [productName, setProductName] = useState('');
+  const [brand, setBrand] = useState('');
+  const [variant, setVariant] = useState('');
   const [productImage, setProductImage] = useState('');
   const [indianPriceINR, setIndianPriceINR] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -47,7 +46,7 @@ export function RequestProduct() {
   const [fetchingDetails, setFetchingDetails] = useState(false);
   const [fetchNotice, setFetchNotice] = useState('');
 
-  // Calculation Results
+  // Pricing & Quote
   const [quote, setQuote] = useState(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,15 +63,17 @@ export function RequestProduct() {
     notes: ''
   });
 
-  // Hydrate pending sourcing quote from sessionStorage
+  // Hydrate pending product quote from sessionStorage
   useEffect(() => {
     try {
-      const savedPending = sessionStorage.getItem('pending_sourcing_quote');
+      const savedPending = sessionStorage.getItem('pending_product_order') || sessionStorage.getItem('pending_sourcing_quote');
       if (savedPending) {
         const parsed = JSON.parse(savedPending);
         if (parsed) {
           if (parsed.productUrl) setProductUrl(parsed.productUrl);
           if (parsed.productName) setProductName(parsed.productName);
+          if (parsed.brand) setBrand(parsed.brand);
+          if (parsed.variant) setVariant(parsed.variant);
           if (parsed.productImage) setProductImage(parsed.productImage);
           if (parsed.indianPriceINR) setIndianPriceINR(parsed.indianPriceINR);
           if (parsed.quantity) setQuantity(parsed.quantity);
@@ -84,11 +85,11 @@ export function RequestProduct() {
         }
       }
     } catch (e) {
-      console.warn('Failed to restore pending sourcing quote', e);
+      console.warn('Failed to restore pending product quote', e);
     }
   }, []);
 
-  // Sync shipping info with user
+  // Sync shipping info with user profile when logged in
   useEffect(() => {
     if (user) {
       setShipping((prev) => ({
@@ -128,9 +129,8 @@ export function RequestProduct() {
       return null;
     }
 
-    // Internal calculation (never exposed in UI)
     const exchangeRate = 1.65;
-    const servicePercent = 0.15;
+    const servicePercent = 0.20;
     const deliveryFee = 200;
 
     const baseInrTotal = inr * qty;
@@ -139,11 +139,13 @@ export function RequestProduct() {
     const deliveryCharge = deliveryFee;
     const finalAmount = Math.round(conversionAmount + serviceCharge + deliveryCharge);
 
-    // Only store customer-facing fields in quote state
     const calculatedQuote = {
       unitPriceINR: inr,
       indianPriceINR: baseInrTotal,
       quantity: qty,
+      conversionAmount,
+      serviceCharge,
+      deliveryCharge,
       finalAmountNPR: finalAmount
     };
 
@@ -151,7 +153,7 @@ export function RequestProduct() {
     return calculatedQuote;
   };
 
-  const handleAutoFetchDetails = async (urlToFetch) => {
+  const handleFetchProductDetails = async (urlToFetch) => {
     const targetUrl = (urlToFetch || productUrl).trim();
     if (!targetUrl || (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://'))) {
       return;
@@ -167,23 +169,34 @@ export function RequestProduct() {
       const res = await api.post('/api/verify-product-link', { url: targetUrl });
       const data = res.data;
       if (data) {
-        if (data.title && (!productName || productName === 'Sourced Indian Product')) {
-          setProductName(data.title);
+        if (data.productName || data.title) {
+          setProductName(data.productName || data.title);
         }
-        if (data.image) {
-          setProductImage(data.image);
+        if (data.brand) {
+          setBrand(data.brand);
         }
-        if (data.priceINR && Number(data.priceINR) > 0) {
+        if (data.variant) {
+          setVariant(data.variant);
+        }
+        if (data.productImage || data.image) {
+          setProductImage(data.productImage || data.image);
+        }
+        if (data.originalPriceINR && Number(data.originalPriceINR) > 0) {
+          const inr = Number(data.originalPriceINR);
+          setIndianPriceINR(inr);
+          calculateLandedQuote(inr, quantity);
+          setFetchNotice(`Price verified from ${data.platform || platform}: ₹${inr.toLocaleString()} INR`);
+        } else if (data.priceINR && Number(data.priceINR) > 0) {
           const inr = Number(data.priceINR);
           setIndianPriceINR(inr);
           calculateLandedQuote(inr, quantity);
-          setFetchNotice(`Live price fetched from ${data.platform || platform}: ₹${inr.toLocaleString()} INR`);
+          setFetchNotice(`Price verified from ${data.platform || platform}: ₹${inr.toLocaleString()} INR`);
         } else {
-          setFetchNotice(`Identified ${data.platform || platform} product link. Live price extraction was restricted by the store — please enter the listed ₹ INR price manually.`);
+          setFetchNotice(`Identified ${data.platform || platform} link. Please enter the ₹ INR listed price shown on the store.`);
         }
       }
     } catch {
-      setFetchNotice(`Connected to ${platform}. Please enter the listed ₹ INR price from the website.`);
+      setFetchNotice(`Identified ${platform} link. Please enter the ₹ INR listed price shown on the store.`);
     } finally {
       setFetchingDetails(false);
     }
@@ -191,15 +204,16 @@ export function RequestProduct() {
 
   useEffect(() => {
     if (initialUrl) {
-      handleAutoFetchDetails(initialUrl);
+      handleFetchProductDetails(initialUrl);
     }
   }, [initialUrl]);
 
   const handleCalculateQuote = async () => {
     setError('');
     const targetUrl = productUrl.trim();
+
     if (!targetUrl) {
-      setError('Please enter an Indian product URL.');
+      setError('Please paste an Indian product URL.');
       return;
     }
 
@@ -216,7 +230,6 @@ export function RequestProduct() {
         quantity
       });
       if (res.data?.success && res.data?.finalAmountNPR > 0) {
-        // Only store customer-facing fields — internal breakdown not exposed
         setQuote({
           unitPriceINR: numericInr,
           indianPriceINR: numericInr * quantity,
@@ -264,7 +277,22 @@ export function RequestProduct() {
   const isCod = paymentMethod === 'COD';
   const finalPayable = quote ? quote.finalAmountNPR : 0;
   const advanceAmount = isCod ? Math.round(finalPayable * 0.5) : finalPayable;
-  const codBalance = isCod ? finalPayable - advanceAmount : 0;
+
+  const savePendingQuote = (targetStep = 2) => {
+    const pendingData = {
+      productUrl,
+      productName: productName || `${detectedPlatform} Product`,
+      brand: brand || '',
+      variant: variant || '',
+      productImage: productImage || '',
+      indianPriceINR,
+      quantity,
+      detectedPlatform,
+      quote,
+      step: targetStep
+    };
+    sessionStorage.setItem('pending_product_order', JSON.stringify(pendingData));
+  };
 
   const handleProceedToDelivery = () => {
     if (!quote || quote.finalAmountNPR <= 0) {
@@ -273,18 +301,8 @@ export function RequestProduct() {
     }
 
     if (!user) {
-      const pendingData = {
-        productUrl,
-        productName: productName || `${detectedPlatform} Sourced Item`,
-        productImage: productImage || '',
-        indianPriceINR,
-        quantity,
-        detectedPlatform,
-        quote,
-        step: 2
-      };
-      sessionStorage.setItem('pending_sourcing_quote', JSON.stringify(pendingData));
-      navigate(`/login?redirect=${encodeURIComponent('/request-product')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
+      savePendingQuote(2);
+      navigate(`/login?redirect=${encodeURIComponent('/order')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
       return;
     }
 
@@ -298,18 +316,8 @@ export function RequestProduct() {
     }
 
     if (!user) {
-      const pendingData = {
-        productUrl,
-        productName: productName || `${detectedPlatform} Sourced Item`,
-        productImage: productImage || '',
-        indianPriceINR,
-        quantity,
-        detectedPlatform,
-        quote,
-        step: 2
-      };
-      sessionStorage.setItem('pending_sourcing_quote', JSON.stringify(pendingData));
-      navigate(`/login?redirect=${encodeURIComponent('/request-product')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
+      savePendingQuote(3);
+      navigate(`/login?redirect=${encodeURIComponent('/order')}&msg=${encodeURIComponent('Please login or create an account before placing your order.')}`);
       return;
     }
 
@@ -319,7 +327,9 @@ export function RequestProduct() {
     try {
       const payload = {
         productUrl,
-        productName: productName || `${detectedPlatform} Sourced Item`,
+        productName: productName || `${detectedPlatform} Product`,
+        brand: brand || 'Information unavailable',
+        productVariant: variant || 'Information unavailable',
         productImage: productImage || '',
         indianPriceINR: quote.indianPriceINR,
         quantity,
@@ -344,10 +354,9 @@ export function RequestProduct() {
       const res = await api.post('/api/india-order/create', payload);
       const createdOrder = res.data?.order;
       if (!createdOrder) {
-        throw new Error(res.data?.error || 'Failed to place India order on server.');
+        throw new Error(res.data?.error || 'Failed to place order on server.');
       }
 
-      // Also register payment proof with payment-controller
       if (screenshotPreview || transactionId) {
         try {
           await api.post('/api/payments/submit-proof', {
@@ -357,15 +366,16 @@ export function RequestProduct() {
             screenshot: screenshotPreview || ''
           });
         } catch (proofErr) {
-          console.warn('Payment proof submission notice:', proofErr.message);
+          console.warn('Payment proof registration notice:', proofErr.message);
         }
       }
 
+      sessionStorage.removeItem('pending_product_order');
       sessionStorage.removeItem('pending_sourcing_quote');
       setConfirmedOrder(createdOrder);
       setStep(4);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to submit India order request.');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to submit order.');
     } finally {
       setSubmitting(false);
     }
@@ -376,14 +386,14 @@ export function RequestProduct() {
       {/* Header Banner */}
       <div className="rounded-3xl bg-neutral-950 text-white p-6 sm:p-8 border border-white/10 relative overflow-hidden shadow-xl space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400 text-neutral-950 text-xs font-black uppercase">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>India-to-Nepal Direct Sourcing Concierge</span>
+          <Package className="h-3.5 w-3.5" />
+          <span>India-to-Nepal Product Ordering</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-          Request ANY Product From India
+          Order Any Product From India
         </h1>
         <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
-          Order authentic items from Amazon.in, Flipkart, Myntra, Ajio, Meesho, Nykaa, Tata CLiQ, boAt & Noise with transparent NPR pricing, customs clearance, and doorstep delivery across Nepal.
+          Paste any product URL from Amazon India, Flipkart, Myntra, AJIO, Meesho, Nykaa, Tata CLiQ, boAt & Noise. We calculate the exact landed NPR price and deliver to your doorstep in Nepal.
         </p>
       </div>
 
@@ -394,15 +404,15 @@ export function RequestProduct() {
         </div>
       )}
 
-      {/* STEP 1: LINK & PRICE CALCULATION */}
+      {/* STEP 1: PASTE URL & PRODUCT INFORMATION */}
       {step === 1 && (
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 sm:p-8 space-y-6 shadow-2xs">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-black text-neutral-950 dark:text-white">
-              1. Enter Product Link & Price
+              1. Paste Product Link &amp; View Details
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Paste the product URL from any Indian shopping platform.
+              Paste the product URL from any supported Indian marketplace.
             </p>
           </div>
 
@@ -428,19 +438,19 @@ export function RequestProduct() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleAutoFetchDetails(productUrl)}
+                  onClick={() => handleFetchProductDetails(productUrl)}
                   disabled={fetchingDetails || !productUrl.trim()}
                   className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
                 >
                   {fetchingDetails ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Fetching...</span>
+                      <span>Fetching Details...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4" />
-                      <span>Auto-Fetch Details</span>
+                      <Package className="h-4 w-4" />
+                      <span>Fetch Details</span>
                     </>
                   )}
                 </button>
@@ -449,69 +459,106 @@ export function RequestProduct() {
 
             {fetchNotice && (
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-300 text-xs font-medium flex items-center gap-2">
-                <Sparkles className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <span>{fetchNotice}</span>
               </div>
             )}
 
-            {/* Product image thumbnail & preview */}
-            {productImage && (
-              <div className="p-3 rounded-2xl border border-neutral-200 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] flex items-center gap-3">
-                <img
-                  src={productImage}
-                  alt="Product preview"
-                  className="h-16 w-16 object-contain rounded-xl bg-white border border-neutral-200 dark:border-[#1b2559] p-1 shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                <div className="overflow-hidden space-y-0.5">
-                  <span className="inline-block px-2 py-0.5 text-[10px] font-black uppercase rounded bg-neutral-900 text-white dark:bg-amber-400 dark:text-neutral-950">
-                    {detectedPlatform}
-                  </span>
-                  <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                    {productName || 'Verified Marketplace Product'}
-                  </p>
+            {/* PRODUCT INFORMATION CARD */}
+            <div className="rounded-2xl border border-neutral-200 dark:border-[#1b2559] bg-neutral-50/70 dark:bg-[#0b1437]/60 p-5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-200 dark:border-[#1b2559]">
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300 tracking-wider">
+                  Product Information
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-neutral-900 text-white dark:bg-amber-400 dark:text-neutral-950 text-[10px] font-black uppercase">
+                  {detectedPlatform || 'Indian Marketplace'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+                {/* Product Image */}
+                <div className="md:col-span-1 flex flex-col items-center justify-center">
+                  {productImage ? (
+                    <img
+                      src={productImage}
+                      alt={productName || 'Product'}
+                      className="h-32 w-32 object-contain rounded-xl bg-white border border-neutral-200 dark:border-[#1b2559] p-2"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="h-32 w-32 rounded-xl bg-neutral-100 dark:bg-[#111c44] border border-dashed border-neutral-300 dark:border-[#1b2559] flex flex-col items-center justify-center text-neutral-400 text-[10px] text-center p-2">
+                      <Package className="h-8 w-8 mb-1" />
+                      <span>Image will appear when fetched</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  Product Name / Title (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  placeholder="e.g. boAt Nirvana Ion Earbuds or Levi's Denim"
-                  className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
+                {/* Structured Metadata Fields */}
+                <div className="md:col-span-3 space-y-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Brand:</span>
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        {brand || 'Information unavailable'}
+                      </p>
+                    </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  Listed Price in ₹ INR *
-                </label>
-                <input
-                  type="number"
-                  value={indianPriceINR}
-                  onChange={(e) => {
-                    setIndianPriceINR(e.target.value);
-                    if (parseFloat(e.target.value) > 0) {
-                      calculateLandedQuote(e.target.value, quantity);
-                    } else {
-                      setQuote(null);
-                    }
-                  }}
-                  placeholder="e.g. 1999"
-                  className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3.5 py-2.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
+                    <div>
+                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Variant / Size / Color:</span>
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        {variant || 'Information unavailable'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Product Name:</span>
+                    <input
+                      type="text"
+                      value={productName}
+                      onChange={(e) => setProductName(e.target.value)}
+                      placeholder="Product name or title"
+                      className="w-full mt-1 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 font-semibold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Source Marketplace:</span>
+                      <p className="font-bold text-neutral-900 dark:text-white">
+                        {detectedPlatform || 'Amazon India / Flipkart / Indian Store'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Original Indian Price (INR):</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="font-bold text-neutral-600 dark:text-neutral-300">₹</span>
+                        <input
+                          type="number"
+                          value={indianPriceINR}
+                          onChange={(e) => {
+                            setIndianPriceINR(e.target.value);
+                            if (parseFloat(e.target.value) > 0) {
+                              calculateLandedQuote(e.target.value, quantity);
+                            } else {
+                              setQuote(null);
+                            }
+                          }}
+                          placeholder="e.g. 1499"
+                          className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 pt-1">
+            {/* Quantity and Calculate Button */}
+            <div className="flex flex-wrap items-center gap-4 pt-1">
               <div className="flex items-center gap-2">
                 <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">Quantity:</label>
                 <select
@@ -523,7 +570,7 @@ export function RequestProduct() {
                       calculateLandedQuote(indianPriceINR, newQty);
                     }
                   }}
-                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   {[1, 2, 3, 4, 5, 10].map((q) => (
                     <option key={q} value={q}>
@@ -537,29 +584,28 @@ export function RequestProduct() {
                 type="button"
                 onClick={handleCalculateQuote}
                 disabled={quoteLoading || !indianPriceINR}
-                className="px-6 py-2.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition flex items-center gap-2 disabled:opacity-50"
               >
-                <Sparkles className="h-4 w-4 text-amber-400 dark:text-neutral-950" />
-                <span>{quoteLoading ? 'Calculating NPR Quote...' : 'Calculate Exact Nepal Price ➔'}</span>
+                <span>{quoteLoading ? 'Calculating Price...' : 'Calculate Nepal Landed Price ➔'}</span>
               </button>
             </div>
           </div>
 
-          {/* Transparent Quote Preview with Clear Separation */}
+          {/* Transparent Quote Preview */}
           {quote && quote.finalAmountNPR > 0 && (
             <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-[#1b254b] dark:to-[#0b1437] border border-amber-200 dark:border-[#1b2559] space-y-5 animate-in fade-in duration-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-amber-200/60 dark:border-white/10">
                 {/* Original Indian Marketplace Price */}
                 <div className="space-y-1">
                   <span className="text-[11px] font-black uppercase text-amber-800 dark:text-amber-400">
-                    Original Marketplace Price (INR)
+                    Original Price (INR)
                   </span>
                   <div className="text-2xl font-black text-neutral-900 dark:text-white">
                     ₹{quote.indianPriceINR.toLocaleString()}{' '}
                     <span className="text-xs font-semibold text-neutral-500">INR</span>
                   </div>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    Listed retail on {detectedPlatform}
+                    Listed retail on {detectedPlatform} ({quantity} item{quantity > 1 ? 's' : ''})
                   </p>
                 </div>
 
@@ -572,12 +618,10 @@ export function RequestProduct() {
                     NPR {quote.finalAmountNPR.toLocaleString()}
                   </div>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    Includes customs, clearance & doorstep delivery
+                    Includes customs, clearance &amp; doorstep delivery in Nepal
                   </p>
                 </div>
               </div>
-
-              {/* Internal cost breakdown intentionally omitted from customer view */}
 
               <div className="flex justify-end pt-2">
                 <button
@@ -667,7 +711,7 @@ export function RequestProduct() {
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Street Address & Landmark *</label>
+              <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Street Address &amp; Landmark *</label>
               <input
                 type="text"
                 value={shipping.street}
@@ -699,22 +743,22 @@ export function RequestProduct() {
               }}
               className="px-8 py-3.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 flex items-center gap-2 transition"
             >
-              <span>Continue to Payment & QR</span>
+              <span>Continue to Payment</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 3: PAYMENT QR & PROOF SUBMISSION */}
+      {/* STEP 3: PAYMENT VERIFICATION & PROOF */}
       {step === 3 && (
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 sm:p-8 space-y-6 shadow-2xs">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-black text-neutral-950 dark:text-white">
-              3. Payment Verification & Confirmation
+              3. Payment &amp; Order Confirmation
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Pay 100% online or 50% advance for Cash on Delivery. Upload transfer screenshot for finance verification.
+              Pay 100% online or 50% advance for Cash on Delivery. Upload payment screenshot for verification.
             </p>
           </div>
 
@@ -760,7 +804,7 @@ export function RequestProduct() {
             </div>
             <div className="text-center space-y-1">
               <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Amount to Scan & Pay:{' '}
+                Amount to Scan &amp; Pay:{' '}
                 <strong className="text-sm text-neutral-950 dark:text-amber-400">
                   NPR {advanceAmount.toLocaleString()}
                 </strong>
@@ -788,7 +832,7 @@ export function RequestProduct() {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center justify-between">
                 <span>Upload Payment Screenshot Proof</span>
-                <span className="text-[10px] text-amber-500 font-semibold">(Fast finance review)</span>
+                <span className="text-[10px] text-amber-500 font-semibold">(Fast verification)</span>
               </label>
 
               {screenshotPreview ? (
@@ -836,7 +880,7 @@ export function RequestProduct() {
             <div className="p-3 rounded-xl bg-neutral-100 dark:bg-[#0b1437] text-[11px] text-neutral-600 dark:text-neutral-300 flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-500 shrink-0" />
               <span>
-                Payment status will remain <strong>Pending Verification</strong> until our finance desk verifies your screenshot.
+                Payment status will be verified by our team after order placement.
               </span>
             </div>
           </div>
@@ -859,10 +903,10 @@ export function RequestProduct() {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Submitting Sourcing Request...</span>
+                  <span>Placing Order...</span>
                 </>
               ) : (
-                <span>Confirm Sourcing Order ➔</span>
+                <span>Confirm &amp; Place Order ➔</span>
               )}
             </button>
           </div>
@@ -878,10 +922,10 @@ export function RequestProduct() {
 
           <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl font-black text-neutral-950 dark:text-white">
-              India Sourcing Request Received!
+              Order Placed Successfully!
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Our sourcing team has received your order and payment verification details.
+              We have received your product order and payment confirmation.
             </p>
           </div>
 
@@ -901,9 +945,25 @@ export function RequestProduct() {
             <div className="flex justify-between">
               <span className="text-neutral-600 dark:text-neutral-300">Product:</span>
               <span className="font-bold text-neutral-900 dark:text-white truncate max-w-xs">
-                {productName || 'Indian Sourced Product'}
+                {productName || 'Indian Product'}
               </span>
             </div>
+            {brand && brand !== 'Information unavailable' && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600 dark:text-neutral-300">Brand:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {brand}
+                </span>
+              </div>
+            )}
+            {variant && variant !== 'Information unavailable' && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600 dark:text-neutral-300">Variant:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {variant}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-neutral-600 dark:text-neutral-300">Original Listed INR:</span>
               <span className="font-bold text-neutral-900 dark:text-white">
@@ -928,7 +988,7 @@ export function RequestProduct() {
               <div className="pt-2 border-t border-neutral-200 dark:border-[#1b2559] flex items-center justify-between">
                 <span className="text-neutral-600 dark:text-neutral-300">Transfer Screenshot:</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Uploaded for Review
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Attached
                 </span>
               </div>
             )}
@@ -939,7 +999,7 @@ export function RequestProduct() {
               to="/track-order"
               className="px-6 py-3.5 rounded-2xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition"
             >
-              Track Sourcing Progress ➔
+              Track Order ➔
             </Link>
             <Link
               to="/"
@@ -954,4 +1014,4 @@ export function RequestProduct() {
   );
 }
 
-export default RequestProduct;
+export default ProductLinkOrder;

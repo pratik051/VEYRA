@@ -63,10 +63,10 @@ export function About() {
 
       <div className="text-center pt-4">
         <Link
-          to="/request-product"
+          to="/order"
           className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs sm:text-sm font-black hover:bg-neutral-800 dark:hover:bg-amber-300 transition shadow-md"
         >
-          <span>Verify Product Link &amp; Get Quote ➔</span>
+          <span>Order by Product Link ➔</span>
         </Link>
       </div>
     </div>

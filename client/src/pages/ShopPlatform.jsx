@@ -32,8 +32,8 @@ export function ShopPlatform() {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center space-y-4">
         <h2 className="text-2xl font-black text-neutral-950 dark:text-white">Marketplace Not Found</h2>
-        <Link to="/request-product" className="text-xs font-bold text-amber-500 hover:text-amber-400 underline">
-          Go to Sourcing Portal
+        <Link to="/order" className="text-xs font-bold text-amber-500 hover:text-amber-400 underline">
+          Go to Product Order Page
         </Link>
       </div>
     );
@@ -48,8 +48,8 @@ export function ShopPlatform() {
           <span>Home</span>
         </Link>
         <span>/</span>
-        <Link to="/request-product" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
-          Sourcing
+        <Link to="/order" className="hover:text-neutral-900 dark:hover:text-white transition-colors">
+          Order
         </Link>
         <span>/</span>
         <span className="text-neutral-900 dark:text-white font-bold">{meta.name}</span>
@@ -80,7 +80,7 @@ export function ShopPlatform() {
 
         <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
           <Link
-            to={`/request-product?source=${meta.slug}`}
+            to={`/order?source=${meta.slug}`}
             className="rounded-2xl bg-amber-400 hover:bg-amber-300 text-neutral-950 px-6 py-3 text-xs font-black transition text-center shadow-md active:scale-95"
           >
             Paste {meta.shortName} URL ➔

@@ -14,7 +14,7 @@ import { Home } from './pages/Home';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
-import { RequestProduct } from './pages/RequestProduct';
+import { ProductLinkOrder } from './pages/ProductLinkOrder';
 import { TrackOrder } from './pages/TrackOrder';
 import { Account } from './pages/Account';
 import { Login } from './pages/Login';
@@ -42,14 +42,16 @@ export default function App() {
                   {/* Storefront Home Route */}
                   <Route path="/" element={<Home />} />
 
-                  {/* Legacy Catalog Routes - Redirect to Sourcing Portal */}
-                  <Route path="/shop" element={<Navigate to="/request-product" replace />} />
-                  <Route path="/shop/:platform" element={<Navigate to="/request-product" replace />} />
-                  <Route path="/marketplace/:source" element={<Navigate to="/request-product" replace />} />
+                  {/* Legacy Catalog Routes - Redirect to Product Link Order */}
+                  <Route path="/shop" element={<Navigate to="/order" replace />} />
+                  <Route path="/shop/:platform" element={<Navigate to="/order" replace />} />
+                  <Route path="/marketplace/:source" element={<Navigate to="/order" replace />} />
                   <Route path="/product/:slug" element={<ProductDetail />} />
 
-                  {/* Sourcing & Order Flow */}
-                  <Route path="/request-product" element={<RequestProduct />} />
+                  {/* Product Link Order Flow */}
+                  <Route path="/order" element={<ProductLinkOrder />} />
+                  <Route path="/product-link" element={<Navigate to="/order" replace />} />
+                  <Route path="/request-product" element={<Navigate to="/order" replace />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/track-order" element={<TrackOrder />} />

@@ -9,7 +9,7 @@ import productRoutes from "./routes/product-routes.js";
 import paymentRoutes from "./routes/payment-routes.js";
 import supportRoutes from "./routes/support-routes.js";
 import requestRoutes from "./routes/request-routes.js";
-import aiRoutes from "./routes/ai-routes.js";
+import productLinkRoutes from "./routes/product-link-routes.js";
 import userRoutes from "./routes/user-routes.js";
 import checkoutRoutes from "./routes/checkout-routes.js";
 import { authenticateUser } from "./middleware/auth.js";
@@ -107,8 +107,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/request-product", requestRoutes);
 app.use("/api/product-requests", requestRoutes);
-app.use("/api/ai", aiRoutes);
-app.use("/api/verify-product-link", aiRoutes);
+app.use("/api/verify-product-link", productLinkRoutes);
 
 // Fallback 404 handler for unmatched routes (always returns JSON, never HTML)
 app.use((req, res) => {

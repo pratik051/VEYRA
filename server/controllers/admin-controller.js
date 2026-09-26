@@ -7,6 +7,7 @@ import MarketplaceProductModel from "../models/marketplace-product-model.js";
 import UserModel from "../models/user-model.js";
 import PaymentModel from "../models/payment-model.js";
 import { sendOrderDeliveredEmail, sendOrderStatusEmail } from "../services/emailService.js";
+import { hashPassword, verifyPassword } from "../utils/password.js";
 
 // Dashboard Overview Stats
 export async function getDashboardStats(req, res) {
@@ -451,10 +452,8 @@ export async function getAllSupportTickets(req, res) {
 export async function updateSupportTicket(req, res) {
   try {
     const { id } = req.params;
-    const { status, priority, reply } = req.body || {};
-    const updates = {};
-    if (status) updates.status = status;
-    if (priority) updates.priority = priority;
+    const { status, priority, reply, message } = req.body || {};
+    const replyContent = reply || message;
 
     const ticket = await SupportTicketModel.findOne({
       $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : undefined }, { ticketId: id }]
@@ -464,13 +463,13 @@ export async function updateSupportTicket(req, res) {
       return res.status(404).json({ error: "Support ticket not found." });
     }
 
-    if (reply) {
+    if (replyContent) {
       ticket.messages.push({
         messageId: "msg-" + Math.floor(Math.random() * 100000),
         senderId: String(req.user._id),
         senderName: req.user.fullName || "Admin Support",
         senderRole: "admin",
-        message: reply,
+        message: replyContent,
         createdAt: new Date()
       });
     }
@@ -512,43 +511,27 @@ export async function updateUserRole(req, res) {
   }
 }
 
-// Catalog Products Management
-export async function getAdminProducts(req, res) {
+export async function updateAdminPassword(req, res) {
   try {
-    const localProducts = await ProductModel.find({}).sort({ createdAt: -1 }).lean();
-    const marketplaceProducts = await MarketplaceProductModel.find({}).sort({ createdAt: -1 }).limit(100).lean();
-    return res.json({ success: true, products: [...localProducts, ...marketplaceProducts] });
+    const { currentPassword, newPassword } = req.body || {};
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters." });
+    }
+    const user = await UserModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "Admin user not found." });
+    }
+    if (user.passwordHash && currentPassword) {
+      const valid = await verifyPassword(currentPassword, user.passwordHash);
+      if (!valid) {
+        return res.status(400).json({ error: "Incorrect current password." });
+      }
+    }
+    const newHash = await hashPassword(newPassword);
+    await UserModel.findByIdAndUpdate(user._id, { passwordHash: newHash });
+    return res.json({ success: true, message: "Password updated successfully." });
   } catch (error) {
-    return res.status(500).json({ error: error.message || "Failed to fetch products." });
+    return res.status(500).json({ error: error.message || "Failed to update password." });
   }
 }
 
-export async function createProduct(req, res) {
-  try {
-    const product = await ProductModel.create(req.body);
-    return res.json({ success: true, product });
-  } catch (error) {
-    return res.status(400).json({ error: error.message || "Failed to create product." });
-  }
-}
-
-export async function updateProduct(req, res) {
-  try {
-    const { id } = req.params;
-    const product = await ProductModel.findByIdAndUpdate(id, req.body, { new: true });
-    if (!product) return res.status(404).json({ error: "Product not found." });
-    return res.json({ success: true, product });
-  } catch (error) {
-    return res.status(400).json({ error: error.message || "Failed to update product." });
-  }
-}
-
-export async function deleteProduct(req, res) {
-  try {
-    const { id } = req.params;
-    await ProductModel.findByIdAndDelete(id);
-    return res.json({ success: true, message: "Product deleted." });
-  } catch (error) {
-    return res.status(400).json({ error: error.message || "Failed to delete product." });
-  }
-}

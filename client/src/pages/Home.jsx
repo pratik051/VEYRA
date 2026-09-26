@@ -18,7 +18,7 @@ export function Home() {
 
     try {
       new URL(productUrl.trim());
-      navigate(`/request-product?url=${encodeURIComponent(productUrl.trim())}`);
+      navigate(`/order?url=${encodeURIComponent(productUrl.trim())}`);
     } catch {
       setUrlError('Please enter a valid URL starting with http:// or https://');
     }

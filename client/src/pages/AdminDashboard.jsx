@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Shield,
@@ -24,8 +24,8 @@ import {
   Check,
   Eye,
   MessageSquare,
-  Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -34,7 +34,7 @@ export function AdminDashboard() {
   const { user, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('orders'); // orders | requests | payments | tickets | settings
+  const [activeTab, setActiveTab] = useState('orders'); // orders | requests | payments | tickets | users | settings
   const [orderFilter, setOrderFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -42,6 +42,7 @@ export function AdminDashboard() {
   const [requests, setRequests] = useState([]);
   const [payments, setPayments] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [usersList, setUsersList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
@@ -52,7 +53,7 @@ export function AdminDashboard() {
   const [replyTicketId, setReplyTicketId] = useState(null);
   const [replyText, setReplyText] = useState('');
 
-  // Sourcing Destination Settings
+  // Logistics & Pricing Settings
   const [transitConfig, setTransitConfig] = useState({
     warehouseCity: 'Raxaul / Birgunj Hub',
     exchangeRate: '1.65',
@@ -67,6 +68,44 @@ export function AdminDashboard() {
     confirmPassword: ''
   });
 
+  const loadAdminData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [ordersRes, requestsRes, paymentsRes, ticketsRes, usersRes] = await Promise.allSettled([
+        api.get('/api/admin/orders'),
+        api.get('/api/admin/product-requests'),
+        api.get('/api/admin/payments'),
+        api.get('/api/admin/tickets'),
+        api.get('/api/admin/users')
+      ]);
+
+      if (ordersRes.status === 'fulfilled') {
+        const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
+        setOrders(Array.isArray(rawOrders) ? rawOrders : []);
+      }
+
+      if (requestsRes.status === 'fulfilled' && requestsRes.value.data?.requests) {
+        setRequests(requestsRes.value.data.requests);
+      }
+
+      if (paymentsRes.status === 'fulfilled' && paymentsRes.value.data?.payments) {
+        setPayments(paymentsRes.value.data.payments);
+      }
+
+      if (ticketsRes.status === 'fulfilled' && ticketsRes.value.data?.tickets) {
+        setTickets(ticketsRes.value.data.tickets);
+      }
+
+      if (usersRes.status === 'fulfilled' && usersRes.value.data?.users) {
+        setUsersList(usersRes.value.data.users);
+      }
+    } catch (e) {
+      console.error('Admin data load error:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== 'admin') {
@@ -74,34 +113,15 @@ export function AdminDashboard() {
       return;
     }
     loadAdminData();
-  }, [user, authLoading]);
-
-  const loadAdminData = () => {
-    api.get('/api/admin/orders').then((res) => {
-      const rawOrders = res.data?.orders || (Array.isArray(res.data) ? res.data : []);
-      setOrders(Array.isArray(rawOrders) ? rawOrders : []);
-    }).catch((e) => console.error("Admin orders load error:", e));
-
-    api.get('/api/admin/product-requests').then((res) => {
-      if (res.data?.requests) setRequests(res.data.requests);
-    }).catch((e) => console.error("Admin requests load error:", e));
-
-    api.get('/api/admin/payments').then((res) => {
-      if (res.data?.payments) setPayments(res.data.payments);
-    }).catch((e) => console.error("Admin payments load error:", e));
-
-    api.get('/api/admin/tickets').then((res) => {
-      if (res.data?.tickets) setTickets(res.data.tickets);
-    }).catch((e) => console.error("Admin tickets load error:", e));
-  };
+  }, [user, authLoading, navigate, loadAdminData]);
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
       await api.patch(`/api/admin/orders/${orderId}`, { status: newStatus });
-      setOrders(orders.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
       setStatusMsg(`Order ${orderId} updated to ${newStatus}`);
     } catch {
-      setOrders(orders.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
       setStatusMsg(`Order status updated to ${newStatus}`);
     }
   };
@@ -109,11 +129,11 @@ export function AdminDashboard() {
   const handleVerifyPayment = async (paymentId, status) => {
     try {
       await api.patch(`/api/admin/payments/${paymentId}`, { status });
-      setPayments(payments.map((p) => (p._id === paymentId ? { ...p, status } : p)));
+      setPayments((prev) => prev.map((p) => (p._id === paymentId ? { ...p, status } : p)));
       setStatusMsg(`Payment ${paymentId} marked as ${status}`);
       setPreviewPayment(null);
     } catch {
-      setPayments(payments.map((p) => (p._id === paymentId ? { ...p, status } : p)));
+      setPayments((prev) => prev.map((p) => (p._id === paymentId ? { ...p, status } : p)));
       setStatusMsg(`Payment verified as ${status}`);
       setPreviewPayment(null);
     }
@@ -133,6 +153,16 @@ export function AdminDashboard() {
     }
   };
 
+  const handleUpdateUserRole = async (userId, newRole) => {
+    try {
+      await api.patch(`/api/admin/users/${userId}/role`, { role: newRole });
+      setUsersList((prev) => prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u)));
+      setStatusMsg(`User role updated to ${newRole}`);
+    } catch (err) {
+      setStatusMsg(err.response?.data?.error || 'Failed to update user role');
+    }
+  };
+
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword) {
@@ -149,7 +179,6 @@ export function AdminDashboard() {
     }
   };
 
-  // Horizon UI Financial & Metric Calculations
   const totalRevenueNPR = useMemo(() => {
     return orders.reduce((sum, ord) => sum + (ord.pricing?.totalAmount || ord.totalAmount || 0), 0);
   }, [orders]);
@@ -164,11 +193,14 @@ export function AdminDashboard() {
       const matchSearch =
         !searchQuery.trim() ||
         o._id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.shippingAddress?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.shippingAddress?.city?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchFilter && matchSearch;
     });
   }, [orders, orderFilter, searchQuery]);
+
   if (authLoading && (!user || user.role !== 'admin')) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
@@ -180,14 +212,13 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-16">
-      {/* 1. HORIZON UI TOP HEADER BAR */}
+      {/* 1. TOP HEADER BAR */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#111c44] p-4 sm:p-6 rounded-3xl border border-neutral-200 dark:border-[#1b2559] shadow-sm transition-all">
-        {/* Breadcrumb & Title */}
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-bold text-neutral-400 dark:text-[#a3aed0]">
             <span>Pages</span>
             <span>/</span>
-            <span className="text-neutral-900 dark:text-white font-black">Admin Store Management</span>
+            <span className="text-neutral-900 dark:text-white font-black">Admin Management</span>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-950 dark:text-white">
@@ -195,26 +226,24 @@ export function AdminDashboard() {
             </h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Transit Online
+              Online
             </span>
           </div>
         </div>
 
         {/* Header Right Action Bar */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Refresh Action */}
           <button
             type="button"
             onClick={loadAdminData}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-neutral-200 text-xs font-bold border border-neutral-200 dark:border-[#1b2559] transition shadow-2xs"
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-700 dark:text-neutral-200 text-xs font-bold border border-neutral-200 dark:border-[#1b2559] transition shadow-2xs disabled:opacity-50"
             title="Refresh dashboard data"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-amber-500 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
 
-
-          {/* Storefront Link */}
           <Link
             to="/"
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-neutral-100 dark:bg-[#0b1437] hover:bg-neutral-200 dark:hover:bg-[#1b254b] text-neutral-800 dark:text-white text-xs font-bold border border-neutral-200 dark:border-[#1b2559] transition"
@@ -223,7 +252,6 @@ export function AdminDashboard() {
             <ArrowUpRight className="h-3.5 w-3.5 text-neutral-400" />
           </Link>
 
-          {/* Admin User Chip & Logout */}
           <button
             onClick={() => {
               logout();
@@ -245,13 +273,13 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 2. HORIZON UI KPI METRIC CARDS */}
+      {/* 2. KPI METRIC CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {/* Revenue */}
         <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider">
-              Total GMV Sourced
+              Total GMV
             </span>
             <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
               <DollarSign className="h-4 w-4" />
@@ -262,7 +290,7 @@ export function AdminDashboard() {
           </h3>
           <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-bold">
             <TrendingUp className="h-3 w-3" />
-            <span>+18.4% this month</span>
+            <span>Orders Sourced</span>
           </div>
         </div>
 
@@ -282,11 +310,11 @@ export function AdminDashboard() {
           <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">In transit &amp; processing</p>
         </div>
 
-        {/* Sourcing Requests */}
+        {/* Product Requests */}
         <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider">
-              India Requests
+              Product Links
             </span>
             <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400">
               <FileText className="h-4 w-4" />
@@ -295,7 +323,7 @@ export function AdminDashboard() {
           <h3 className="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
             {requests.length}
           </h3>
-          <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">URLs waiting quote review</p>
+          <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">Product inquiries</p>
         </div>
 
         {/* Payments Submitted */}
@@ -327,18 +355,19 @@ export function AdminDashboard() {
           <h3 className="text-lg sm:text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
             {tickets.length}
           </h3>
-          <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">Customer care questions</p>
+          <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">Customer tickets</p>
         </div>
       </div>
 
-      {/* 3. HORIZON UI TAB NAVIGATION */}
+      {/* 3. TAB NAVIGATION */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200 dark:border-[#1b2559]">
         {[
           { id: 'orders', label: 'Orders Management', icon: Package, count: orders.length },
-          { id: 'requests', label: 'India Sourcing Requests', icon: FileText, count: requests.length },
-          { id: 'payments', label: 'Payment QR Verification', icon: CreditCard, count: payments.length },
-          { id: 'tickets', label: 'Customer Support Tickets', icon: HelpCircle, count: tickets.length },
-          { id: 'settings', label: 'Logistics & Password', icon: Settings }
+          { id: 'requests', label: 'Product Requests', icon: FileText, count: requests.length },
+          { id: 'payments', label: 'Payment Verification', icon: CreditCard, count: payments.length },
+          { id: 'tickets', label: 'Support Tickets', icon: HelpCircle, count: tickets.length },
+          { id: 'users', label: 'Users & Customers', icon: Users, count: usersList.length },
+          { id: 'settings', label: 'Pricing & Security', icon: Settings }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -364,10 +393,10 @@ export function AdminDashboard() {
         })}
       </div>
 
-      {/* 4. TAB 1: ORDERS MANAGEMENT (STORE MANAGEMENT DASHBOARD FIGMA LAYOUT) */}
+      {/* 4. TAB 1: ORDERS MANAGEMENT */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
-          {/* Controls: Search and Status Filters */}
+          {/* Order Search and Status Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#111c44] p-3.5 sm:p-4 rounded-2xl border border-neutral-200 dark:border-[#1b2559]">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
@@ -402,8 +431,8 @@ export function AdminDashboard() {
           <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
             <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black text-neutral-950 dark:text-white">Store &amp; Sourcing Orders</h3>
-                <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Real-time tracking of India landed packages</p>
+                <h3 className="text-base font-black text-neutral-950 dark:text-white">Orders List</h3>
+                <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Manage and update customer orders</p>
               </div>
               <span className="text-xs font-bold text-neutral-400 dark:text-[#a3aed0]">
                 {filteredOrders.length} matching orders
@@ -436,27 +465,27 @@ export function AdminDashboard() {
                       <div className="space-y-1 min-w-[220px]">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-black text-xs text-neutral-950 dark:text-white">
-                            {ord._id}
+                            {ord.orderId || ord._id}
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-[#0b1437] text-neutral-600 dark:text-[#a3aed0]">
-                            {ord.payment?.method || 'eSewa'}
+                            {ord.payment?.method || ord.paymentMethod || 'eSewa'}
                           </span>
                         </div>
                         <p className="text-xs font-bold text-neutral-900 dark:text-white">
-                          {ord.shippingAddress?.fullName || 'Customer'}
+                          {ord.shippingAddress?.fullName || ord.customerName || 'Customer'}
                         </p>
                         <p className="text-[11px] text-neutral-500 dark:text-[#a3aed0]">
-                          {ord.shippingAddress?.city}, {ord.shippingAddress?.province} • {ord.shippingAddress?.phone}
+                          {ord.shippingAddress?.city || ord.city || 'Nepal'}, {ord.shippingAddress?.province || ord.province || ''} • {ord.shippingAddress?.phone || ord.phone || ''}
                         </p>
                       </div>
 
                       {/* Middle: Items & Amount */}
                       <div className="space-y-1">
                         <span className="text-xs font-black text-neutral-950 dark:text-amber-400 block">
-                          NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}
+                          NPR {(ord.pricing?.totalAmount || ord.totalAmount || ord.finalAmountNPR || 0).toLocaleString()}
                         </span>
                         <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0] block">
-                          {ord.items?.length || 1} items ({ord.pricing?.deliveryFee === 0 ? 'Free Delivery' : 'Standard Courier'})
+                          {ord.items?.length || 1} items ({ord.productName || 'Order'})
                         </span>
                         <div className="flex items-center gap-1.5 pt-0.5">
                           <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
@@ -464,7 +493,7 @@ export function AdminDashboard() {
                               ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                               : 'bg-neutral-100 dark:bg-[#0b1437] text-neutral-500 dark:text-[#a3aed0]'
                           }`}>
-                            Payment Proof: {(ord.paymentScreenshot || ord.payment?.screenshot) ? 'Submitted' : 'Not Uploaded'}
+                            Proof: {(ord.paymentScreenshot || ord.payment?.screenshot) ? 'Submitted' : 'None'}
                           </span>
                           {(ord.paymentScreenshot || ord.payment?.screenshot) && (
                             <button
@@ -472,7 +501,7 @@ export function AdminDashboard() {
                               onClick={() => setPreviewPayment({
                                 _id: ord._id,
                                 orderId: ord.orderId || ord._id,
-                                amount: ord.pricing?.totalAmount || ord.totalAmount || ord.total || 0,
+                                amount: ord.pricing?.totalAmount || ord.totalAmount || ord.finalAmountNPR || 0,
                                 transactionId: ord.payment?.transactionId || ord.paymentReference || ord.paymentTransactionId || 'TXN',
                                 method: ord.payment?.method || ord.paymentMethod || 'eSewa',
                                 screenshot: ord.paymentScreenshot || ord.payment?.screenshot || ''
@@ -488,7 +517,7 @@ export function AdminDashboard() {
                       {/* Right: Status Dropdown */}
                       <div className="flex items-center gap-3 self-start md:self-auto">
                         <select
-                          value={ord.status || 'Processing'}
+                          value={ord.status || ord.orderStatus || 'Processing'}
                           onChange={(e) => handleUpdateOrderStatus(ord._id, e.target.value)}
                           className={`rounded-xl border px-3 py-1.5 text-xs font-black focus:outline-none focus:ring-2 focus:ring-amber-400 ${
                             statusColors[ord.status] || statusColors['Processing']
@@ -511,13 +540,13 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 5. TAB 2: INDIA SOURCING REQUESTS */}
+      {/* 5. TAB 2: PRODUCT REQUESTS */}
       {activeTab === 'requests' && (
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
           <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">
             <div>
-              <h3 className="text-base font-black text-neutral-950 dark:text-white">Customer India Sourcing Requests</h3>
-              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">URLs requested from Amazon, Flipkart, Myntra, Ajio</p>
+              <h3 className="text-base font-black text-neutral-950 dark:text-white">Customer Product Requests</h3>
+              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Links requested by customers</p>
             </div>
             <span className="text-xs font-bold text-neutral-400">{requests.length} requests</span>
           </div>
@@ -525,7 +554,7 @@ export function AdminDashboard() {
           <div className="divide-y divide-neutral-100 dark:divide-[#1b2559] overflow-x-auto">
             {requests.length === 0 ? (
               <div className="p-12 text-center text-xs text-neutral-400 dark:text-[#a3aed0]">
-                No pending customer sourcing requests.
+                No pending customer product requests.
               </div>
             ) : (
               requests.map((r) => (
@@ -551,7 +580,7 @@ export function AdminDashboard() {
                       {r.productUrl}
                     </a>
                     <p className="text-neutral-500 dark:text-[#a3aed0] text-[11px]">
-                      Source: ₹{r.indianPriceINR || 0} INR → NPR {(r.finalAmountNPR || 0).toLocaleString()} (incl. conversion &amp; duty)
+                      Price: ₹{r.indianPriceINR || 0} INR → NPR {(r.finalAmountNPR || 0).toLocaleString()}
                     </p>
                   </div>
 
@@ -560,10 +589,10 @@ export function AdminDashboard() {
                       {r.status || 'Pending'}
                     </span>
                     <button
-                      onClick={() => setStatusMsg(`Quote confirmed for ${r._id}`)}
+                      onClick={() => setStatusMsg(`Quote acknowledged for ${r._id}`)}
                       className="px-3 py-1 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 transition"
                     >
-                      Send Quote
+                      Acknowledge
                     </button>
                   </div>
                 </div>
@@ -573,13 +602,13 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 6. TAB 3: PAYMENT QR VERIFICATION */}
+      {/* 6. TAB 3: PAYMENT VERIFICATION */}
       {activeTab === 'payments' && (
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
           <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">
             <div>
-              <h3 className="text-base font-black text-neutral-950 dark:text-white">Payment QR Verification Queue</h3>
-              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Verify eSewa, Khalti, and Nepali Bank transfer transaction IDs</p>
+              <h3 className="text-base font-black text-neutral-950 dark:text-white">Payment Verification Queue</h3>
+              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Verify eSewa, Khalti, and Nepali Bank transfer transaction proofs</p>
             </div>
             <span className="text-xs font-bold text-neutral-400">{payments.length} submissions</span>
           </div>
@@ -653,7 +682,7 @@ export function AdminDashboard() {
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
           <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559]">
             <h3 className="text-base font-black text-neutral-950 dark:text-white">Customer Support Inquiries</h3>
-            <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Assistance requests received through Support &amp; AI Help Center</p>
+            <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Assistance requests received through Customer Support Desk</p>
           </div>
 
           <div className="divide-y divide-neutral-100 dark:divide-[#1b2559] overflow-x-auto">
@@ -676,7 +705,7 @@ export function AdminDashboard() {
                         </span>
                       </div>
                       <p className="text-neutral-500 dark:text-[#a3aed0] text-[11px]">
-                        From: {t.user?.fullName || t.user?.email || 'Customer'} • Status: {t.status || 'Open'}
+                        From: {t.userName || t.userEmail || 'Customer'} • Status: {t.status || 'Open'}
                       </p>
                     </div>
 
@@ -688,9 +717,9 @@ export function AdminDashboard() {
                     </button>
                   </div>
 
-                  {t.message && (
+                  {t.description && (
                     <p className="text-neutral-700 dark:text-neutral-200 bg-neutral-50 dark:bg-[#0b1437] p-3 rounded-xl border border-neutral-200 dark:border-[#1b2559]">
-                      {t.message}
+                      {t.description}
                     </p>
                   )}
 
@@ -718,19 +747,76 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 8. TAB 5: LOGISTICS CONFIGURATION & PASSWORD SETTINGS */}
+      {/* 8. TAB 5: USERS & CUSTOMERS */}
+      {activeTab === 'users' && (
+        <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
+          <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-black text-neutral-950 dark:text-white">Registered Users &amp; Customers</h3>
+              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Manage customer accounts and administrative roles</p>
+            </div>
+            <span className="text-xs font-bold text-neutral-400">{usersList.length} users</span>
+          </div>
+
+          <div className="divide-y divide-neutral-100 dark:divide-[#1b2559] overflow-x-auto">
+            {usersList.length === 0 ? (
+              <div className="p-12 text-center text-xs text-neutral-400 dark:text-[#a3aed0]">
+                No registered user accounts found.
+              </div>
+            ) : (
+              usersList.map((u) => (
+                <div
+                  key={u._id}
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs hover:bg-neutral-50/60 dark:hover:bg-[#1b254b]/40 transition"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-neutral-950 dark:text-white text-sm">
+                        {u.fullName || 'Registered User'}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                        u.role === 'admin'
+                          ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+                          : 'bg-neutral-100 dark:bg-[#0b1437] text-neutral-700 dark:text-neutral-300'
+                      }`}>
+                        {u.role || 'customer'}
+                      </span>
+                    </div>
+                    <p className="text-neutral-500 dark:text-[#a3aed0]">
+                      {u.email} {u.phone ? `• ${u.phone}` : ''}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={u.role || 'customer'}
+                      onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
+                      className="rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                      <option value="customer">Customer</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 9. TAB 6: SETTINGS & PASSWORD */}
       {activeTab === 'settings' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Logistics Sourcing Config */}
           <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] p-6 space-y-4 shadow-sm">
             <h3 className="text-base font-black text-neutral-950 dark:text-white flex items-center gap-2">
               <Building className="h-4 w-4 text-amber-500" />
-              <span>India Sourcing &amp; Pricing Configuration</span>
+              <span>Logistics &amp; Pricing Configuration</span>
             </h3>
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-neutral-700 dark:text-neutral-300">Indian Transit Hub</label>
+                <label className="font-bold text-neutral-700 dark:text-neutral-300">Transit Hub</label>
                 <input
                   type="text"
                   value={transitConfig.warehouseCity}
@@ -764,7 +850,7 @@ export function AdminDashboard() {
                 onClick={() => setStatusMsg('✓ Logistics settings saved')}
                 className="w-full py-2.5 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 font-bold hover:bg-neutral-800 transition"
               >
-                Save Sourcing Settings
+                Save Settings
               </button>
             </div>
           </div>
@@ -878,7 +964,7 @@ export function AdminDashboard() {
                 onClick={() => handleVerifyPayment(previewPayment._id, 'Approved')}
                 className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition"
               >
-                Approve & Verify Order
+                Approve &amp; Verify Order
               </button>
               <button
                 type="button"

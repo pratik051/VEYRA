@@ -96,7 +96,7 @@ export function MarketplacePlatformSection({ initialProducts = [], onQuickView }
 
         <div className="relative z-10 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <Link
-            to="/request-product"
+            to={`/order?source=${activeMeta.slug}`}
             className="rounded-2xl bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 text-xs font-black transition active:scale-95 shadow-md"
           >
             Paste {activeMeta.shortName} Link ➔

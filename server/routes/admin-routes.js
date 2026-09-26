@@ -13,10 +13,7 @@ import {
   updateSupportTicket,
   getAllUsers,
   updateUserRole,
-  getAdminProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct
+  updateAdminPassword
 } from "../controllers/admin-controller.js";
 import { authenticateUser, requireAdmin } from "../middleware/auth.js";
 
@@ -46,13 +43,11 @@ router.patch("/product-requests/:id", updateProductRequest);
 
 router.get("/tickets", getAllSupportTickets);
 router.patch("/tickets/:id", updateSupportTicket);
+router.post("/tickets/:id/reply", updateSupportTicket);
 
 router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
 
-router.get("/products", getAdminProducts);
-router.post("/products", createProduct);
-router.put("/products/:id", updateProduct);
-router.delete("/products/:id", deleteProduct);
+router.post("/settings/password", updateAdminPassword);
 
 export default router;

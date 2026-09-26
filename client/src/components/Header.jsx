@@ -27,7 +27,7 @@ export function Header() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: '🇮🇳 Sourcing Portal', href: '/request-product' },
+    { name: 'Order by Link', href: '/order' },
     { name: 'How It Works', href: '/how-it-works' },
     { name: 'Track Order', href: '/track-order' },
     { name: 'Support', href: '/support' },
