@@ -46,7 +46,7 @@ export function getEmailFrom() {
   const fromName = (process.env.EMAIL_FROM_NAME || "SajiloMarts").trim();
   return (
     process.env.EMAIL_FROM ||
-    (user ? `"${fromName}" <${user}>` : `"SajiloMarts" <no-reply@sajilomarts.tech>`)
+    (user ? `"${fromName}" <${user}>` : `"SajiloMarts" <sajilomarts@gmail.com>`)
   );
 }
 
@@ -137,7 +137,7 @@ function buildEmailLayout({ headerTitle = "SajiloMarts", headerSubtitle = "Shop 
           <tr>
             <td style="padding: 24px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
               <p style="margin: 0 0 8px; font-size: 12px; color: #64748b; line-height: 18px;">
-                Need help or have questions? Reach out to our support team at <a href="mailto:support@sajilomarts.tech" style="color: #2563eb; text-decoration: none; font-weight: 600;">support@sajilomarts.tech</a>
+                Need help or have questions? Reach out to our support team at <a href="mailto:sajilomarts@gmail.com" style="color: #2563eb; text-decoration: none; font-weight: 600;">sajilomarts@gmail.com</a>
               </p>
               <p style="margin: 0; font-size: 11px; color: #94a3b8;">
                 &copy; ${currentYear} SajiloMarts Nepal. Direct India-to-Nepal cross-border marketplace logistics. All rights reserved.

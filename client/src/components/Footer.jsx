@@ -17,12 +17,36 @@ export function Footer() {
               SajiloMarts
             </span>
           </Link>
-          <p className="text-neutral-500 text-xs">
+          <p className="text-neutral-500 text-xs font-medium">
             Shop Easy • Live Better
           </p>
           <p className="text-neutral-500 text-xs leading-relaxed max-w-xs">
             Direct marketplace sourcing from Indian online stores with transparent NPR pricing and reliable Nepal delivery.
           </p>
+          <div className="pt-1 flex flex-col gap-1 text-[11px]">
+            <a href="mailto:sajilomarts@gmail.com" className="text-neutral-700 hover:text-neutral-950 font-bold transition-colors">
+              ✉ sajilomarts@gmail.com
+            </a>
+            <div className="flex items-center gap-3 pt-1">
+              <a
+                href="https://www.facebook.com/profile.php?id=61594687408072"
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 font-bold hover:underline"
+              >
+                Facebook
+              </a>
+              <span className="text-neutral-300">•</span>
+              <a
+                href="https://www.instagram.com/sajilomarts/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-pink-600 font-bold hover:underline"
+              >
+                Instagram
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* SOURCING Column */}
@@ -66,19 +90,29 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/support" className="hover:text-neutral-900 transition-colors">
-                Customer Care Desk
-              </Link>
+              <a href="mailto:sajilomarts@gmail.com" className="hover:text-neutral-900 transition-colors">
+                Email Customer Care
+              </a>
             </li>
             <li>
-              <Link to="/faq" className="hover:text-neutral-900 transition-colors">
-                FAQs
-              </Link>
+              <a
+                href="https://www.facebook.com/profile.php?id=61594687408072"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-neutral-900 transition-colors"
+              >
+                Facebook Support
+              </a>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-neutral-900 transition-colors">
-                Contact Us
-              </Link>
+              <a
+                href="https://www.instagram.com/sajilomarts/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-neutral-900 transition-colors"
+              >
+                Instagram Direct
+              </a>
             </li>
           </ul>
         </div>
