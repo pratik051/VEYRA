@@ -182,8 +182,16 @@ export function createTransportByStrategy(strategy = "port_465", customConfig = 
   });
 }
 
+// Cached reusable transporter
+let cachedTransporter = null;
+let cachedStrategy = null;
+
 export function getTransporter() {
-  return createTransportByStrategy("port_465");
+  if (!cachedTransporter) {
+    cachedStrategy = "port_465";
+    cachedTransporter = createTransportByStrategy("port_465");
+  }
+  return cachedTransporter;
 }
 
 /**
@@ -227,14 +235,28 @@ export async function sendMailWithResilience(mailOptions) {
   for (let i = 0; i < uniqueStrategies.length; i++) {
     const strat = uniqueStrategies[i];
     try {
-      const client = createTransportByStrategy(strat, config);
+      const client = (cachedStrategy === strat && cachedTransporter)
+        ? cachedTransporter
+        : createTransportByStrategy(strat, config);
+
       const info = await client.sendMail(mailOptions);
+      
+      // Update cache on successful transport
+      cachedTransporter = client;
+      cachedStrategy = strat;
+
       if (i > 0) {
         console.log(`[Email Service] ✓ Email dispatched via fallback strategy '${strat}' to ${maskEmail(mailOptions.to)}`);
       }
       return info;
     } catch (err) {
       lastError = err;
+      // Invalidate broken transporter from cache
+      if (cachedStrategy === strat) {
+        cachedTransporter = null;
+        cachedStrategy = null;
+      }
+
       const isTimeout =
         err?.code === "ETIMEDOUT" ||
         err?.code === "ESOCKET" ||
