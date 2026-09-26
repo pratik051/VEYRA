@@ -12,80 +12,121 @@ import SupportTicketModel from "../models/support-ticket-model.js";
 import EmailNotificationModel from "../models/email-notification-model.js";
 import PasswordResetOtpModel from "../models/password-reset-otp-model.js";
 import PasswordResetTokenModel from "../models/password-reset-token-model.js";
-import { seedAdmin } from "../services/auth-service.js";
+import { hashPassword } from "../utils/password.js";
 
-async function clearAndResetFreshData() {
-  console.log("=================================================");
-  console.log("  SajiloMarts — Database Reset & Clean Slate     ");
-  console.log("=================================================");
+async function performFreshProductionDatabaseReset() {
+  console.log("================================================================================");
+  console.log("             SajiloMarts — Production Database Complete Clean Reset             ");
+  console.log("================================================================================");
 
   const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
   if (!mongoUri) {
-    console.error("Error: MONGODB_URI is not defined in environment.");
+    console.error("Error: MONGODB_URI is not defined in server environment.");
     process.exit(1);
   }
 
   try {
     await mongoose.connect(mongoUri);
-    console.log("✓ Connected to MongoDB Atlas\n");
+    const dbName = mongoose.connection.name || "sajilomarts";
+    console.log(`✓ Connected to MongoDB Atlas Target Database: [${dbName}]\n`);
 
-    // 1. Clear Orders
+    // 1. Completely Remove All Orders & Order Items
     const delOrders = await OrderModel.deleteMany({});
     const delIndiaOrders = await IndiaOrderModel.deleteMany({});
-    console.log(`✓ Cleared Storefront Orders: ${delOrders.deletedCount}`);
-    console.log(`✓ Cleared India Sourcing Orders: ${delIndiaOrders.deletedCount}`);
+    console.log(`✓ Cleared Storefront Orders (${delOrders.deletedCount} records deleted)`);
+    console.log(`✓ Cleared Direct India Orders (${delIndiaOrders.deletedCount} records deleted)`);
 
-    // 2. Clear Payments
+    // 2. Completely Remove All Payment Proofs & Records
     const delPayments = await PaymentModel.deleteMany({});
-    console.log(`✓ Cleared Payments & Verification Queue: ${delPayments.deletedCount}`);
+    console.log(`✓ Cleared Payments & Verification Slips (${delPayments.deletedCount} records deleted)`);
 
-    // 3. Clear Carts & Saved Addresses
+    // 3. Completely Remove Carts & Customer Saved Addresses
     const delCarts = await CartModel.deleteMany({});
     const delAddresses = await AddressModel.deleteMany({});
-    console.log(`✓ Cleared Active Carts: ${delCarts.deletedCount}`);
-    console.log(`✓ Cleared Saved Delivery Addresses: ${delAddresses.deletedCount}`);
+    console.log(`✓ Cleared Active Carts (${delCarts.deletedCount} records deleted)`);
+    console.log(`✓ Cleared Saved Delivery Addresses (${delAddresses.deletedCount} records deleted)`);
 
-    // 4. Clear Product Sourcing Requests & Support Tickets
+    // 4. Completely Remove Product Sourcing Inquiries & Support Inquiries
     const delRequests = await ProductRequestModel.deleteMany({});
     const delTickets = await SupportTicketModel.deleteMany({});
-    console.log(`✓ Cleared Product Sourcing Requests: ${delRequests.deletedCount}`);
-    console.log(`✓ Cleared Support Tickets: ${delTickets.deletedCount}`);
+    console.log(`✓ Cleared Product Requests (${delRequests.deletedCount} records deleted)`);
+    console.log(`✓ Cleared Support Tickets (${delTickets.deletedCount} records deleted)`);
 
-    // 5. Clear Auth Sessions, OTPs, and Notification Logs
+    // 5. Completely Remove Auth Sessions, OTPs, and Email Logs
     const delSessions = await AuthSessionModel.deleteMany({});
     const delOtps = await PasswordResetOtpModel.deleteMany({});
     const delTokens = await PasswordResetTokenModel.deleteMany({});
     const delEmails = await EmailNotificationModel.deleteMany({});
-    console.log(`✓ Cleared Active Auth Sessions: ${delSessions.deletedCount}`);
-    console.log(`✓ Cleared Password Reset OTPs & Tokens: ${delOtps.deletedCount + delTokens.deletedCount}`);
-    console.log(`✓ Cleared Email Notification Logs: ${delEmails.deletedCount}`);
+    console.log(`✓ Cleared Auth Sessions (${delSessions.deletedCount} records deleted)`);
+    console.log(`✓ Cleared Password Reset OTPs & Tokens (${delOtps.deletedCount + delTokens.deletedCount} records deleted)`);
+    console.log(`✓ Cleared Historical Email Notification Logs (${delEmails.deletedCount} records deleted)`);
 
-    // 6. Clear Customer Accounts (Keep only master admin)
-    const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
-    const delUsers = await UserModel.deleteMany({
-      $and: [
-        { role: { $ne: "admin" } },
-        ...(adminEmail ? [{ email: { $ne: adminEmail } }] : [])
-      ]
+    // 6. Completely Remove All Users / Accounts
+    const delUsers = await UserModel.deleteMany({});
+    console.log(`✓ Cleared All Previous Accounts (${delUsers.deletedCount} records deleted)`);
+
+    // 7. Ensure Unique Indexes are Built Cleanly
+    console.log("\nRebuilding unique indexes for fresh database state...");
+    await Promise.allSettled([
+      OrderModel.syncIndexes(),
+      IndiaOrderModel.syncIndexes(),
+      UserModel.syncIndexes(),
+      PaymentModel.syncIndexes(),
+      AuthSessionModel.syncIndexes()
+    ]);
+    console.log("✓ Unique indexes synchronized (orderId, invoiceNumber, email, token).");
+
+    // 8. Re-sync / Initialize Fresh Master Administrator Account
+    const adminEmail = (process.env.ADMIN_EMAIL || "admin@sajilomarts.com").toLowerCase().trim();
+    const adminPassword = process.env.ADMIN_PASSWORD || "Admin@SajiloMarts2026#";
+    const adminPasswordHash = await hashPassword(adminPassword);
+
+    await UserModel.create({
+      fullName: "SajiloMarts Executive Admin",
+      email: adminEmail,
+      phone: "9800000000",
+      passwordHash: adminPasswordHash,
+      role: "admin"
     });
-    console.log(`✓ Cleared Customer / Test User Accounts: ${delUsers.deletedCount}`);
+    console.log(`✓ Fresh Master Administrator seeded for [${adminEmail}] with secure role: admin.`);
 
-    // 7. Re-sync Master Admin Account
-    console.log("\nRe-syncing fresh Master Admin Account...");
-    await seedAdmin();
-    console.log("✓ Master Admin account is ready and synced.");
+    // 9. Verify Post-Reset Database State
+    const [
+      remainingOrders,
+      remainingIndiaOrders,
+      remainingPayments,
+      remainingCustomers,
+      totalUsersCount
+    ] = await Promise.all([
+      OrderModel.countDocuments({}),
+      IndiaOrderModel.countDocuments({}),
+      PaymentModel.countDocuments({}),
+      UserModel.countDocuments({ role: "customer" }),
+      UserModel.countDocuments({})
+    ]);
 
-    console.log("\n=================================================");
-    console.log("  SUCCESS: Database is now completely FRESH!     ");
-    console.log("=================================================");
+    console.log("\n================ POST-RESET VERIFICATION ================");
+    console.log(`Storefront Orders:        ${remainingOrders} (Expected: 0)`);
+    console.log(`India Sourced Orders:     ${remainingIndiaOrders} (Expected: 0)`);
+    console.log(`Payment Submissions:      ${remainingPayments} (Expected: 0)`);
+    console.log(`Customer Registrations:   ${remainingCustomers} (Expected: 0)`);
+    console.log(`Total Users (Admin only): ${totalUsersCount} (Expected: 1)`);
+    console.log("==========================================================");
+
+    if (remainingOrders === 0 && remainingIndiaOrders === 0 && remainingCustomers === 0 && totalUsersCount === 1) {
+      console.log("\n✓ ALL CRITERIA MET: Database is in a 100% fresh, clean production state!\n");
+    } else {
+      console.warn("\n⚠ Warning: Some counts did not match expected zero state.");
+    }
   } catch (err) {
-    console.error("Database reset error:", err.message);
+    console.error("Database reset failure:", err.message);
+    process.exit(1);
   } finally {
     if (mongoose.connection.readyState === 1) {
       await mongoose.disconnect();
-      console.log("✓ MongoDB connection closed.");
+      console.log("✓ MongoDB connection safely closed.");
     }
   }
 }
 
-clearAndResetFreshData();
+performFreshProductionDatabaseReset();

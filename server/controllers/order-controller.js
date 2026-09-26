@@ -3,6 +3,7 @@ import OrderModel from "../models/order-model.js";
 import PaymentModel from "../models/payment-model.js";
 import AddressModel from "../models/address-model.js";
 import { sendOrderConfirmationEmail } from "../utils/mailer.js";
+import { generateUniqueOrderId } from "../utils/orderId.js";
 
 export async function createCheckoutOrder(req, res) {
   try {
@@ -59,9 +60,8 @@ export async function createCheckoutOrder(req, res) {
       ? "Advance Pending"
       : "Pending";
 
-    // Generate readable unique Order ID
-    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
-    const orderId = `ORD-NP-${randomSuffix}`;
+    // Strictly generate server-side unique Order ID (ignoring any client inputs)
+    const orderId = await generateUniqueOrderId("SM");
 
     const userId = String(req.user._id);
 

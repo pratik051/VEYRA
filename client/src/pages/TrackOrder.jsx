@@ -25,21 +25,12 @@ export function TrackOrder() {
       if (res.data?.success && res.data.order) {
         setOrderData(res.data.order);
       } else {
-        throw new Error('Not found');
+        setError('No active order found with this Reference ID. Please check your Order ID and try again.');
+        setOrderData(null);
       }
     } catch {
-      // Mock tracking state for demonstration
-      setOrderData({
-        orderId: orderId.toUpperCase(),
-        status: 'In Transit',
-        currentStage: 4, // 0-indexed
-        createdAt: 'Sep 16, 2026',
-        estimatedDelivery: 'Sep 20, 2026',
-        destination: 'Kathmandu, Bagmati Province',
-        items: [
-          { name: 'SajiloMarts Sourced Package', quantity: 1 }
-        ]
-      });
+      setError('No active order found with this Reference ID. Please verify your Order ID.');
+      setOrderData(null);
     } finally {
       setLoading(false);
     }

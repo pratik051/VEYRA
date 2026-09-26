@@ -3,6 +3,7 @@ import IndiaOrderModel from "../models/india-order-model.js";
 import AddressModel from "../models/address-model.js";
 import { calculateOrderPrice, getCustomerFacingPrice } from "../utils/pricing.js";
 import { sendOrderConfirmationEmail } from "../utils/mailer.js";
+import { generateUniqueOrderId, generateUniqueInvoiceNumber } from "../utils/orderId.js";
 
 export async function calculatePrice(req, res) {
   try {
@@ -66,9 +67,9 @@ export async function createIndiaOrder(req, res) {
 
     const priceCalculation = calculateOrderPrice(rawInrPrice * quantity);
 
-    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-    const orderId = `LNK-IN-${randomSuffix}`;
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${randomSuffix}`;
+    // Strictly generate server-side unique Order ID & Invoice (ignoring any client inputs)
+    const orderId = await generateUniqueOrderId("SM");
+    const invoiceNumber = await generateUniqueInvoiceNumber();
     const invoiceUrl = `/api/india-order/invoice/${orderId}`;
 
     let paymentStatus = "Pending Verification";
