@@ -11,7 +11,6 @@ import { MobileNav } from './components/MobileNav';
 
 // Pages
 import { Home } from './pages/Home';
-import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
 import { ProductLinkOrder } from './pages/ProductLinkOrder';
@@ -42,11 +41,15 @@ export default function App() {
                   {/* Storefront Home Route */}
                   <Route path="/" element={<Home />} />
 
-                  {/* Legacy Catalog Routes - Redirect to Product Link Order */}
+                  {/* Legacy Catalog & Search Routes - Redirect to Product Link Order */}
                   <Route path="/shop" element={<Navigate to="/order" replace />} />
-                  <Route path="/shop/:platform" element={<Navigate to="/order" replace />} />
-                  <Route path="/marketplace/:source" element={<Navigate to="/order" replace />} />
-                  <Route path="/product/:slug" element={<ProductDetail />} />
+                  <Route path="/shop/*" element={<Navigate to="/order" replace />} />
+                  <Route path="/products" element={<Navigate to="/order" replace />} />
+                  <Route path="/catalog" element={<Navigate to="/order" replace />} />
+                  <Route path="/categories" element={<Navigate to="/order" replace />} />
+                  <Route path="/search" element={<Navigate to="/order" replace />} />
+                  <Route path="/marketplace/*" element={<Navigate to="/order" replace />} />
+                  <Route path="/product/:slug" element={<Navigate to="/order" replace />} />
 
                   {/* Product Link Order Flow */}
                   <Route path="/order" element={<ProductLinkOrder />} />

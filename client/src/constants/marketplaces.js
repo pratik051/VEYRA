@@ -11,8 +11,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-amber-50 text-amber-900 border-amber-200",
     badgeBorder: "border-amber-500",
     domain: "amazon.in",
-    shopUrl: "/order?source=amazon",
-    popularCategories: ["Tech & Gadgets", "Mobile Accessories", "Watches", "Essentials"]
+    shopUrl: "/order?source=amazon"
   },
   {
     id: "flipkart",
@@ -26,8 +25,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-blue-50 text-blue-900 border-blue-200",
     badgeBorder: "border-blue-500",
     domain: "flipkart.com",
-    shopUrl: "/order?source=flipkart",
-    popularCategories: ["Electronics", "Fashion", "Footwear", "Home & Kitchen"]
+    shopUrl: "/order?source=flipkart"
   },
   {
     id: "myntra",
@@ -41,8 +39,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-rose-50 text-rose-900 border-rose-200",
     badgeBorder: "border-rose-500",
     domain: "myntra.com",
-    shopUrl: "/order?source=myntra",
-    popularCategories: ["Fashion", "Footwear", "Accessories", "Bags"]
+    shopUrl: "/order?source=myntra"
   },
   {
     id: "meesho",
@@ -56,8 +53,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-pink-50 text-pink-900 border-pink-200",
     badgeBorder: "border-pink-500",
     domain: "meesho.com",
-    shopUrl: "/order?source=meesho",
-    popularCategories: ["Ethnic Wear", "Accessories", "Home Essentials", "Jewelry"]
+    shopUrl: "/order?source=meesho"
   },
   {
     id: "nykaa",
@@ -71,8 +67,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-fuchsia-50 text-fuchsia-900 border-fuchsia-200",
     badgeBorder: "border-fuchsia-500",
     domain: "nykaa.com",
-    shopUrl: "/order?source=nykaa",
-    popularCategories: ["Beauty & Lifestyle", "Skincare", "Cosmetics", "Fragrance"]
+    shopUrl: "/order?source=nykaa"
   },
   {
     id: "ajio",
@@ -86,8 +81,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-emerald-50 text-emerald-900 border-emerald-200",
     badgeBorder: "border-emerald-500",
     domain: "ajio.com",
-    shopUrl: "/order?source=ajio",
-    popularCategories: ["Western Wear", "Footwear", "Caps & Accessories", "Casuals"]
+    shopUrl: "/order?source=ajio"
   },
   {
     id: "tatacliq",
@@ -101,8 +95,7 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-red-50 text-red-900 border-red-200",
     badgeBorder: "border-red-500",
     domain: "tatacliq.com",
-    shopUrl: "/order?source=tatacliq",
-    popularCategories: ["Luxury Watches", "Smart Tech", "Footwear", "Apparel"]
+    shopUrl: "/order?source=tatacliq"
   },
   {
     id: "croma",
@@ -116,38 +109,35 @@ export const MARKETPLACE_METAS = [
     badgeBg: "bg-teal-50 text-teal-900 border-teal-200",
     badgeBorder: "border-teal-500",
     domain: "croma.com",
-    shopUrl: "/order?source=croma",
-    popularCategories: ["Laptops", "Audio", "Smart Home", "Accessories"]
+    shopUrl: "/order?source=croma"
   },
   {
     id: "boat",
     slug: "boat",
     name: "boAt Lifestyle",
     shortName: "boAt",
-    tagline: "India's #1 Audio Brand: Wireless Earbuds, Headphones & Watches",
+    tagline: "India's Audio and Wearables Brand",
     emoji: "🎧",
     accentBg: "bg-red-600",
     accentText: "text-red-600",
     badgeBg: "bg-red-50 text-red-900 border-red-200",
     badgeBorder: "border-red-500",
     domain: "boat-lifestyle.com",
-    shopUrl: "/order?source=boat",
-    popularCategories: ["TWS Earbuds", "Wireless Headphones", "Smartwatches", "Speakers"]
+    shopUrl: "/order?source=boat"
   },
   {
     id: "noise",
     slug: "noise",
     name: "Noise",
     shortName: "Noise",
-    tagline: "Smart Wearables, Health Trackers & Connected Lifestyle",
+    tagline: "Smart Wearables and Connected Lifestyle",
     emoji: "⌚",
     accentBg: "bg-indigo-600",
     accentText: "text-indigo-600",
     badgeBg: "bg-indigo-50 text-indigo-900 border-indigo-200",
     badgeBorder: "border-indigo-500",
     domain: "gonoise.com",
-    shopUrl: "/order?source=noise",
-    popularCategories: ["Smartwatches", "Wireless Earbuds", "Soundbars", "Straps"]
+    shopUrl: "/order?source=noise"
   }
 ];
 

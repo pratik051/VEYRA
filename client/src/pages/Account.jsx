@@ -20,7 +20,6 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { nepalProvinces } from '../data/mockData';
-import { ProductCard } from '../components/ProductCard';
 import api from '../services/api';
 
 export function Account() {
@@ -581,13 +580,43 @@ export function Account() {
             <div className="rounded-3xl border border-dashed border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#111c44] p-12 text-center space-y-3">
               <Heart className="h-8 w-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
               <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Your Wishlist is Empty</h4>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">Save products you love while browsing our store.</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Save product links to quickly order them anytime.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {wishlist.map((item) => (
-                <ProductCard key={item._id || item.id || item.slug} product={item} />
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {wishlist.map((item, idx) => {
+                const title = typeof item === 'object' ? (item.title || item.name || 'Product') : 'Product';
+                const url = typeof item === 'object' ? (item.url || item.productUrl || '') : '';
+                const image = typeof item === 'object' ? (item.image || item.imageUrl || '') : '';
+                const price = typeof item === 'object' ? (item.price || item.totalPrice || item.finalPrice) : null;
+
+                return (
+                  <div key={item._id || item.id || idx} className="p-4 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] flex flex-col justify-between space-y-3">
+                    <div className="flex gap-3 items-start">
+                      {image ? (
+                        <img src={image} alt={title} className="h-16 w-16 object-cover rounded-xl bg-neutral-100 shrink-0" />
+                      ) : (
+                        <div className="h-16 w-16 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                          <Package className="h-6 w-6 text-neutral-400" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2">{title}</h4>
+                        {price && <p className="text-xs font-bold text-amber-600">NPR {Number(price).toLocaleString()}</p>}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2 border-t border-neutral-100 dark:border-[#1b2559]">
+                      <button
+                        onClick={() => navigate(url ? `/order?url=${encodeURIComponent(url)}` : '/order')}
+                        className="flex-1 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-neutral-950 text-xs font-bold text-center transition"
+                      >
+                        Order Now
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
