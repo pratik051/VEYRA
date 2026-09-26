@@ -85,10 +85,15 @@ app.use((req, res, next) => {
   next();
 });
 
+import { trackOrderPublic } from "./controllers/order-controller.js";
+
 // Health check endpoint (allowed even if DB is still connecting)
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
+
+// Public Live Package Tracking endpoint
+app.get("/api/track-order", trackOrderPublic);
 
 // Ensure database connection before running authenticated or database-backed routes
 app.use(dbConnectionMiddleware);

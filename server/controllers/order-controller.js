@@ -199,9 +199,16 @@ export async function createCheckoutOrder(req, res) {
 export async function getOrderDetails(req, res) {
   try {
     const { orderId } = req.params;
-    const order = await OrderModel.findOne({
-      $or: [{ orderId }, { _id: mongoose.Types.ObjectId.isValid(orderId) ? orderId : undefined }]
-    }).lean();
+    const cleanId = String(orderId || "").trim();
+    const query = {
+      $or: [
+        { orderId: cleanId },
+        { invoiceNumber: cleanId },
+        ...(cleanId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: cleanId }] : [])
+      ]
+    };
+
+    const order = (await OrderModel.findOne(query).lean()) || (await IndiaOrderModel.findOne(query).lean());
 
     if (!order) {
       return res.status(404).json({ error: "Order not found." });
@@ -210,5 +217,120 @@ export async function getOrderDetails(req, res) {
     return res.json({ success: true, order });
   } catch (error) {
     return res.status(500).json({ error: error.message || "Failed to fetch order." });
+  }
+}
+
+export async function trackOrderPublic(req, res) {
+  try {
+    const rawId = req.query.orderId || req.query.id || req.params.orderId || req.params.id || "";
+    const cleanId = String(rawId || "").trim();
+
+    if (!cleanId) {
+      return res.status(400).json({ success: false, error: "Please provide an Order ID or Reference Number." });
+    }
+
+    const query = {
+      $or: [
+        { orderId: cleanId },
+        { invoiceNumber: cleanId },
+        { trackingNumber: cleanId },
+        { paymentReference: cleanId },
+        { paymentTransactionId: cleanId },
+        ...(cleanId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: cleanId }] : [])
+      ]
+    };
+
+    const [stdOrder, indOrder] = await Promise.all([
+      OrderModel.findOne(query).lean(),
+      IndiaOrderModel.findOne(query).lean()
+    ]);
+
+    const order = stdOrder || indOrder;
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: "No active order found with this Reference ID. Please check your Order ID and try again."
+      });
+    }
+
+    const currentStatus = String(order.orderStatus || order.status || "Processing").trim();
+    const paymentStatus = String(order.paymentStatus || order.payment?.status || "Pending").trim();
+
+    // Map status to timeline index (0 to 7 matching client orderTimeline array)
+    const statusLower = currentStatus.toLowerCase();
+    let currentStage = 0;
+
+    if (statusLower.includes("deliver") && !statusLower.includes("out")) {
+      currentStage = 7;
+    } else if (statusLower.includes("out for delivery") || statusLower.includes("out_for_delivery")) {
+      currentStage = 6;
+    } else if (statusLower.includes("arrived in nepal") || statusLower.includes("hub") || statusLower.includes("customs")) {
+      currentStage = 5;
+    } else if (statusLower.includes("transit") || statusLower.includes("shipped")) {
+      currentStage = 4;
+    } else if (statusLower.includes("sourced") || statusLower.includes("purchased")) {
+      currentStage = 3;
+    } else if (statusLower.includes("processing") || statusLower.includes("verified") || statusLower.includes("confirmed")) {
+      currentStage = 2;
+    } else if (paymentStatus.toUpperCase() === "PAID" || paymentStatus.toLowerCase().includes("approved")) {
+      currentStage = 1;
+    } else {
+      currentStage = 0;
+    }
+
+    const items = Array.isArray(order.items) && order.items.length > 0
+      ? order.items
+      : [
+          {
+            name: order.productName || "Sourced Product",
+            quantity: order.quantity || 1,
+            price: order.finalAmountNPR || order.totalAmount || 0,
+            image: order.productImage || "",
+            brand: order.brand || "",
+            variant: order.variant || order.productVariant || "",
+            color: order.color || "",
+            size: order.size || ""
+          }
+        ];
+
+    const formattedDate = new Date(order.createdAt || Date.now()).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+
+    const destination = (
+      order.city ||
+      order.shippingAddress?.city ||
+      order.deliveryAddress ||
+      order.shippingAddress?.fullAddress ||
+      "Nepal"
+    ).trim();
+
+    return res.json({
+      success: true,
+      order: {
+        _id: String(order._id),
+        orderId: order.orderId || String(order._id),
+        status: currentStatus,
+        orderStatus: currentStatus,
+        paymentStatus,
+        currentStage,
+        createdAt: formattedDate,
+        estimatedDelivery: currentStage >= 6 ? "Today / 24 Hours" : currentStage >= 4 ? "2-4 Business Days" : "5-7 Business Days",
+        destination,
+        items,
+        totalAmount: order.totalAmount || order.finalAmountNPR || 0,
+        shippingAddress: order.shippingAddress || {
+          fullName: order.customerName || order.fullName || "Customer",
+          city: order.city || "Kathmandu",
+          province: order.province || "Bagmati"
+        }
+      }
+    });
+  } catch (error) {
+    console.error("[Track Order Public Error]:", error);
+    return res.status(500).json({ success: false, error: "Failed to locate package tracking details." });
   }
 }

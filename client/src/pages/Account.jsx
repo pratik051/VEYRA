@@ -260,47 +260,78 @@ export function Account() {
             </div>
           ) : (
             <div className="space-y-3">
-              {orders.map((ord) => (
-                <div key={ord._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-2xs space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-100 dark:border-[#1b2559] text-xs">
-                    <div>
-                      <span className="font-bold text-neutral-400">Order ID: </span>
-                      <span className="font-black text-neutral-950 dark:text-amber-400">{ord._id}</span>
-                    </div>
-                    <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bold text-[11px] self-start sm:self-auto">
-                      {ord.payment?.status || 'Processing'}
-                    </span>
-                  </div>
+              {orders.map((ord) => {
+                const orderStatus = ord.status || ord.orderStatus || 'Processing';
+                const paymentStatus = ord.paymentStatus || ord.payment?.status || 'Pending Verification';
+                const isPaid = paymentStatus.toUpperCase() === 'PAID' || paymentStatus.toLowerCase().includes('approved');
 
-                  <div className="space-y-2">
-                    {ord.items?.map((item, i) => (
-                      <div key={i} className="flex flex-col sm:flex-row justify-between sm:items-center text-xs gap-1">
-                        <div>
-                          <span className="text-neutral-800 dark:text-neutral-200 font-medium">
-                            {item.name} × {item.quantity}
-                          </span>
-                          {(item.brand || item.variant || item.color || item.size) && (
-                            <div className="flex flex-wrap gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                              {item.brand && <span>Brand: {item.brand}</span>}
-                              {item.variant && <span>• Variant: {item.variant}</span>}
-                              {item.color && <span>• Color: {item.color}</span>}
-                              {item.size && <span>• Size: {item.size}</span>}
-                            </div>
-                          )}
-                        </div>
-                        <span className="font-bold text-neutral-950 dark:text-white">
-                          NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-                        </span>
+                const statusBadgeStyle = {
+                  'Delivered': 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300',
+                  'Out for Delivery': 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300',
+                  'In Transit': 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300',
+                  'Sourced': 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300',
+                  'Verified': 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300',
+                  'Processing': 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300',
+                  'Cancelled': 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300'
+                }[orderStatus] || 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300';
+
+                return (
+                  <div key={ord._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-2xs space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-100 dark:border-[#1b2559] text-xs">
+                      <div>
+                        <span className="font-bold text-neutral-400">Order ID: </span>
+                        <span className="font-black text-neutral-950 dark:text-amber-400 font-mono">{ord.orderId || ord._id}</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                        <span className={`px-2.5 py-1 rounded-full font-bold text-[11px] ${
+                          isPaid
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'
+                        }`}>
+                          Payment: {paymentStatus}
+                        </span>
+                        <span className={`px-2.5 py-1 rounded-full font-bold text-[11px] ${statusBadgeStyle}`}>
+                          Status: {orderStatus}
+                        </span>
+                        <Link
+                          to={`/track-order?id=${encodeURIComponent(ord.orderId || ord._id)}`}
+                          className="px-2.5 py-1 rounded-full bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 font-bold text-[10px] hover:opacity-90 transition"
+                        >
+                          Track ➔
+                        </Link>
+                      </div>
+                    </div>
 
-                  <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559] text-xs font-black text-neutral-950 dark:text-white">
-                    <span>Total Amount:</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}</span>
+                    <div className="space-y-2">
+                      {ord.items?.map((item, i) => (
+                        <div key={i} className="flex flex-col sm:flex-row justify-between sm:items-center text-xs gap-1">
+                          <div>
+                            <span className="text-neutral-800 dark:text-neutral-200 font-medium">
+                              {item.name} × {item.quantity}
+                            </span>
+                            {(item.brand || item.variant || item.color || item.size) && (
+                              <div className="flex flex-wrap gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                                {item.brand && <span>Brand: {item.brand}</span>}
+                                {item.variant && <span>• Variant: {item.variant}</span>}
+                                {item.color && <span>• Color: {item.color}</span>}
+                                {item.size && <span>• Size: {item.size}</span>}
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-bold text-neutral-950 dark:text-white">
+                            NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559] text-xs font-black text-neutral-950 dark:text-white">
+                      <span>Total Amount:</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">NPR {(ord.pricing?.totalAmount || ord.totalAmount || 0).toLocaleString()}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -113,19 +113,41 @@ export function AdminDashboard() {
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await api.patch(`/api/admin/orders/${orderId}`, { status: newStatus });
-      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
+      const res = await api.patch(`/api/admin/orders/${orderId}`, { status: newStatus });
+      const updatedOrd = res.data?.order;
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId || o.orderId === orderId || (updatedOrd && (o._id === updatedOrd._id || o.orderId === updatedOrd.orderId))
+            ? { ...o, status: newStatus, orderStatus: newStatus }
+            : o
+        )
+      );
       setStatusMsg(`Order ${orderId} updated to ${newStatus}`);
     } catch {
-      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
+      setOrders((prev) => prev.map((o) => (o._id === orderId || o.orderId === orderId ? { ...o, status: newStatus, orderStatus: newStatus } : o)));
       setStatusMsg(`Order status updated to ${newStatus}`);
     }
   };
 
   const handleVerifyPayment = async (paymentId, status) => {
     try {
-      await api.patch(`/api/admin/payments/${paymentId}`, { status });
+      const res = await api.patch(`/api/admin/payments/${paymentId}`, { status });
       setPayments((prev) => prev.map((p) => (p._id === paymentId ? { ...p, status } : p)));
+      if (res.data?.order) {
+        const updatedOrd = res.data.order;
+        setOrders((prev) =>
+          prev.map((o) =>
+            o._id === updatedOrd._id || o.orderId === updatedOrd.orderId || o.orderId === paymentId
+              ? {
+                  ...o,
+                  paymentStatus: updatedOrd.paymentStatus,
+                  status: updatedOrd.status || updatedOrd.orderStatus || o.status,
+                  orderStatus: updatedOrd.orderStatus || updatedOrd.status || o.orderStatus
+                }
+              : o
+          )
+        );
+      }
       setStatusMsg(`Payment ${paymentId} marked as ${status}`);
       setPreviewPayment(null);
     } catch {

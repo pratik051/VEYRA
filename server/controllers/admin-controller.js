@@ -211,15 +211,18 @@ export async function updateOrder(req, res) {
   try {
     const { id } = req.params;
     const body = req.body || {};
+    const cleanId = String(id || "").trim();
+
     let newStatus = body.status || body.orderStatus;
     const updates = { ...body, updatedAt: new Date() };
 
     if (body.adminVerificationStatus) {
       updates.adminVerifiedAt = new Date();
-      updates.adminVerifiedBy = req.user.fullName || req.user.email;
+      updates.adminVerifiedBy = req.user?.fullName || req.user?.email || "Admin";
       if (body.adminVerificationStatus === "Verified / Orderable") {
-        newStatus = "Verified";
+        newStatus = newStatus || "Verified";
         updates.orderStatus = "Verified";
+        updates.status = "Verified";
         updates.stockStatus = "In Stock";
         updates.deliveryStatus = "Delivery Available";
       } else if (body.adminVerificationStatus === "Alternative Required") {
@@ -229,6 +232,7 @@ export async function updateOrder(req, res) {
       } else if (body.adminVerificationStatus === "Rejected") {
         newStatus = "Cancelled";
         updates.orderStatus = "Cancelled";
+        updates.status = "Cancelled";
         updates.stockStatus = "Rejected";
       }
     }
@@ -238,54 +242,64 @@ export async function updateOrder(req, res) {
       updates.orderStatus = newStatus;
     }
 
+    if (body.paymentStatus) {
+      updates.paymentStatus = body.paymentStatus;
+      updates["payment.status"] = body.paymentStatus;
+    }
+
     const query = {
       $or: [
-        ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
-        { orderId: id }
+        { orderId: cleanId },
+        { invoiceNumber: cleanId },
+        ...(cleanId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: cleanId }] : [])
       ]
     };
 
     // 1. Retrieve the existing order first to compare old status vs new status
-    let existing = await OrderModel.findOne(query).lean();
-    let isIndia = false;
-    if (!existing) {
-      existing = await IndiaOrderModel.findOne(query).lean();
-      if (existing) isIndia = true;
-    }
-
+    let existing = (await OrderModel.findOne(query).lean()) || (await IndiaOrderModel.findOne(query).lean());
     if (!existing) {
       return res.status(404).json({ error: "Order not found." });
     }
 
     const oldStatus = String(existing.orderStatus || existing.status || "").trim();
 
-    // 2. Perform the update
-    let updated = isIndia
-      ? await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean()
-      : await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
+    // 2. Perform the update across both models
+    const [stdUpdated, indUpdated] = await Promise.allSettled([
+      OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean(),
+      IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean()
+    ]);
 
-    if (!updated) {
-      // Fallback cross-check if model was ambiguous
-      updated = await IndiaOrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean() ||
-        await OrderModel.findOneAndUpdate(query, { $set: updates }, { new: true }).lean();
-    }
+    const updated =
+      (stdUpdated.status === "fulfilled" && stdUpdated.value) ||
+      (indUpdated.status === "fulfilled" && indUpdated.value);
 
     if (!updated) {
       return res.status(404).json({ error: "Order not found." });
     }
 
-    // 3. Trigger Email Notification if status ACTUALLY changed
+    // 3. Synchronize PaymentModel if paymentStatus changed
+    if (body.paymentStatus) {
+      try {
+        const payStatus = body.paymentStatus === "PAID" || body.paymentStatus === "Approved" ? "Approved" : "Rejected";
+        await PaymentModel.updateMany(
+          { orderId: updated.orderId || cleanId },
+          { $set: { status: payStatus, verifiedAt: new Date() } }
+        );
+      } catch (pErr) {
+        console.warn("[Admin Payment Sync Notice]:", pErr.message);
+      }
+    }
+
+    // 4. Trigger Email Notification if status ACTUALLY changed
     const targetEmail = (updated.email || updated.shippingAddress?.email || existing.email || existing.shippingAddress?.email || "").trim();
     const cleanNewStatus = String(newStatus || "").trim();
 
     if (cleanNewStatus && cleanNewStatus.toLowerCase() !== oldStatus.toLowerCase() && targetEmail) {
       if (cleanNewStatus.toLowerCase() === "delivered") {
-        // Dedicated delivered email
         sendOrderDeliveredEmail(targetEmail, updated).catch((err) => {
           console.warn("[Admin Delivered Email Notice]:", err?.message || err);
         });
       } else {
-        // Status update email
         sendOrderStatusEmail(targetEmail, updated, cleanNewStatus, oldStatus).catch((err) => {
           console.warn("[Admin Status Email Notice]:", err?.message || err);
         });
@@ -328,76 +342,86 @@ export async function verifyPayment(req, res) {
   try {
     const { id } = req.params;
     const { status } = req.body || {};
+    const cleanId = String(id || "").trim();
 
     if (!status) {
       return res.status(400).json({ error: "Verification status is required (Approved or Rejected)." });
     }
 
+    const isApproved = status === "Approved" || status === "verified" || status === "Verified";
+    const paymentStatusValue = isApproved ? "Approved" : "Rejected";
+    const orderPaymentStatus = isApproved ? "PAID" : "Payment Rejected";
+    const newOrderStatus = isApproved ? "Processing" : "Payment Issue";
+
     const paymentQuery = {
       $or: [
-        ...(id.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: id }] : []),
-        { transactionCode: id }
+        { transactionCode: cleanId },
+        { orderId: cleanId },
+        ...(cleanId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: cleanId }] : [])
       ]
     };
 
-    const payment = await PaymentModel.findOneAndUpdate(
+    let payment = await PaymentModel.findOneAndUpdate(
       paymentQuery,
-      { $set: { status, verifiedAt: new Date() } },
+      { $set: { status: paymentStatusValue, verifiedAt: new Date() } },
       { new: true }
     ).lean();
 
-    if (!payment) {
-      return res.status(404).json({ error: "Payment record not found." });
+    const targetOrderId = payment?.orderId || cleanId;
+
+    const orderQuery = {
+      $or: [
+        { orderId: targetOrderId },
+        { invoiceNumber: targetOrderId },
+        ...(targetOrderId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: targetOrderId }] : [])
+      ]
+    };
+
+    const existingOrder =
+      (await OrderModel.findOne(orderQuery).lean()) ||
+      (await IndiaOrderModel.findOne(orderQuery).lean());
+
+    const orderUpdates = {
+      paymentStatus: orderPaymentStatus,
+      status: newOrderStatus,
+      orderStatus: newOrderStatus,
+      "payment.status": orderPaymentStatus,
+      adminVerificationStatus: isApproved ? "Verified / Orderable" : "Rejected",
+      updatedAt: new Date()
+    };
+
+    const [stdRes, indRes] = await Promise.allSettled([
+      OrderModel.findOneAndUpdate(orderQuery, { $set: orderUpdates }, { new: true }).lean(),
+      IndiaOrderModel.findOneAndUpdate(orderQuery, { $set: orderUpdates }, { new: true }).lean()
+    ]);
+
+    const updatedOrder =
+      (stdRes.status === "fulfilled" && stdRes.value) ||
+      (indRes.status === "fulfilled" && indRes.value) ||
+      existingOrder;
+
+    if (!payment && updatedOrder) {
+      payment = {
+        _id: String(updatedOrder._id),
+        orderId: updatedOrder.orderId,
+        status: paymentStatusValue,
+        amount: updatedOrder.totalAmount || updatedOrder.finalAmountNPR || 0
+      };
     }
 
-    const isApproved = status === "Approved" || status === "verified" || status === "Verified";
-    const newPaymentStatus = isApproved ? "PAID" : "Payment Rejected";
-    const newOrderStatus = isApproved ? "Processing" : "Payment Issue";
-
-    // Update associated order across both OrderModel and IndiaOrderModel
-    if (payment.orderId) {
-      const orderQuery = {
-        $or: [
-          { orderId: payment.orderId },
-          ...(payment.orderId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: payment.orderId }] : [])
-        ]
-      };
-
-      const existingOrder =
-        (await OrderModel.findOne(orderQuery).lean()) ||
-        (await IndiaOrderModel.findOne(orderQuery).lean());
-      const oldStatus = existingOrder ? String(existingOrder.orderStatus || existingOrder.status || "").trim() : "";
-
-      const [stdRes, indRes] = await Promise.allSettled([
-        OrderModel.findOneAndUpdate(
-          orderQuery,
-          { $set: { paymentStatus: newPaymentStatus, status: newOrderStatus, orderStatus: newOrderStatus } },
-          { new: true }
-        ).lean(),
-        IndiaOrderModel.findOneAndUpdate(
-          orderQuery,
-          { $set: { paymentStatus: newPaymentStatus, orderStatus: isApproved ? "Verified" : "Cancelled" } },
-          { new: true }
-        ).lean()
-      ]);
-
-      const updatedOrder =
-        (stdRes.status === "fulfilled" && stdRes.value) ||
-        (indRes.status === "fulfilled" && indRes.value) ||
-        existingOrder;
-
+    // Trigger email notification on payment verification
+    if (updatedOrder) {
       const targetEmail = (
-        updatedOrder?.email ||
-        updatedOrder?.shippingAddress?.email ||
+        updatedOrder.email ||
+        updatedOrder.shippingAddress?.email ||
         existingOrder?.email ||
         existingOrder?.shippingAddress?.email ||
         ""
       ).trim();
 
-      const finalStatus = isApproved ? (indRes?.value ? "Verified" : newOrderStatus) : "Cancelled";
-
-      if (finalStatus && finalStatus.toLowerCase() !== oldStatus.toLowerCase() && targetEmail && updatedOrder) {
-        sendOrderStatusEmail(targetEmail, updatedOrder, finalStatus, oldStatus).catch((err) => {
+      const oldStatus = existingOrder ? String(existingOrder.orderStatus || existingOrder.status || "").trim() : "";
+      if (newOrderStatus.toLowerCase() !== oldStatus.toLowerCase() && targetEmail) {
+        sendOrderStatusEmail(targetEmail, updatedOrder, newOrderStatus, oldStatus).catch((err) => {
           console.warn("[Admin Payment Verification Email Notice]:", err?.message || err);
         });
       }
@@ -406,9 +430,11 @@ export async function verifyPayment(req, res) {
     return res.json({
       success: true,
       message: `Payment has been ${status}. Associated order status updated.`,
-      payment
+      payment,
+      order: updatedOrder
     });
   } catch (error) {
+    console.error("[Verify Payment Error]:", error);
     return res.status(400).json({ error: error.message || "Failed to verify payment." });
   }
 }
