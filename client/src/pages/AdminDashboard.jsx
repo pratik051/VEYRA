@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Shield,
   Package,
-  FileText,
   CreditCard,
   HelpCircle,
   Settings,
@@ -34,12 +33,11 @@ export function AdminDashboard() {
   const { user, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('orders'); // orders | requests | payments | tickets | users | settings
+  const [activeTab, setActiveTab] = useState('orders'); // orders | payments | tickets | users | settings
   const [orderFilter, setOrderFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [orders, setOrders] = useState([]);
-  const [requests, setRequests] = useState([]);
   const [payments, setPayments] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [usersList, setUsersList] = useState([]);
@@ -71,9 +69,8 @@ export function AdminDashboard() {
   const loadAdminData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ordersRes, requestsRes, paymentsRes, ticketsRes, usersRes] = await Promise.allSettled([
+      const [ordersRes, paymentsRes, ticketsRes, usersRes] = await Promise.allSettled([
         api.get('/api/admin/orders'),
-        api.get('/api/admin/product-requests'),
         api.get('/api/admin/payments'),
         api.get('/api/admin/tickets'),
         api.get('/api/admin/users')
@@ -82,10 +79,6 @@ export function AdminDashboard() {
       if (ordersRes.status === 'fulfilled') {
         const rawOrders = ordersRes.value.data?.orders || (Array.isArray(ordersRes.value.data) ? ordersRes.value.data : []);
         setOrders(Array.isArray(rawOrders) ? rawOrders : []);
-      }
-
-      if (requestsRes.status === 'fulfilled' && requestsRes.value.data?.requests) {
-        setRequests(requestsRes.value.data.requests);
       }
 
       if (paymentsRes.status === 'fulfilled' && paymentsRes.value.data?.payments) {
@@ -274,7 +267,7 @@ export function AdminDashboard() {
       )}
 
       {/* 2. KPI METRIC CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Revenue */}
         <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
@@ -310,22 +303,6 @@ export function AdminDashboard() {
           <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">In transit &amp; processing</p>
         </div>
 
-        {/* Product Requests */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider">
-              Product Links
-            </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400">
-              <FileText className="h-4 w-4" />
-            </div>
-          </div>
-          <h3 className="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
-            {requests.length}
-          </h3>
-          <p className="text-[10px] text-neutral-400 dark:text-[#a3aed0] font-medium">Product inquiries</p>
-        </div>
-
         {/* Payments Submitted */}
         <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
@@ -343,7 +320,7 @@ export function AdminDashboard() {
         </div>
 
         {/* Support Tickets */}
-        <div className="col-span-2 lg:col-span-1 p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
+        <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] uppercase tracking-wider">
               Support Inquiries
@@ -363,7 +340,6 @@ export function AdminDashboard() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-neutral-200 dark:border-[#1b2559]">
         {[
           { id: 'orders', label: 'Orders Management', icon: Package, count: orders.length },
-          { id: 'requests', label: 'Product Requests', icon: FileText, count: requests.length },
           { id: 'payments', label: 'Payment Verification', icon: CreditCard, count: payments.length },
           { id: 'tickets', label: 'Support Tickets', icon: HelpCircle, count: tickets.length },
           { id: 'users', label: 'Users & Customers', icon: Users, count: usersList.length },
@@ -540,69 +516,7 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* 5. TAB 2: PRODUCT REQUESTS */}
-      {activeTab === 'requests' && (
-        <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
-          <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-black text-neutral-950 dark:text-white">Customer Product Requests</h3>
-              <p className="text-xs text-neutral-500 dark:text-[#a3aed0]">Links requested by customers</p>
-            </div>
-            <span className="text-xs font-bold text-neutral-400">{requests.length} requests</span>
-          </div>
-
-          <div className="divide-y divide-neutral-100 dark:divide-[#1b2559] overflow-x-auto">
-            {requests.length === 0 ? (
-              <div className="p-12 text-center text-xs text-neutral-400 dark:text-[#a3aed0]">
-                No pending customer product requests.
-              </div>
-            ) : (
-              requests.map((r) => (
-                <div
-                  key={r._id}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs hover:bg-neutral-50/60 dark:hover:bg-[#1b254b]/40 transition"
-                >
-                  <div className="space-y-1 min-w-0 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-neutral-900 dark:text-white truncate">
-                        {r.productName || 'Direct Indian Marketplace Item'}
-                      </h4>
-                      <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                        {r.platform || 'Indian Store'}
-                      </span>
-                    </div>
-                    <a
-                      href={r.productUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-amber-600 dark:text-amber-400 underline truncate block text-[11px]"
-                    >
-                      {r.productUrl}
-                    </a>
-                    <p className="text-neutral-500 dark:text-[#a3aed0] text-[11px]">
-                      Price: ₹{r.indianPriceINR || 0} INR → NPR {(r.finalAmountNPR || 0).toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 font-bold self-start sm:self-auto">
-                      {r.status || 'Pending'}
-                    </span>
-                    <button
-                      onClick={() => setStatusMsg(`Quote acknowledged for ${r._id}`)}
-                      className="px-3 py-1 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 text-xs font-bold hover:bg-neutral-800 transition"
-                    >
-                      Acknowledge
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 6. TAB 3: PAYMENT VERIFICATION */}
+      {/* 5. TAB 2: PAYMENT VERIFICATION */}
       {activeTab === 'payments' && (
         <div className="rounded-3xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] overflow-hidden shadow-sm">
           <div className="p-5 border-b border-neutral-100 dark:border-[#1b2559] flex items-center justify-between">

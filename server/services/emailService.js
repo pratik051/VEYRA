@@ -5,32 +5,45 @@ import UserModel from "../models/user-model.js";
 import OrderModel from "../models/order-model.js";
 import IndiaOrderModel from "../models/india-order-model.js";
 
+// Helper to mask sensitive email addresses in server logs
+export function maskEmail(email) {
+  if (!email || typeof email !== "string" || !email.includes("@")) return "[invalid-email]";
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return "[masked-email]";
+  const visible = local.length > 2 ? local.slice(0, 2) : local.slice(0, 1);
+  return `${visible}***@${domain}`;
+}
+
 // Dynamic Server-side SMTP credentials resolution
 export function getSmtpConfig() {
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = parseInt(process.env.SMTP_PORT || "465", 10);
-  const secure = process.env.SMTP_SECURE === "true" || port === 465;
+  const host = (process.env.SMTP_HOST || "smtp.gmail.com").trim();
+  const port = parseInt((process.env.SMTP_PORT || "465").toString().trim(), 10) || 465;
+  const is465 = port === 465;
+  const secure = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === "true" : is465;
 
-  const user =
+  const rawUser =
     process.env.SMTP_USER ||
     process.env.GMAIL_USER ||
     process.env.EMAIL_USER ||
     "";
 
-  const pass = (
+  const rawPass =
     process.env.SMTP_PASS ||
     process.env.SMTP_PASSWORD ||
     process.env.GMAIL_APP_PASSWORD ||
     process.env.EMAIL_PASS ||
-    ""
-  ).replace(/\s+/g, "");
+    "";
+
+  // Clean strings by trimming and removing accidental wrapping quotes or internal whitespace
+  const user = rawUser.trim().replace(/^["']|["']$/g, "");
+  const pass = rawPass.trim().replace(/^["']|["']$/g, "").replace(/\s+/g, "");
 
   return { host, port, secure, user, pass };
 }
 
 export function getEmailFrom() {
   const { user } = getSmtpConfig();
-  const fromName = process.env.EMAIL_FROM_NAME || "SajiloMarts";
+  const fromName = (process.env.EMAIL_FROM_NAME || "SajiloMarts").trim();
   return (
     process.env.EMAIL_FROM ||
     (user ? `"${fromName}" <${user}>` : `"SajiloMarts" <no-reply@sajilomarts.tech>`)
@@ -50,8 +63,10 @@ export function getTransporter() {
     throw new Error("SMTP credentials are not configured in server environment variables (SMTP_USER/SMTP_PASS).");
   }
 
-  const credsKey = `${config.host}:${config.port}:${config.user}:${config.pass}`;
+  const credsKey = `${config.host}:${config.port}:${config.secure}:${config.user}:${config.pass}`;
   if (!transporter || lastCredsKey !== credsKey) {
+    const isGmail = config.host.includes("gmail.com") || config.user.includes("@gmail.com");
+
     const transportConfig = {
       host: config.host,
       port: config.port,
@@ -59,10 +74,17 @@ export function getTransporter() {
       auth: {
         user: config.user,
         pass: config.pass
-      }
+      },
+      tls: {
+        rejectUnauthorized: false,
+        minVersion: "TLSv1.2"
+      },
+      connectionTimeout: 12000,
+      greetingTimeout: 12000,
+      socketTimeout: 15000
     };
 
-    if (config.host.includes("gmail.com") && config.port === 465) {
+    if (isGmail && config.port === 465) {
       transportConfig.service = "gmail";
     }
 
@@ -130,6 +152,22 @@ function buildEmailLayout({ headerTitle = "SajiloMarts", headerSubtitle = "Shop 
 </html>`;
 }
 
+export async function verifySmtpConnection() {
+  try {
+    const config = getSmtpConfig();
+    if (!config.user || !config.pass) {
+      return { success: false, configured: false, error: "SMTP credentials not provided in environment variables" };
+    }
+    const client = getTransporter();
+    await client.verify();
+    console.log(`[Email Service] ✓ SMTP connection verified successfully to ${config.host}:${config.port} (user: ${maskEmail(config.user)})`);
+    return { success: true, configured: true, host: config.host, port: config.port };
+  } catch (err) {
+    console.warn(`[Email Service] ✗ SMTP verification failed:`, err?.message || err);
+    return { success: false, configured: true, error: err?.message || "SMTP verification failed" };
+  }
+}
+
 /**
  * Send Welcome Email upon new customer account creation
  */
@@ -167,7 +205,7 @@ export async function sendWelcomeEmail(toEmail, customerName, userId = "") {
     const client = getTransporter();
     const name = (customerName || "Valued Customer").trim();
     const frontendUrl = getFrontendUrl();
-    const actionUrl = `${frontendUrl}/verify-product-link`;
+    const actionUrl = `${frontendUrl}/order`;
     const homeUrl = frontendUrl;
 
     const subject = "Welcome to SajiloMarts! 🛍️";
@@ -180,7 +218,7 @@ Your account has been successfully created.
 
 You can now send us your favorite product links from Indian marketplaces and get a price and delivery quote for delivery to Nepal.
 
-Start sourcing Indian products today: ${actionUrl}
+Start ordering Indian products today: ${actionUrl}
 
 Thank you for choosing SajiloMarts.
 
@@ -205,11 +243,11 @@ ${homeUrl}`;
           🛍️ Shop from Amazon, Flipkart, Myntra, AJIO & more!
         </h4>
         <p style="margin: 0 0 14px; font-size: 13px; line-height: 22px; color: #78350f;">
-          Found something you love on an Indian marketplace? Simply copy the product link, paste it into our <strong>Link Verification / Request Product</strong> tool, and get an instant NPR landed price with doorstep delivery across Nepal.
+          Found something you love on an Indian marketplace? Simply copy the product link, paste it into our <strong>Order Direct from India</strong> tool, and get an instant NPR landed price with doorstep delivery across Nepal.
         </p>
         <div style="text-align: left;">
           <a href="${actionUrl}" style="display: inline-block; background-color: #d97706; color: #ffffff; font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 20px; border-radius: 8px;">
-            Verify Product Link ➔
+            Order Product Link ➔
           </a>
         </div>
       </div>
@@ -243,7 +281,9 @@ ${homeUrl}`;
       html: htmlContent
     };
 
+    console.log(`[Email Service] Sending WELCOME email to ${maskEmail(cleanEmail)}...`);
     const info = await client.sendMail(mailOptions);
+    console.log(`[Email Service] ✓ WELCOME email sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
     await EmailNotificationModel.create({
@@ -261,7 +301,7 @@ ${homeUrl}`;
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.warn(`[Email Notification Notice] Welcome email failed for ${customerName || toEmail}:`, error?.message || error);
+    console.warn(`[Email Service] ✗ Welcome email failed for ${maskEmail(toEmail)}:`, error?.message || error);
     return { success: false, error: error?.message || "Failed to send welcome email" };
   }
 }
@@ -504,7 +544,9 @@ SajiloMarts Team`;
       html: htmlContent
     };
 
+    console.log(`[Email Service] Sending ORDER_CONFIRMATION #${orderId} to ${maskEmail(cleanEmail)}...`);
     const info = await client.sendMail(mailOptions);
+    console.log(`[Email Service] ✓ ORDER_CONFIRMATION #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
     await EmailNotificationModel.create({
@@ -524,7 +566,7 @@ SajiloMarts Team`;
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.warn(`[Email Notification Notice] Order confirmation email failed for #${order?.orderId || "unknown"}:`, error?.message || error);
+    console.warn(`[Email Service] ✗ Order confirmation email failed for #${order?.orderId || "unknown"} to ${maskEmail(toEmail)}:`, error?.message || error);
     return { success: false, error: error?.message || "Failed to send order confirmation email" };
   }
 }
@@ -681,7 +723,9 @@ SajiloMarts Team`;
       html: htmlContent
     };
 
+    console.log(`[Email Service] Sending STATUS_UPDATE (${cleanNewStatus}) for #${orderId} to ${maskEmail(cleanEmail)}...`);
     const info = await client.sendMail(mailOptions);
+    console.log(`[Email Service] ✓ STATUS_UPDATE (${cleanNewStatus}) for #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
     await EmailNotificationModel.create({
@@ -697,7 +741,7 @@ SajiloMarts Team`;
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.warn(`[Email Notification Notice] Status update email failed for #${order?.orderId || "unknown"}:`, error?.message || error);
+    console.warn(`[Email Service] ✗ Status update email failed for #${order?.orderId || "unknown"} to ${maskEmail(toEmail)}:`, error?.message || error);
     return { success: false, error: error?.message || "Failed to send status update email" };
   }
 }
@@ -854,7 +898,9 @@ SajiloMarts Team`;
       html: htmlContent
     };
 
+    console.log(`[Email Service] Sending DELIVERED email for #${orderId} to ${maskEmail(cleanEmail)}...`);
     const info = await client.sendMail(mailOptions);
+    console.log(`[Email Service] ✓ DELIVERED email for #${orderId} sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
 
     // Record notification in DB for idempotency
     await EmailNotificationModel.create({
@@ -875,7 +921,7 @@ SajiloMarts Team`;
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.warn(`[Email Notification Notice] Delivered email failed for #${order?.orderId || "unknown"}:`, error?.message || error);
+    console.warn(`[Email Service] ✗ Delivered email failed for #${order?.orderId || "unknown"} to ${maskEmail(toEmail)}:`, error?.message || error);
     return { success: false, error: error?.message || "Failed to send delivered email" };
   }
 }
@@ -962,10 +1008,12 @@ export async function sendPasswordResetOtpEmail(toEmail, otpCode, recipientName)
 </html>`
     };
 
+    console.log(`[Email Service] Sending OTP email to ${maskEmail(cleanEmail)}...`);
     const info = await client.sendMail(mailOptions);
+    console.log(`[Email Service] ✓ OTP email sent to ${maskEmail(cleanEmail)} (MessageId: ${info.messageId || "N/A"})`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.warn("[Email Notification Notice] OTP email failed:", error?.message || error);
+    console.warn(`[Email Service] ✗ OTP email failed for ${maskEmail(toEmail)}:`, error?.message || error);
     return { success: false, error: error?.message || "Failed to send email" };
   }
 }
@@ -975,5 +1023,7 @@ export default {
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
   sendOrderDeliveredEmail,
-  sendPasswordResetOtpEmail
+  sendPasswordResetOtpEmail,
+  verifySmtpConnection,
+  maskEmail
 };

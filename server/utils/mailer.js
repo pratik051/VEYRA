@@ -3,7 +3,9 @@ import {
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
   sendOrderDeliveredEmail,
-  sendPasswordResetOtpEmail
+  sendPasswordResetOtpEmail,
+  verifySmtpConnection,
+  maskEmail
 } from "../services/emailService.js";
 
 export {
@@ -11,7 +13,9 @@ export {
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
   sendOrderDeliveredEmail,
-  sendPasswordResetOtpEmail
+  sendPasswordResetOtpEmail,
+  verifySmtpConnection,
+  maskEmail
 };
 
 export default {
@@ -19,5 +23,7 @@ export default {
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
   sendOrderDeliveredEmail,
-  sendPasswordResetOtpEmail
+  sendPasswordResetOtpEmail,
+  verifySmtpConnection,
+  maskEmail
 };
