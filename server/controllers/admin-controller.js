@@ -74,10 +74,16 @@ export async function getAllOrders(req, res) {
       const items = Array.isArray(ord.items) && ord.items.length > 0
         ? ord.items.map((i) => ({
             name: i.name || "Catalog Product",
+            brand: i.brand || ord.brand || "",
+            variant: i.variant || i.productVariant || "",
+            color: i.color || "",
+            size: i.size || "",
             quantity: i.quantity || 1,
             price: i.price || i.unitPrice || 0,
+            unitPrice: i.unitPrice || i.price || 0,
             image: i.image || "",
-            source: i.source || "SajiloMarts"
+            source: i.source || "SajiloMarts",
+            productUrl: i.productUrl || ord.productUrl || ""
           }))
         : [];
 
@@ -88,6 +94,13 @@ export async function getAllOrders(req, res) {
         customerName: ord.customerName || ord.fullName || ord.shippingAddress?.fullName || "Customer",
         phone: ord.phone || ord.shippingAddress?.phone || "",
         email: ord.email || ord.shippingAddress?.email || "",
+        productName: items[0]?.name || ord.productName || "Catalog Product",
+        brand: items[0]?.brand || ord.brand || "",
+        variant: items[0]?.variant || ord.variant || ord.productVariant || "",
+        color: items[0]?.color || ord.color || "",
+        size: items[0]?.size || ord.size || "",
+        productImage: items[0]?.image || ord.productImage || "",
+        productUrl: items[0]?.productUrl || ord.productUrl || "",
         shippingAddress: {
           fullName: ord.shippingAddress?.fullName || ord.fullName || "Customer",
           phone: ord.shippingAddress?.phone || ord.phone || "",
@@ -124,12 +137,17 @@ export async function getAllOrders(req, res) {
       const items = [
         {
           name: ord.productName || "Sourced Indian Product",
+          brand: ord.brand || "",
+          variant: ord.variant || ord.productVariant || "",
+          color: ord.color || "",
+          size: ord.size || "",
           quantity: ord.quantity || 1,
           price: ord.finalAmountNPR || 0,
           unitPrice: ord.finalAmountNPR || 0,
           image: ord.productImage || "",
           source: ord.marketplace || "Indian Marketplace",
-          originalPriceINR: ord.indianPriceINR || 0
+          originalPriceINR: ord.indianPriceINR || 0,
+          productUrl: ord.productUrl || ""
         }
       ];
 
@@ -140,6 +158,13 @@ export async function getAllOrders(req, res) {
         customerName: ord.customerName || ord.shippingAddress?.fullName || "Customer",
         phone: ord.phone || ord.shippingAddress?.phone || "",
         email: ord.email || ord.shippingAddress?.email || "",
+        productName: ord.productName || "Sourced Indian Product",
+        brand: ord.brand || "",
+        variant: ord.variant || ord.productVariant || "",
+        color: ord.color || "",
+        size: ord.size || "",
+        productImage: ord.productImage || "",
+        productUrl: ord.productUrl || "",
         shippingAddress: {
           fullName: ord.shippingAddress?.fullName || ord.customerName || "Customer",
           phone: ord.shippingAddress?.phone || ord.phone || "",

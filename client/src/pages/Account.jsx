@@ -274,10 +274,20 @@ export function Account() {
 
                   <div className="space-y-2">
                     {ord.items?.map((item, i) => (
-                      <div key={i} className="flex justify-between items-center text-xs">
-                        <span className="text-neutral-800 dark:text-neutral-200 font-medium">
-                          {item.name} × {item.quantity}
-                        </span>
+                      <div key={i} className="flex flex-col sm:flex-row justify-between sm:items-center text-xs gap-1">
+                        <div>
+                          <span className="text-neutral-800 dark:text-neutral-200 font-medium">
+                            {item.name} × {item.quantity}
+                          </span>
+                          {(item.brand || item.variant || item.color || item.size) && (
+                            <div className="flex flex-wrap gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                              {item.brand && <span>Brand: {item.brand}</span>}
+                              {item.variant && <span>• Variant: {item.variant}</span>}
+                              {item.color && <span>• Color: {item.color}</span>}
+                              {item.size && <span>• Size: {item.size}</span>}
+                            </div>
+                          )}
+                        </div>
                         <span className="font-bold text-neutral-950 dark:text-white">
                           NPR {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                         </span>
@@ -323,8 +333,16 @@ export function Account() {
                 <div key={req._id} className="p-5 rounded-2xl bg-white dark:bg-[#111c44] border border-neutral-200 dark:border-[#1b2559] space-y-2 text-xs">
                   <div className="flex justify-between font-bold">
                     <span className="text-neutral-900 dark:text-white">{req.productName || 'Sourced Item'}</span>
-                    <span className="text-amber-600 dark:text-amber-400">{req.status || 'Pending Review'}</span>
+                    <span className="text-amber-600 dark:text-amber-400">{req.orderStatus || req.status || 'Pending Review'}</span>
                   </div>
+                  {(req.brand || req.variant || req.productVariant || req.color || req.size) && (
+                    <div className="flex flex-wrap gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
+                      {req.brand && <span>Brand: <strong className="text-neutral-700 dark:text-neutral-200">{req.brand}</strong></span>}
+                      {(req.variant || req.productVariant) && <span>Variant: <strong className="text-neutral-700 dark:text-neutral-200">{req.variant || req.productVariant}</strong></span>}
+                      {req.color && <span>Color: <strong className="text-neutral-700 dark:text-neutral-200">{req.color}</strong></span>}
+                      {req.size && <span>Size: <strong className="text-neutral-700 dark:text-neutral-200">{req.size}</strong></span>}
+                    </div>
+                  )}
                   <p className="text-neutral-400 truncate">{req.productUrl}</p>
                   <div className="flex justify-between pt-2 border-t border-neutral-100 dark:border-[#1b2559]">
                     <span className="text-neutral-500 dark:text-neutral-400">Source: ₹{req.indianPriceINR} INR</span>

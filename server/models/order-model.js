@@ -4,11 +4,16 @@ const OrderItemSchema = new mongoose.Schema(
   {
     productId: { type: String, default: "" },
     name: { type: String, default: "" },
+    brand: { type: String, default: "" },
+    variant: { type: String, default: "" },
+    color: { type: String, default: "" },
+    size: { type: String, default: "" },
     price: { type: Number, default: 0 },
     unitPrice: { type: Number, default: 0 },
     quantity: { type: Number, required: true, default: 1 },
     image: { type: String, default: "" },
-    source: { type: String, default: "SajiloMarts" }
+    source: { type: String, default: "SajiloMarts" },
+    productUrl: { type: String, default: "" }
   },
   { _id: false }
 );

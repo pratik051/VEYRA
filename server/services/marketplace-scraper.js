@@ -37,6 +37,11 @@ async function extractFromHtml(html, platform) {
   let title = "";
   let brand = null;
   let variant = null;
+  let color = null;
+  let size = null;
+  let availableVariants = [];
+  let availableColors = [];
+  let availableSizes = [];
   let image = "";
   let price = null;
   let inStock = true;
@@ -57,16 +62,22 @@ async function extractFromHtml(html, platform) {
   const ogColorMatch =
     html.match(/<meta[^>]+property=["']product:color["'][^>]+content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]+property=["']og:color["'][^>]+content=["']([^"']+)["']/i);
+  if (ogColorMatch && ogColorMatch[1]?.trim()) {
+    color = ogColorMatch[1].trim();
+  }
+
   const ogSizeMatch =
     html.match(/<meta[^>]+property=["']product:size["'][^>]+content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]+property=["']og:size["'][^>]+content=["']([^"']+)["']/i);
+  if (ogSizeMatch && ogSizeMatch[1]?.trim()) {
+    size = ogSizeMatch[1].trim();
+  }
 
-  if (ogColorMatch && ogSizeMatch) {
-    variant = `${ogColorMatch[1].trim()} / ${ogSizeMatch[1].trim()}`;
-  } else if (ogColorMatch) {
-    variant = ogColorMatch[1].trim();
-  } else if (ogSizeMatch) {
-    variant = ogSizeMatch[1].trim();
+  const ogVariantMatch =
+    html.match(/<meta[^>]+property=["']product:variant["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+property=["']og:variant["'][^>]+content=["']([^"']+)["']/i);
+  if (ogVariantMatch && ogVariantMatch[1]?.trim()) {
+    variant = ogVariantMatch[1].trim();
   }
 
   const ogImageMatch =
@@ -97,15 +108,17 @@ async function extractFromHtml(html, platform) {
           if (!brand && product.brand) {
             brand = typeof product.brand === "object" ? product.brand.name || null : String(product.brand);
           }
+          if (!color && product.color) {
+            color = typeof product.color === "string" ? product.color.trim() : null;
+          }
+          if (!size && product.size) {
+            size = typeof product.size === "string" ? product.size.trim() : null;
+          }
           if (!variant) {
-            if (product.color && product.size) {
-              variant = `${product.color} / ${product.size}`;
-            } else if (product.color) {
-              variant = product.color;
-            } else if (product.size) {
-              variant = product.size;
-            } else if (product.model) {
-              variant = product.model;
+            if (product.model) {
+              variant = String(product.model).trim();
+            } else if (product.variant) {
+              variant = String(product.variant).trim();
             }
           }
           if (!image && product.image) {
@@ -206,7 +219,19 @@ async function extractFromHtml(html, platform) {
     }
   }
 
-  return { title, brand, variant, image, price, inStock };
+  return {
+    title,
+    brand,
+    variant,
+    color,
+    size,
+    availableVariants,
+    availableColors,
+    availableSizes,
+    image,
+    price,
+    inStock
+  };
 }
 
 export async function fetchMarketplaceProduct(url) {
@@ -250,6 +275,11 @@ export async function fetchMarketplaceProduct(url) {
       productName: extracted?.title || "",
       brand: extracted?.brand || null,
       variant: extracted?.variant || null,
+      color: extracted?.color || null,
+      size: extracted?.size || null,
+      availableVariants: extracted?.availableVariants || [],
+      availableColors: extracted?.availableColors || [],
+      availableSizes: extracted?.availableSizes || [],
       productImage: extracted?.image || "",
       url: cleanUrl,
       message: "Could not automatically verify original marketplace price from this link. Please enter the INR amount manually below."
@@ -267,6 +297,11 @@ export async function fetchMarketplaceProduct(url) {
     productName: extracted.title || `${platform.shortName} Sourced Product`,
     brand: extracted.brand || null,
     variant: extracted.variant || null,
+    color: extracted.color || null,
+    size: extracted.size || null,
+    availableVariants: extracted.availableVariants || [],
+    availableColors: extracted.availableColors || [],
+    availableSizes: extracted.availableSizes || [],
     productImage: extracted.image || "",
     originalPriceINR: pricing.indianPriceINR,
     currency: "INR",

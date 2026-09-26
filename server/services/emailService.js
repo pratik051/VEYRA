@@ -458,6 +458,26 @@ SajiloMarts Team`;
               ${productName}
             </td>
           </tr>
+          ${(order.brand || items[0]?.brand) ? `
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Brand:</td>
+            <td style="text-align: right; color: #334155;">${order.brand || items[0]?.brand}</td>
+          </tr>` : ""}
+          ${(order.variant || order.productVariant || items[0]?.variant) ? `
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Variant:</td>
+            <td style="text-align: right; color: #334155;">${order.variant || order.productVariant || items[0]?.variant}</td>
+          </tr>` : ""}
+          ${(order.color || items[0]?.color) ? `
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Color:</td>
+            <td style="text-align: right; color: #334155;">${order.color || items[0]?.color}</td>
+          </tr>` : ""}
+          ${(order.size || items[0]?.size) ? `
+          <tr>
+            <td style="color: #64748b; font-weight: 600;">Size:</td>
+            <td style="text-align: right; color: #334155;">${order.size || items[0]?.size}</td>
+          </tr>` : ""}
           <tr>
             <td style="color: #64748b; font-weight: 600;">Quantity:</td>
             <td style="text-align: right; color: #334155;">${quantity}</td>

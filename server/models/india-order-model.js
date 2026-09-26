@@ -71,6 +71,7 @@ const IndiaOrderSchema = new mongoose.Schema(
     brand: { type: String, default: "" },
     category: { type: String, default: "" },
     productVariant: { type: String, default: "" },
+    variant: { type: String, default: "" },
     size: { type: String, default: "" },
     color: { type: String, default: "" },
     quantity: { type: Number, required: true, default: 1, min: 1 },

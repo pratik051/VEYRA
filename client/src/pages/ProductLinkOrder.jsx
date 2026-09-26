@@ -37,6 +37,11 @@ export function ProductLinkOrder() {
   const [productName, setProductName] = useState('');
   const [brand, setBrand] = useState('');
   const [variant, setVariant] = useState('');
+  const [color, setColor] = useState('');
+  const [size, setSize] = useState('');
+  const [availableVariants, setAvailableVariants] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
   const [productImage, setProductImage] = useState('');
   const [indianPriceINR, setIndianPriceINR] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -74,6 +79,11 @@ export function ProductLinkOrder() {
           if (parsed.productName) setProductName(parsed.productName);
           if (parsed.brand) setBrand(parsed.brand);
           if (parsed.variant) setVariant(parsed.variant);
+          if (parsed.color) setColor(parsed.color);
+          if (parsed.size) setSize(parsed.size);
+          if (Array.isArray(parsed.availableVariants)) setAvailableVariants(parsed.availableVariants);
+          if (Array.isArray(parsed.availableColors)) setAvailableColors(parsed.availableColors);
+          if (Array.isArray(parsed.availableSizes)) setAvailableSizes(parsed.availableSizes);
           if (parsed.productImage) setProductImage(parsed.productImage);
           if (parsed.indianPriceINR) setIndianPriceINR(parsed.indianPriceINR);
           if (parsed.quantity) setQuantity(parsed.quantity);
@@ -177,6 +187,21 @@ export function ProductLinkOrder() {
         }
         if (data.variant) {
           setVariant(data.variant);
+        }
+        if (data.color) {
+          setColor(data.color);
+        }
+        if (data.size) {
+          setSize(data.size);
+        }
+        if (Array.isArray(data.availableVariants) && data.availableVariants.length > 0) {
+          setAvailableVariants(data.availableVariants);
+        }
+        if (Array.isArray(data.availableColors) && data.availableColors.length > 0) {
+          setAvailableColors(data.availableColors);
+        }
+        if (Array.isArray(data.availableSizes) && data.availableSizes.length > 0) {
+          setAvailableSizes(data.availableSizes);
         }
         if (data.productImage || data.image) {
           setProductImage(data.productImage || data.image);
@@ -284,6 +309,11 @@ export function ProductLinkOrder() {
       productName: productName || `${detectedPlatform} Product`,
       brand: brand || '',
       variant: variant || '',
+      color: color || '',
+      size: size || '',
+      availableVariants,
+      availableColors,
+      availableSizes,
       productImage: productImage || '',
       indianPriceINR,
       quantity,
@@ -328,8 +358,11 @@ export function ProductLinkOrder() {
       const payload = {
         productUrl,
         productName: productName || `${detectedPlatform} Product`,
-        brand: brand || 'Information unavailable',
-        productVariant: variant || 'Information unavailable',
+        brand: brand || '',
+        variant: variant || '',
+        productVariant: variant || '',
+        color: color || '',
+        size: size || '',
         productImage: productImage || '',
         indianPriceINR: quote.indianPriceINR,
         quantity,
@@ -496,25 +529,37 @@ export function ProductLinkOrder() {
                 </div>
 
                 {/* Structured Metadata Fields */}
-                <div className="md:col-span-3 space-y-3 text-xs">
+                <div className="md:col-span-3 space-y-3.5 text-xs">
+                  {/* Brand & Source Marketplace */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Brand:</span>
-                      <p className="font-bold text-neutral-900 dark:text-white">
-                        {brand || 'Information unavailable'}
-                      </p>
+                      <span className="text-[11px] font-bold text-neutral-500 dark:text-[#a3aed0] block">
+                        Brand <span className="font-normal text-neutral-400">(Optional)</span>:
+                      </span>
+                      <input
+                        type="text"
+                        value={brand}
+                        onChange={(e) => setBrand(e.target.value)}
+                        placeholder="e.g. Nike, Apple, boAt"
+                        className="w-full mt-1 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Variant / Size / Color:</span>
-                      <p className="font-bold text-neutral-900 dark:text-white">
-                        {variant || 'Information unavailable'}
+                      <span className="text-[11px] font-bold text-neutral-500 dark:text-[#a3aed0] block">
+                        Source Marketplace:
+                      </span>
+                      <p className="font-bold text-neutral-900 dark:text-white mt-2.5">
+                        {detectedPlatform || 'Indian Marketplace'}
                       </p>
                     </div>
                   </div>
 
+                  {/* Product Name */}
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Product Name:</span>
+                    <span className="text-[11px] font-bold text-neutral-500 dark:text-[#a3aed0] block">
+                      Product Name:
+                    </span>
                     <input
                       type="text"
                       value={productName}
@@ -524,33 +569,141 @@ export function ProductLinkOrder() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Source Marketplace:</span>
-                      <p className="font-bold text-neutral-900 dark:text-white">
-                        {detectedPlatform || 'Amazon India / Flipkart / Indian Store'}
-                      </p>
-                    </div>
+                  {/* Optional Customization: Variant, Color, Size */}
+                  <div className="pt-2.5 border-t border-neutral-200/80 dark:border-[#1b2559]/80 space-y-2.5">
+                    <span className="text-[10px] font-black uppercase text-neutral-500 dark:text-[#a3aed0] tracking-wider block">
+                      Product Options <span className="normal-case font-medium text-neutral-400">(All 3 Optional)</span>
+                    </span>
 
-                    <div>
-                      <span className="text-[11px] font-bold text-neutral-400 dark:text-[#a3aed0] block">Original Indian Price (INR):</span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="font-bold text-neutral-600 dark:text-neutral-300">₹</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* 1. Variant (Optional) */}
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-200">
+                            Variant
+                          </label>
+                          <span className="text-[10px] text-neutral-400 font-medium">(Optional)</span>
+                        </div>
                         <input
-                          type="number"
-                          value={indianPriceINR}
-                          onChange={(e) => {
-                            setIndianPriceINR(e.target.value);
-                            if (parseFloat(e.target.value) > 0) {
-                              calculateLandedQuote(e.target.value, quantity);
-                            } else {
-                              setQuote(null);
-                            }
-                          }}
-                          placeholder="e.g. 1499"
-                          className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                          type="text"
+                          value={variant}
+                          onChange={(e) => setVariant(e.target.value)}
+                          placeholder="e.g. Air Max 90"
+                          className="w-full mt-1 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
+                        {availableVariants.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {availableVariants.map((v) => (
+                              <button
+                                key={v}
+                                type="button"
+                                onClick={() => setVariant(v)}
+                                className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold transition ${
+                                  variant === v
+                                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 border-neutral-950 dark:border-amber-400'
+                                    : 'bg-white dark:bg-[#111c44] text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-[#1b2559] hover:border-neutral-400'
+                                }`}
+                              >
+                                {v}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
+
+                      {/* 2. Color (Optional) */}
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-200">
+                            Color
+                          </label>
+                          <span className="text-[10px] text-neutral-400 font-medium">(Optional)</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={color}
+                          onChange={(e) => setColor(e.target.value)}
+                          placeholder="e.g. Black"
+                          className="w-full mt-1 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        {availableColors.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {availableColors.map((c) => (
+                              <button
+                                key={c}
+                                type="button"
+                                onClick={() => setColor(c)}
+                                className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold transition ${
+                                  color === c
+                                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 border-neutral-950 dark:border-amber-400'
+                                    : 'bg-white dark:bg-[#111c44] text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-[#1b2559] hover:border-neutral-400'
+                                }`}
+                              >
+                                {c}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3. Size (Optional) */}
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-200">
+                            Size
+                          </label>
+                          <span className="text-[10px] text-neutral-400 font-medium">(Optional)</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={size}
+                          onChange={(e) => setSize(e.target.value)}
+                          placeholder="e.g. 42"
+                          className="w-full mt-1 rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        {availableSizes.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {availableSizes.map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => setSize(s)}
+                                className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold transition ${
+                                  size === s
+                                    ? 'bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 border-neutral-950 dark:border-amber-400'
+                                    : 'bg-white dark:bg-[#111c44] text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-[#1b2559] hover:border-neutral-400'
+                                }`}
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Indian Price Field */}
+                  <div className="pt-2 border-t border-neutral-200/80 dark:border-[#1b2559]/80">
+                    <span className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 block">
+                      Original Indian Price (₹ INR) *
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-1 max-w-xs">
+                      <span className="font-bold text-neutral-600 dark:text-neutral-300">₹</span>
+                      <input
+                        type="number"
+                        value={indianPriceINR}
+                        onChange={(e) => {
+                          setIndianPriceINR(e.target.value);
+                          if (parseFloat(e.target.value) > 0) {
+                            calculateLandedQuote(e.target.value, quantity);
+                          } else {
+                            setQuote(null);
+                          }
+                        }}
+                        placeholder="e.g. 1499"
+                        className="w-full rounded-xl border border-neutral-200 dark:border-[#1b2559] bg-white dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
                     </div>
                   </div>
                 </div>
@@ -961,6 +1114,22 @@ export function ProductLinkOrder() {
                 <span className="text-neutral-600 dark:text-neutral-300">Variant:</span>
                 <span className="font-bold text-neutral-900 dark:text-white">
                   {variant}
+                </span>
+              </div>
+            )}
+            {color && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600 dark:text-neutral-300">Color:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {color}
+                </span>
+              </div>
+            )}
+            {size && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600 dark:text-neutral-300">Size:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {size}
                 </span>
               </div>
             )}

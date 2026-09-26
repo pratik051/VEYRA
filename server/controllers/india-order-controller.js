@@ -39,7 +39,7 @@ export async function createIndiaOrder(req, res) {
     const productUrl = String(body.productUrl || "").trim();
     const productName = String(body.productName || "Sourced Indian Product").trim();
     const productImage = String(body.productImage || "").trim();
-    const productVariant = String(body.productVariant || "").trim();
+    const productVariant = String(body.productVariant || body.variant || "").trim();
     const size = String(body.size || "").trim();
     const color = String(body.color || "").trim();
     const quantity = Math.max(1, Number(body.quantity) || 1);
@@ -135,6 +135,7 @@ export async function createIndiaOrder(req, res) {
       brand: body.brand || "Generic",
       category: body.category || "Everyday Essentials",
       productVariant,
+      variant: productVariant,
       size,
       color,
       quantity,

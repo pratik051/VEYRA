@@ -47,6 +47,9 @@ export function AdminDashboard() {
   // Selected payment preview modal
   const [previewPayment, setPreviewPayment] = useState(null);
 
+  // Selected full order details modal
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+
   // Ticket reply state
   const [replyTicketId, setReplyTicketId] = useState(null);
   const [replyText, setReplyText] = useState('');
@@ -461,16 +464,24 @@ export function AdminDashboard() {
                           NPR {(ord.pricing?.totalAmount || ord.totalAmount || ord.finalAmountNPR || 0).toLocaleString()}
                         </span>
                         <span className="text-[10px] text-neutral-400 dark:text-[#a3aed0] block">
-                          {ord.items?.length || 1} items ({ord.productName || 'Order'})
+                          {ord.items?.length || 1} item{ord.items?.length > 1 ? 's' : ''} ({ord.productName || 'Order'})
                         </span>
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                            (ord.paymentScreenshot || ord.payment?.screenshot)
-                              ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                              : 'bg-neutral-100 dark:bg-[#0b1437] text-neutral-500 dark:text-[#a3aed0]'
-                          }`}>
-                            Proof: {(ord.paymentScreenshot || ord.payment?.screenshot) ? 'Submitted' : 'None'}
-                          </span>
+                        {(ord.variant || ord.color || ord.size || ord.brand) && (
+                          <div className="flex flex-wrap gap-1 text-[9px] text-neutral-500 dark:text-neutral-400 pt-0.5">
+                            {ord.brand && <span className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-[#0b1437]">Brand: {ord.brand}</span>}
+                            {ord.variant && <span className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300">Var: {ord.variant}</span>}
+                            {ord.color && <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300">Color: {ord.color}</span>}
+                            {ord.size && <span className="px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300">Size: {ord.size}</span>}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrderDetails(ord)}
+                            className="text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                          >
+                            View Details ➔
+                          </button>
                           {(ord.paymentScreenshot || ord.payment?.screenshot) && (
                             <button
                               type="button"
@@ -482,9 +493,9 @@ export function AdminDashboard() {
                                 method: ord.payment?.method || ord.paymentMethod || 'eSewa',
                                 screenshot: ord.paymentScreenshot || ord.payment?.screenshot || ''
                               })}
-                              className="text-[10px] font-bold text-amber-500 hover:text-amber-400 underline cursor-pointer"
+                              className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                             >
-                              View Proof
+                              Proof
                             </button>
                           )}
                         </div>
@@ -894,6 +905,161 @@ export function AdminDashboard() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 8. ORDER DETAILS MODAL */}
+      {selectedOrderDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#111c44] rounded-3xl max-w-lg w-full p-6 space-y-4 border border-neutral-200 dark:border-[#1b2559] shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-[#1b2559] pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">Order Inspection</span>
+                <h3 className="text-base font-black text-neutral-950 dark:text-white">
+                  #{selectedOrderDetails.orderId || selectedOrderDetails._id}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedOrderDetails(null)}
+                className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Product Specifications Section */}
+            <div className="rounded-2xl bg-neutral-50 dark:bg-[#0b1437] p-4 border border-neutral-200/80 dark:border-[#1b2559] space-y-2.5 text-xs">
+              <span className="text-[10px] font-black uppercase text-neutral-500 dark:text-[#a3aed0] tracking-wider block border-b border-neutral-200/60 dark:border-white/5 pb-1">
+                Product Specifications
+              </span>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Product:</span>
+                <span className="font-bold text-neutral-900 dark:text-white text-right max-w-[240px] truncate">
+                  {selectedOrderDetails.productName || selectedOrderDetails.items?.[0]?.name || 'Catalog Product'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Brand:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.brand || selectedOrderDetails.items?.[0]?.brand || 'Not specified'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Price:</span>
+                <span className="font-black text-neutral-950 dark:text-amber-400">
+                  NPR {(selectedOrderDetails.pricing?.totalAmount || selectedOrderDetails.totalAmount || selectedOrderDetails.finalAmountNPR || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Variant:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.variant || selectedOrderDetails.productVariant || selectedOrderDetails.items?.[0]?.variant || 'Not specified'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Color:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.color || selectedOrderDetails.items?.[0]?.color || 'Not specified'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Size:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.size || selectedOrderDetails.items?.[0]?.size || 'Not specified'}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-0.5">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Quantity:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.quantity || selectedOrderDetails.items?.[0]?.quantity || 1}
+                </span>
+              </div>
+
+              {(selectedOrderDetails.productUrl || selectedOrderDetails.items?.[0]?.productUrl) && (
+                <div className="flex justify-between py-0.5 pt-1 border-t border-neutral-200/60 dark:border-white/5">
+                  <span className="text-neutral-500 dark:text-[#a3aed0]">Source URL:</span>
+                  <a
+                    href={selectedOrderDetails.productUrl || selectedOrderDetails.items?.[0]?.productUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-amber-600 dark:text-amber-400 font-bold hover:underline truncate max-w-[220px]"
+                  >
+                    Open Source Store ➔
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Customer & Delivery Information */}
+            <div className="space-y-2 text-xs">
+              <span className="text-[10px] font-black uppercase text-neutral-500 dark:text-[#a3aed0] tracking-wider block">
+                Customer &amp; Shipping Details
+              </span>
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Customer Name:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.shippingAddress?.fullName || selectedOrderDetails.customerName || 'Customer'}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Contact Phone:</span>
+                <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.shippingAddress?.phone || selectedOrderDetails.phone || 'Not provided'}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Email:</span>
+                <span className="font-bold text-neutral-900 dark:text-white">
+                  {selectedOrderDetails.shippingAddress?.email || selectedOrderDetails.email || 'Not provided'}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-[#1b2559]">
+                <span className="text-neutral-500 dark:text-[#a3aed0]">Delivery Destination:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white text-right max-w-[240px]">
+                  {selectedOrderDetails.shippingAddress?.fullAddress || selectedOrderDetails.deliveryAddress || selectedOrderDetails.shippingAddress?.city || 'Nepal'}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment & Status Control */}
+            <div className="pt-2 border-t border-neutral-100 dark:border-[#1b2559] flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] text-neutral-400 block font-bold">Payment: {selectedOrderDetails.payment?.method || selectedOrderDetails.paymentMethod || 'eSewa'}</span>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{selectedOrderDetails.paymentStatus || 'Pending Verification'}</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedOrderDetails.status || selectedOrderDetails.orderStatus || 'Processing'}
+                  onChange={(e) => {
+                    handleUpdateOrderStatus(selectedOrderDetails._id, e.target.value);
+                    setSelectedOrderDetails((prev) => prev ? { ...prev, status: e.target.value, orderStatus: e.target.value } : null);
+                  }}
+                  className="rounded-xl border border-neutral-300 dark:border-[#1b2559] bg-neutral-50 dark:bg-[#0b1437] text-neutral-900 dark:text-white px-3 py-2 text-xs font-black focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="Processing">Processing</option>
+                  <option value="Sourced">Sourced in India</option>
+                  <option value="In Transit">In Transit (Nepal)</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrderDetails(null)}
+                  className="px-4 py-2 rounded-xl bg-neutral-950 dark:bg-amber-400 text-white dark:text-neutral-950 font-bold text-xs"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </div>

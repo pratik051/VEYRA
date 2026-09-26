@@ -68,11 +68,16 @@ export async function createCheckoutOrder(req, res) {
     const normalizedItems = items.map((i) => ({
       productId: String(i.productId || i._id || i.id || ""),
       name: String(i.name || i.title || "Product"),
+      brand: String(i.brand || "").trim(),
+      variant: String(i.variant || i.productVariant || "").trim(),
+      color: String(i.color || "").trim(),
+      size: String(i.size || "").trim(),
       price: Number(i.price) || 0,
       unitPrice: Number(i.price || i.unitPrice) || 0,
       quantity: Math.max(1, Number(i.quantity) || 1),
       image: String(i.image || i.imageUrl || ""),
-      source: String(i.source || "SajiloMarts")
+      source: String(i.source || "SajiloMarts"),
+      productUrl: String(i.productUrl || i.url || "").trim()
     }));
 
     const orderDoc = {
